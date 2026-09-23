@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Log in · Komi TCG{% endblock %}
+{% block content %}
+<form method="post" class="form">{% csrf_token %}
+  <h1>Log in</h1>
+  {{ form.as_div }}
+  <button class="btn">Log in</button>
+  <p>No account yet? <a href="{% url 'signup' %}">Sign up</a></p>
+</form>
+{% endblock %}

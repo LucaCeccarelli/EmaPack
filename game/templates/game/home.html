@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<section id="stage" class="stage" data-open-url="{% url 'open_pack' %}" data-next-pack-at="{{ next_pack_at|default:'' }}">
+  {% csrf_token %}
+</section>
+{% endblock %}

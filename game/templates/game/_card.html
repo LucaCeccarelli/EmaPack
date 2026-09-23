@@ -1,0 +1,16 @@
+<article class="card rarity-{{ card.rarity_slug }}" style="--c1: {{ card.primary_color|default:'#3a3f58' }}; --c2: {{ card.secondary_color|default:'#1b1e2e' }}">
+  <div class="card-inner">
+    <div class="card-art">{% if card.banner %}<img src="{{ card.banner.url }}" alt="" loading="lazy">{% endif %}</div>
+    <div class="card-logo">{% if card.logo %}<img src="{{ card.logo.url }}" alt="" loading="lazy">{% else %}<span>{{ card.name|slice:":1"|upper }}</span>{% endif %}</div>
+    <h3 class="card-name">{{ card.name }}</h3>
+    <p class="card-tagline">{{ card.tagline|truncatechars:90 }}</p>
+    <dl class="card-stats">
+      <div><dt>Subs</dt><dd>{{ card.subscriber_count }}</dd></div>
+      <div><dt>Posts</dt><dd>{{ card.post_count }}</dd></div>
+      <div><dt>Events</dt><dd>{{ card.event_count }}</dd></div>
+    </dl>
+    <span class="card-rarity">{{ card.get_rarity_display }}</span>
+    <div class="card-shine"></div>
+    <div class="card-glare"></div>
+  </div>
+</article>

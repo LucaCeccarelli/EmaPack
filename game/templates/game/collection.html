@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Collection · Komi TCG{% endblock %}
+{% block content %}
+<h1>Collection <small class="muted">{{ cards|length }} / {{ total }} discovered</small></h1>
+{% if not cards %}<p>No cards yet. <a href="{% url 'home' %}">Open your first pack!</a></p>{% endif %}
+<div class="grid">
+  {% for card in cards %}
+  <a class="grid-item" href="{% url 'card_detail' card.pk %}">
+    {% include "game/_card.html" %}
+    {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'game/fx.js' %}"></script>
+<script>document.querySelectorAll('.card').forEach(el => FX.tilt(el));</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}{{ card.name }} · Komi TCG{% endblock %}
+{% block content %}
+<div class="detail">
+  {% include "game/_card.html" %}
+  <div class="detail-text">
+    <h1>{{ card.name }}</h1>
+    <p class="muted">{{ card.get_rarity_display }} · owned ×{{ copies }} · {{ card.subscriber_count }} subscribers</p>
+    {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">This page has no presentation yet.</p>{% endif %}
+    <p><a href="{% url 'collection' %}">← Back to collection</a></p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'game/fx.js' %}"></script>
+<script>document.querySelectorAll('.card').forEach(el => FX.tilt(el));</script>
+{% endblock %}
