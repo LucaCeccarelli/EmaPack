@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'tcg.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'pack_ema'),
+        'USER': os.environ.get('POSTGRES_USER', 'pack_ema'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'pack_ema'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 

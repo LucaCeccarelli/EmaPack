@@ -15,3 +15,10 @@ class ModelTests(TestCase):
         self.assertEqual(card.rarity_slug, "legendary")
         self.assertEqual(card.get_rarity_display(), "Legendary")
         self.assertEqual(str(card), "BDE")
+
+    def test_long_image_paths_fit(self):
+        # Real Komi paths reach ~115 chars; FileField's default max_length (100) is enforced by Postgres.
+        path = "3ce8b812-6527-4668-8e86-5c3709de280a/" + "image_picker_" + "A" * 120 + ".jpg"
+        card = Card.objects.create(komi_id="3ce8b812-6527-4668-8e86-5c3709de280b", name="Long", logo=path, banner=path)
+        card.refresh_from_db()
+        self.assertEqual(card.logo.name, path)

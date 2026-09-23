@@ -22,8 +22,8 @@ class Card(models.Model):
     name = models.CharField(max_length=200)
     tagline = models.CharField(max_length=500, blank=True)  # the page's short description line
     description = models.TextField(blank=True)  # text of the page's presentation blocks
-    logo = models.FileField(blank=True)  # relative to MEDIA_ROOT (the images/ dir)
-    banner = models.FileField(blank=True)
+    logo = models.FileField(max_length=255, blank=True)  # relative to MEDIA_ROOT (the images/ dir)
+    banner = models.FileField(max_length=255, blank=True)
     primary_color = models.CharField(max_length=7, blank=True)  # "#rrggbb" or ""
     secondary_color = models.CharField(max_length=7, blank=True)
     subscriber_count = models.PositiveIntegerField(default=0)
