@@ -1,6 +1,7 @@
 import json
 import tempfile
 import uuid
+from io import StringIO
 from pathlib import Path
 
 from django.core.management import call_command
@@ -43,11 +44,11 @@ CLUB = {
 }
 
 MEMBER = {
-    "id": "bafcd99a-50f8-4c92-b330-c6fb74c97580",
-    "name": "Robin Lesur",
+    "id": "31aa01a7-c874-4a4c-97ab-e2a839656b12",
+    "name": "Alex Martin",
     "type": "user",
-    "user_id": "99083c4f-d6c6-4208-92aa-d3e3fbb52ba3",
-    "description": "robin_lsr",
+    "user_id": "40e010f4-4b93-4b7c-a86c-eae61ae8bad2",
+    "description": "alex_m",
     "subscriber_count": 2,
     "logo_url": "https://cdn.example/home/komi_banner.png",
     "banner_url": "https://cdn.example/home/komi_banner.png",
@@ -98,7 +99,7 @@ class HelperTests(TestCase):
         self.assertEqual(fields["description"], "")
         self.assertEqual(fields["logo"], "")
         self.assertEqual(fields["primary_color"], "")
-        self.assertEqual(fields["tagline"], "robin_lsr")
+        self.assertEqual(fields["tagline"], "alex_m")
 
     def test_empty_name_gets_placeholder(self):
         self.assertEqual(card_fields({**MEMBER, "name": "  "})["name"], "???")
@@ -126,8 +127,13 @@ class HelperTests(TestCase):
 
 
 class CommandTests(TestCase):
+    def call_import(self, data):
+        path = write_dump(data)
+        self.addCleanup(path.unlink)
+        call_command("import_komi", path, stdout=StringIO())
+
     def test_imports_clubs_and_members(self):
-        call_command("import_komi", write_dump({"clubs": [CLUB], "members": [MEMBER]}))
+        self.call_import({"clubs": [CLUB], "members": [MEMBER]})
         self.assertEqual(Card.objects.count(), 2)
         bde = Card.objects.get(komi_id=CLUB["id"])
         self.assertEqual(bde.name, "BDE")
@@ -138,12 +144,12 @@ class CommandTests(TestCase):
         self.assertEqual(bde.primary_color, "#b80c09")
 
     def test_reimport_updates_in_place(self):
-        call_command("import_komi", write_dump({"clubs": [CLUB], "members": [MEMBER]}))
+        self.call_import({"clubs": [CLUB], "members": [MEMBER]})
         bde = Card.objects.get(komi_id=CLUB["id"])
         user = User.objects.create_user("ash", password="pw")
         Pull.objects.create(user=user, card=bde, opened_at="2026-09-23T10:00:00Z")
 
-        call_command("import_komi", write_dump({"clubs": [{**CLUB, "name": "BDE 2027"}], "members": [MEMBER]}))
+        self.call_import({"clubs": [{**CLUB, "name": "BDE 2027"}], "members": [MEMBER]})
 
         self.assertEqual(Card.objects.count(), 2)
         self.assertEqual(Pull.objects.get().card.name, "BDE 2027")
