@@ -1,0 +1,10 @@
+# Personal data / large files — never commit
+images/
+komi_pages_dump.json
+*.zip
+db.sqlite3
+# Python
+.venv/
+__pycache__/
+# SDD scratch
+.superpowers/
