@@ -71,7 +71,8 @@ def rarity_for(count, sorted_counts):
 
 
 def assign_rarities():
-    cards = list(Card.objects.only("id", "subscriber_count"))
+    # Only imported Komi cards are ranked; proposed cards keep the rarity the admin gave them.
+    cards = list(Card.objects.filter(komi_id__isnull=False).only("id", "subscriber_count"))
     counts = sorted(card.subscriber_count for card in cards)
     for card in cards:
         card.rarity = rarity_for(card.subscriber_count, counts)

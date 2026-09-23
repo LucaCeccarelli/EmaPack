@@ -39,6 +39,12 @@ It prints something like `Imported 2103 cards. Rarities: {'Common': 1578, ...}`.
 - **Rarity** comes from `subscriber_count`: cards are ranked against every card in the database — top 1% Legendary, next 4% Epic, next 10% Rare, next 25% Uncommon, the rest Common. Tweak `RARITY_THRESHOLDS` in `game/management/commands/import_komi.py` and re-run the import to change it.
 - Card fields: name, short description, presentation text (from the page's `blocks`), logo, banner, colors, subscriber/post/event counts. Data format: see `KOMI_DUMP_SCHEMA.md`.
 
+## Player-proposed cards
+
+Players can design a new card on **Propose** (http://localhost:8000/cards/propose/): name, tagline, description, logo, banner and colors, with a live preview. Each player can have up to 3 proposals waiting for review; images must be real images, 5 MB max (`PROPOSAL_MAX_IMAGE_BYTES`), stored in `images/proposals/`.
+
+Admins review them in **Admin → Proposed cards**: pick the rarity in the list, **Save**, then select the cards and run **Approve** (they can now be pulled from packs) or **Reject**. Only approved cards ever appear in packs, and re-running the import never changes a proposed card's rarity.
+
 ## Admin (optional)
 
 ```bash

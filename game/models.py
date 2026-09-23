@@ -15,15 +15,22 @@ class Rarity(models.IntegerChoices):
     LEGENDARY = 5, "Legendary"
 
 
-class Card(models.Model):
-    """One Komi page (a club or a member) turned into a collectible card."""
+class Status(models.TextChoices):
+    PENDING = "pending", "Pending review"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
 
-    komi_id = models.UUIDField(unique=True)
+
+class Card(models.Model):
+    """A collectible card: one Komi page (a club or a member), or a card proposed by a player."""
+
+    komi_id = models.UUIDField(unique=True, null=True, blank=True)  # None for player-proposed cards
     name = models.CharField(max_length=200)
     tagline = models.CharField(max_length=500, blank=True)  # the page's short description line
     description = models.TextField(blank=True)  # text of the page's presentation blocks
-    logo = models.FileField(max_length=255, blank=True)  # relative to MEDIA_ROOT (the images/ dir)
-    banner = models.FileField(max_length=255, blank=True)
+    # Relative to MEDIA_ROOT (the images/ dir); player uploads land in images/proposals/.
+    logo = models.FileField(max_length=255, blank=True, upload_to="proposals/")
+    banner = models.FileField(max_length=255, blank=True, upload_to="proposals/")
     primary_color = models.CharField(max_length=7, blank=True)  # "#rrggbb" or ""
     secondary_color = models.CharField(max_length=7, blank=True)
     subscriber_count = models.PositiveIntegerField(default=0)
@@ -32,6 +39,12 @@ class Card(models.Model):
     rarity = models.PositiveSmallIntegerField(
         choices=Rarity.choices, default=Rarity.COMMON, db_index=True
     )
+    # Only approved cards can be pulled. Imported cards are approved; proposals start pending.
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.APPROVED, db_index=True)
+    proposed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="proposals"
+    )
+    proposed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -39,6 +52,14 @@ class Card(models.Model):
     @property
     def rarity_slug(self):
         return Rarity(self.rarity).name.lower()
+
+
+class CardProposal(Card):
+    """Admin-only view of Card for reviewing player proposals (its own tab in the admin)."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "proposed card"
 
 
 class Pull(models.Model):

@@ -142,5 +142,8 @@ LOGOUT_REDIRECT_URL = "login"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "images"
 
+# Max size of each image a player uploads when proposing a card.
+PROPOSAL_MAX_IMAGE_BYTES = 5 * 1024 * 1024
+
 # Time between two packs. 10 minutes in prod; e.g. PACK_COOLDOWN_SECONDS=10 for testing.
 PACK_COOLDOWN = timedelta(seconds=int(os.environ.get("PACK_COOLDOWN_SECONDS", 600)))

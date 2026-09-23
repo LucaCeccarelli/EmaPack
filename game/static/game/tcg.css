@@ -59,7 +59,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .nav a:hover, .nav-logout:hover { color: var(--text); background: var(--surface-2); }
 .nav a.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .nav form { margin: 0 0 0 8px; }
-@media (max-width: 480px) { .brand { font-size: 0; gap: 0; } .brand-mark { font-size: .8rem; } .nav a, .nav-logout { padding: 8px 10px; } }
+.nav a, .nav-logout { white-space: nowrap; }
+@media (max-width: 480px) { .brand { font-size: 0; gap: 0; } .brand-mark { font-size: .8rem; } .nav { gap: 0; } .nav a, .nav-logout { padding: 7px 8px; font-size: .88rem; } .nav form { margin-left: 0; } }
 
 /* ---------- Surfaces, buttons, forms ---------- */
 .panel { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 20px 50px #0006; }
@@ -171,6 +172,75 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .stats dd { margin: 2px 0 0; font-size: 1.4rem; font-weight: 800; }
 .prose { color: #ddd8f0; overflow-wrap: anywhere; }
 .prose p { margin: 0 0 1em; }
+
+/* ---------- Flash messages ---------- */
+.flash { margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; font-weight: 600; border: 1px solid var(--line-strong); background: var(--surface-2); }
+.flash-success { border-color: color-mix(in srgb, var(--uncommon) 50%, transparent); background: color-mix(in srgb, var(--uncommon) 12%, var(--surface)); }
+.flash-warning { border-color: color-mix(in srgb, var(--accent-2) 50%, transparent); background: color-mix(in srgb, var(--accent-2) 12%, var(--surface)); }
+.small { font-size: .85rem; }
+
+/* ---------- Card editor ---------- */
+.page-head p { margin: 8px 0 0; max-width: 60ch; }
+.editor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: start; }
+.editor-form { padding: 24px 28px; }
+.editor-form fieldset { margin: 0 0 22px; padding: 0; border: 0; }
+.editor-form legend { margin-bottom: 12px; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.editor-form legend .muted { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
+.field { margin-bottom: 14px; }
+.field label { display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: 600; font-size: .9rem; }
+.count { color: var(--muted); font-weight: 400; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.editor-form input[type=text], .editor-form textarea {
+  width: 100%; padding: 11px 14px; border-radius: 12px; font: inherit; color: var(--text);
+  border: 1px solid var(--line-strong); background: var(--bg); transition: border-color .15s, box-shadow .15s;
+}
+.editor-form textarea { resize: vertical; min-height: 110px; }
+.editor-form input[type=text]:focus, .editor-form textarea:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+.editor-form .errorlist { margin: 6px 0 0; padding: 0; list-style: none; color: var(--danger); font-size: .85rem; }
+.uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.upload {
+  --thumb: none; position: relative; display: grid; place-content: center; gap: 2px; min-height: 110px; padding: 12px; text-align: center;
+  border: 2px dashed var(--line-strong); border-radius: 14px; cursor: pointer; background: var(--bg) var(--thumb) center / cover no-repeat;
+  transition: border-color .15s, background-color .15s;
+}
+.upload:hover, .upload:focus-within { border-color: var(--focus); }
+.upload.has-file { border-style: solid; }
+.upload.has-file > span { padding: 2px 8px; border-radius: 8px; background: #000a; }
+.upload.has-file > .muted { display: none; }
+.upload-title { font-weight: 800; }
+.upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.colors { display: flex; gap: 16px; flex-wrap: wrap; }
+.color { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+.color input[type=color] { width: 48px; height: 48px; padding: 0; border: 2px solid var(--line-strong); border-radius: 12px; background: none; cursor: pointer; }
+.color input[type=color]::-webkit-color-swatch-wrapper { padding: 3px; }
+.color input[type=color]::-webkit-color-swatch, .color input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
+.editor-form .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.editor-preview { --card-w: min(300px, 80vw); position: sticky; top: 90px; display: grid; justify-items: center; gap: 16px; text-align: center; }
+.rarity-toggle { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 320px; margin: 0; padding: 0; border: 0; }
+.rarity-toggle legend { width: 100%; margin-bottom: 8px; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.rarity-toggle label { position: relative; cursor: pointer; }
+.rarity-toggle input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.rarity-toggle span {
+  display: block; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--muted);
+  font: 600 .8rem Outfit, system-ui, sans-serif;
+}
+.rarity-toggle input:checked + span { color: var(--text); border-color: var(--text); }
+.rarity-toggle input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+.editor-preview .small { margin: 0; }
+.my-proposals { margin-top: 32px; padding: 20px 24px; }
+.my-proposals h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.my-proposals ul { margin: 0; padding: 0; list-style: none; }
+.my-proposals li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.my-proposals li:first-child { border-top: 0; }
+.my-proposals .chip { margin-left: auto; }
+.swatch { width: 28px; height: 28px; flex: none; border-radius: 8px; background: linear-gradient(135deg, var(--c1), var(--c2)); border: 1px solid var(--line-strong); }
+.status-pending { --rc: var(--accent-2); }
+.status-approved { --rc: var(--uncommon); }
+.status-rejected { --rc: var(--danger); }
+@media (max-width: 760px) {
+  .editor { grid-template-columns: 1fr; }
+  .editor-preview { position: static; order: -1; }
+  .uploads { grid-template-columns: 1fr; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .card-inner { transition: none; }
