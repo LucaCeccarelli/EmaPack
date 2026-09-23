@@ -9,22 +9,26 @@
 
   FX.init($('fx'));
   let nextPackAt = stage.dataset.nextPackAt ? new Date(stage.dataset.nextPackAt) : null;
-  let busy = false, request = null, skip = false, pendingTap = null;
+  let busy = false, request = null, skip = false, pendingTap = null, message = '';
   const dur = ms => (FX.reduced || skip ? 0 : ms);
   const wait = ms => new Promise(r => setTimeout(r, dur(ms)));
 
   // ---------- Countdown ----------
   function ready() {
     const left = nextPackAt ? nextPackAt - Date.now() : 0;
-    pack.classList.toggle('locked', left > 0);
+    pack.classList.toggle('locked', left > 0 && !busy);
     pack.setAttribute('aria-disabled', String(left > 0));
     hint.hidden = left > 0 || busy;
-    if (left <= 0) {
-      timer.textContent = 'A pack is ready!';
+    let text;
+    if (message) {
+      text = message;
+    } else if (left <= 0) {
+      text = 'A pack is ready!';
     } else {
       const s = Math.ceil(left / 1000);
-      timer.textContent = `Next pack in ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      text = `Next pack in ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     }
+    if (timer.textContent !== text) timer.textContent = text;
     return left <= 0;
   }
   setInterval(ready, 250);
@@ -34,8 +38,10 @@
   function fetchPack() {
     return request ??= fetch(stage.dataset.openUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf } })
       .then(async r => {
-        const data = await r.json().catch(() => ({ error: 'Something went wrong. Try again.' }));
-        if (!r.ok) throw data;
+        const data = await r.json().catch(() => ({
+          error: r.redirected ? 'Your session expired. Please log in again.' : 'Something went wrong. Try again.',
+        }));
+        if (!r.ok || !data.cards) throw data;
         return data;
       });
   }
@@ -43,6 +49,8 @@
   // ---------- Tear (drag across the pack) ----------
   let tearFrom = null, torn = 0;
   pack.addEventListener('pointerdown', e => {
+    FX.unlock();
+    message = '';
     if (busy || !ready()) return;
     tearFrom = e.clientX;
     torn = 0;
@@ -61,7 +69,10 @@
     if (!busy) { tearFrom = null; tearLine.style.setProperty('--p', 0); }
   });
   pack.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && !busy && ready()) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    FX.unlock();
+    message = '';
+    if (!busy && ready()) {
       e.preventDefault();
       finishTear();
     }
@@ -97,8 +108,8 @@
 
   function fail(err) {
     if (err && err.next_pack_at) nextPackAt = new Date(err.next_pack_at);
+    message = (err && err.error) || 'Could not open the pack. Try again.';
     reset();
-    timer.textContent = (err && err.error) || 'Could not open the pack. Try again.';
   }
 
   // ---------- Reveal ----------
@@ -225,5 +236,5 @@
     tearLine.style.setProperty('--p', 0);
     ready();
   }
-  $('again').addEventListener('click', reset);
+  $('again').addEventListener('click', () => { message = ''; reset(); });
 })();

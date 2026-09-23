@@ -68,7 +68,7 @@ body:has(.stage.dim)::before { opacity: .75; }
   background: radial-gradient(circle, #3a2bff 0 22%, transparent 23%), repeating-conic-gradient(#1a1f6b 0 10deg, #262e99 10deg 20deg);
 }
 .card-back span { padding: 10px 18px; border-radius: 999px; border: 3px solid #fff6; background: #0008; color: #fff; font-size: 2rem; font-weight: 900; letter-spacing: .15em; }
-.flip.charging .flip-inner { filter: drop-shadow(0 0 20px var(--rc)) drop-shadow(0 0 45px var(--rc)); }
+.flip.charging .flip-back { filter: drop-shadow(0 0 20px var(--rc)) drop-shadow(0 0 45px var(--rc)); }
 .flip.revealed.rarity-legendary .card, .summary .rarity-legendary { animation: legend-pulse 1.8s ease-in-out infinite; }
 @keyframes legend-pulse { 50% { filter: drop-shadow(0 0 30px var(--legendary)); } }
 .new-badge {

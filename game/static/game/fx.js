@@ -75,8 +75,16 @@ window.FX = (() => {
   }
 
   // --- Sound: tiny Web Audio synth, no files to load ---
+  function unlock() {
+    try {
+      audio ??= new AudioContext();
+      if (audio.state === 'suspended') audio.resume();
+    } catch { /* audio unavailable */ }
+  }
+
   function tone(freq, dur, type = 'sine', gain = 0.12, when = 0, slideTo = null) {
     audio ??= new AudioContext();
+    if (audio.state === 'suspended') audio.resume();
     const t = audio.currentTime + when, o = audio.createOscillator(), g = audio.createGain();
     o.type = type;
     o.frequency.setValueAtTime(freq, t);
@@ -90,6 +98,7 @@ window.FX = (() => {
 
   function noise(dur, gain = 0.25) {
     audio ??= new AudioContext();
+    if (audio.state === 'suspended') audio.resume();
     const len = Math.floor(audio.sampleRate * dur), buf = audio.createBuffer(1, len, audio.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
@@ -131,5 +140,5 @@ window.FX = (() => {
     el.addEventListener('pointerleave', () => vars.forEach(v => el.style.removeProperty(v)));
   }
 
-  return { reduced, init, burst, flash, shake, sound, tilt };
+  return { reduced, init, burst, flash, shake, sound, tilt, unlock };
 })();
