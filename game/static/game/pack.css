@@ -86,5 +86,5 @@ body:has(.stage.dim)::before { opacity: .75; }
 .summary-actions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pack, .pack-shine, .hint, .stage.rays ~ .reveal::before, .flip.revealed.rarity-legendary .card, .summary .rarity-legendary, .new-badge { animation: none !important; }
+  .pack, .pack-shine, .hint, .stage.rays ~ .reveal::before, .flip.revealed.rarity-legendary .card, .summary .rarity-legendary, .new-badge, .pack.torn .pack-top, .pack.torn::after { animation: none !important; }
 }
