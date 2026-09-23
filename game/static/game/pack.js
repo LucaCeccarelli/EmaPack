@@ -120,7 +120,7 @@
       el.className = `flip rarity-${c.slug}`;
       el.style.zIndex = cards.length - i; // first card on top; the best one is last
       el.style.visibility = 'hidden';
-      el.innerHTML = `<div class="flip-inner"><div class="flip-face flip-back"><div class="card-back"><span>KOMI</span></div></div>`
+      el.innerHTML = `<div class="flip-inner"><div class="flip-face flip-back"><div class="card-back"><span>EMA</span></div></div>`
         + `<div class="flip-face flip-front">${c.html}</div></div>`;
       el.querySelectorAll('img').forEach(img => { img.loading = 'eager'; });
       reveal.append(el);

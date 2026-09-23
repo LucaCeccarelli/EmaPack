@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -135,3 +137,6 @@ LOGOUT_REDIRECT_URL = "login"
 # Card images are served straight from the scraper's images/ folder.
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "images"
+
+# Time between two packs. 10 minutes in prod; e.g. PACK_COOLDOWN_SECONDS=10 for testing.
+PACK_COOLDOWN = timedelta(seconds=int(os.environ.get("PACK_COOLDOWN_SECONDS", 600)))

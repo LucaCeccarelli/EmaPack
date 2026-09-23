@@ -1,11 +1,26 @@
 {% extends "base.html" %}{% load static %}
-{% block title %}Collection · Komi TCG{% endblock %}
+{% block title %}Collection · Pack Ema{% endblock %}
 {% block content %}
-<h1>Collection <small class="muted">{{ cards|length }} / {{ total }} discovered</small></h1>
-{% if not cards %}<p>No cards yet. <a href="{% url 'home' %}">Open your first pack!</a></p>{% endif %}
+{% with owned=cards|length %}
+<header class="page-head">
+  <h1>Collection</h1>
+  <div class="progress" role="img" aria-label="{{ owned }} of {{ total }} cards discovered">
+    <div class="progress-bar"><span style="width: {% widthratio owned total 100 %}%"></span></div>
+    <span class="progress-label"><strong>{{ owned }}</strong> / {{ total }} discovered</span>
+  </div>
+</header>
+{% if not owned %}
+<div class="panel empty">
+  <span class="brand-mark big">EMA</span>
+  <h2>No cards yet</h2>
+  <p class="muted">Tear open your first pack to start collecting.</p>
+  <a class="btn" href="{% url 'home' %}">Open a pack</a>
+</div>
+{% endif %}
+{% endwith %}
 <div class="grid">
   {% for card in cards %}
-  <a class="grid-item" href="{% url 'card_detail' card.pk %}">
+  <a class="grid-item" href="{% url 'card_detail' card.pk %}" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
     {% include "game/_card.html" %}
     {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
   </a>

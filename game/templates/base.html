@@ -3,21 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Komi TCG{% endblock %}</title>
+  <title>{% block title %}Pack Ema{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
   <link rel="stylesheet" href="{% static 'game/tcg.css' %}">
   {% block head %}{% endblock %}
 </head>
 <body>
+  {% with here=request.resolver_match.url_name %}
   <header class="topbar">
-    <a class="brand" href="{% url 'home' %}">KOMI TCG</a>
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">EMA</span> Pack Ema</a>
     {% if user.is_authenticated %}
-    <nav>
-      <a href="{% url 'home' %}">Packs</a>
-      <a href="{% url 'collection' %}">Collection</a>
-      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="linklike">Log out</button></form>
+    <nav class="nav">
+      <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>Packs</a>
+      <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>Collection</a>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="Log out {{ user.username }}">Log out</button></form>
     </nav>
     {% endif %}
   </header>
+  {% endwith %}
   <main>{% block content %}{% endblock %}</main>
   {% block scripts %}{% endblock %}
 </body>

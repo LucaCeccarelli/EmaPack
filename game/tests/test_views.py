@@ -84,7 +84,7 @@ class GameViewTests(TestCase):
         response = self.client.get(reverse("collection"))
         self.assertContains(response, "×2")
         self.assertNotContains(response, "Not mine")
-        self.assertContains(response, "1 / 2")
+        self.assertContains(response, "1 of 2 cards discovered")
 
     def test_home_loads_pack_opening(self):
         response = self.client.get(reverse("home"))
@@ -98,6 +98,6 @@ class GameViewTests(TestCase):
         Pull.objects.create(user=self.user, card=mine, opened_at=timezone.now())
         response = self.client.get(reverse("card_detail", args=[mine.pk]))
         self.assertContains(response, "Bienvenue au BDE")
-        self.assertContains(response, "owned ×2")
+        self.assertContains(response, "<dd>×2</dd>")
         other = make_card(name="Secret")
         self.assertEqual(self.client.get(reverse("card_detail", args=[other.pk])).status_code, 404)

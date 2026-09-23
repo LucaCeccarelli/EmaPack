@@ -1,14 +1,23 @@
 {% extends "base.html" %}{% load static %}
-{% block title %}{{ card.name }} · Komi TCG{% endblock %}
+{% block title %}{{ card.name }} · Pack Ema{% endblock %}
 {% block content %}
+<a class="back" href="{% url 'collection' %}">← Collection</a>
 <div class="detail">
   {% include "game/_card.html" %}
-  <div class="detail-text">
+  <section class="panel detail-text rarity-{{ card.rarity_slug }}">
+    <span class="chip">{{ card.get_rarity_display }}</span>
     <h1>{{ card.name }}</h1>
-    <p class="muted">{{ card.get_rarity_display }} · owned ×{{ copies }} · {{ card.subscriber_count }} subscribers</p>
-    {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">This page has no presentation yet.</p>{% endif %}
-    <p><a href="{% url 'collection' %}">← Back to collection</a></p>
-  </div>
+    {% if card.tagline %}<p class="muted">{{ card.tagline }}</p>{% endif %}
+    <dl class="stats">
+      <div><dt>Owned</dt><dd>×{{ copies }}</dd></div>
+      <div><dt>Subscribers</dt><dd>{{ card.subscriber_count }}</dd></div>
+      <div><dt>Posts</dt><dd>{{ card.post_count }}</dd></div>
+      <div><dt>Events</dt><dd>{{ card.event_count }}</dd></div>
+    </dl>
+    <div class="prose">
+      {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">This page has no presentation yet.</p>{% endif %}
+    </div>
+  </section>
 </div>
 {% endblock %}
 {% block scripts %}

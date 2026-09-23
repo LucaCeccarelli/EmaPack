@@ -1,11 +1,13 @@
 import random
 import uuid
+from datetime import timedelta
 
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from game.models import Card, Pull, Rarity, User
-from game.packs import HIT_ODDS, PACK_COOLDOWN, SLOT_ODDS, PackUnavailable, open_pack, pick_rarity
+from game.packs import HIT_ODDS, SLOT_ODDS, PackUnavailable, open_pack, pick_rarity
 
 
 def make_card(rarity=Rarity.COMMON, name="card"):
@@ -23,19 +25,28 @@ class OpenPackTests(TestCase):
         self.assertEqual(len(cards), 5)
         self.assertEqual(Pull.objects.filter(user=self.user).count(), 5)
         self.user.refresh_from_db()
-        self.assertEqual(self.user.next_pack_at, self.now + PACK_COOLDOWN)
+        self.assertEqual(self.user.next_pack_at, self.now + settings.PACK_COOLDOWN)
 
     def test_cannot_open_twice_within_cooldown(self):
         make_card()
         open_pack(self.user, now=self.now)
         with self.assertRaises(PackUnavailable):
-            open_pack(self.user, now=self.now + PACK_COOLDOWN / 2)
+            open_pack(self.user, now=self.now + settings.PACK_COOLDOWN / 2)
         self.assertEqual(Pull.objects.count(), 5)
 
     def test_can_open_again_after_cooldown(self):
         make_card()
         open_pack(self.user, now=self.now)
-        open_pack(self.user, now=self.now + PACK_COOLDOWN)
+        open_pack(self.user, now=self.now + settings.PACK_COOLDOWN)
+        self.assertEqual(Pull.objects.count(), 10)
+
+    @override_settings(PACK_COOLDOWN=timedelta(seconds=5))
+    def test_cooldown_is_configurable(self):
+        make_card()
+        open_pack(self.user, now=self.now)
+        with self.assertRaises(PackUnavailable):
+            open_pack(self.user, now=self.now + timedelta(seconds=4))
+        open_pack(self.user, now=self.now + timedelta(seconds=5))
         self.assertEqual(Pull.objects.count(), 10)
 
     def test_stale_user_instance_cannot_double_open(self):
@@ -60,7 +71,7 @@ class OpenPackTests(TestCase):
         for rarity in Rarity:
             make_card(rarity)
         for i in range(20):
-            cards = open_pack(self.user, now=self.now + i * PACK_COOLDOWN)
+            cards = open_pack(self.user, now=self.now + i * settings.PACK_COOLDOWN)
             rarities = [c.rarity for c in cards]
             self.assertEqual(rarities, sorted(rarities))
             self.assertGreaterEqual(rarities[-1], Rarity.RARE)

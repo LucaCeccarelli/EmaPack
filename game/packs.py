@@ -1,6 +1,5 @@
 import random
-from datetime import timedelta
-
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -8,7 +7,6 @@ from django.utils import timezone
 from .models import Card, Pull, Rarity, User
 
 PACK_SIZE = 5
-PACK_COOLDOWN = timedelta(minutes=10)
 # Relative odds per slot. The last slot is the "hit": always Rare or better.
 SLOT_ODDS = {Rarity.COMMON: 60, Rarity.UNCOMMON: 25, Rarity.RARE: 10, Rarity.EPIC: 4, Rarity.LEGENDARY: 1}
 HIT_ODDS = {Rarity.RARE: 75, Rarity.EPIC: 20, Rarity.LEGENDARY: 5}
@@ -32,7 +30,7 @@ def open_pack(user, now=None):
         claimed = (
             User.objects.filter(pk=user.pk)
             .filter(Q(next_pack_at__isnull=True) | Q(next_pack_at__lte=now))
-            .update(next_pack_at=now + PACK_COOLDOWN)
+            .update(next_pack_at=now + settings.PACK_COOLDOWN)
         )
         if not claimed:
             raise PackUnavailable("Your next pack isn't ready yet.")
@@ -46,5 +44,5 @@ def open_pack(user, now=None):
             for odds in slots
         ]
         Pull.objects.bulk_create(Pull(user=user, card=card, opened_at=now) for card in cards)
-    user.next_pack_at = now + PACK_COOLDOWN
+    user.next_pack_at = now + settings.PACK_COOLDOWN
     return sorted(cards, key=lambda card: card.rarity)

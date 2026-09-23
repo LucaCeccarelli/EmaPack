@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Log in · Komi TCG{% endblock %}
+{% block title %}Log in · Pack Ema{% endblock %}
 {% block content %}
-<form method="post" class="form">{% csrf_token %}
-  <h1>Log in</h1>
+<form method="post" class="panel form">{% csrf_token %}
+  <span class="brand-mark big">EMA</span>
+  <h1>Welcome back</h1>
+  <p class="muted">Your next pack might be waiting.</p>
   {{ form.as_div }}
-  <button class="btn">Log in</button>
-  <p>No account yet? <a href="{% url 'signup' %}">Sign up</a></p>
+  <button class="btn block">Log in</button>
+  <p class="form-foot">No account yet? <a href="{% url 'signup' %}">Sign up</a></p>
 </form>
 {% endblock %}
