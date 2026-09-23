@@ -1,11 +1,35 @@
 services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: pack_ema
+      POSTGRES_USER: pack_ema
+      POSTGRES_PASSWORD: pack_ema  # local dev only
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"  # so `uv run` on the host can reach it too
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pack_ema -d pack_ema"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
   web:
     build: .
+    user: "${UID:-1000}:${GID:-1000}"  # files written to the mounted project stay yours, not root's
     ports:
       - "8000:8000"
     environment:
       # Seconds between two packs (600 = 10 min). Override: PACK_COOLDOWN_SECONDS=10 docker compose up
       PACK_COOLDOWN_SECONDS: ${PACK_COOLDOWN_SECONDS:-600}
-    # Project dir mounted live: code reloads, and db.sqlite3, images/ and the dump stay on the host.
+      POSTGRES_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    # Project dir mounted live: code reloads; images/ and the dump stay on the host.
     volumes:
       - .:/app
+
+volumes:
+  pgdata:
