@@ -1,0 +1,9 @@
+images/
+*.zip
+komi_pages_dump.json
+db.sqlite3
+.venv/
+.git/
+.idea/
+.superpowers/
+__pycache__/

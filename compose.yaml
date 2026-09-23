@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Seconds between two packs (600 = 10 min). Override: PACK_COOLDOWN_SECONDS=10 docker compose up
+      PACK_COOLDOWN_SECONDS: ${PACK_COOLDOWN_SECONDS:-600}
+    # Project dir mounted live: code reloads, and db.sqlite3, images/ and the dump stay on the host.
+    volumes:
+      - .:/app
