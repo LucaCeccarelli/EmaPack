@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Card, Pull, Rarity, User
+from .models import Card, Pull, Rarity, Status, User
 
 PACK_SIZE = 5
 # Relative odds per slot. The last slot is the "hit": always Rare or better.
@@ -34,13 +34,14 @@ def open_pack(user, now=None):
         )
         if not claimed:
             raise PackUnavailable("Your next pack isn't ready yet.")
-        available = set(Card.objects.values_list("rarity", flat=True).distinct())
+        pullable = Card.objects.filter(status=Status.APPROVED)
+        available = set(pullable.values_list("rarity", flat=True).distinct())
         if not available:
             raise PackUnavailable("No cards exist yet. Run the import first.")  # rolls back the claim
         slots = [SLOT_ODDS] * (PACK_SIZE - 1) + [HIT_ODDS]
         # ponytail: order_by("?") scans the rarity bucket; fine for ~2k cards, precompute ids if it grows.
         cards = [
-            Card.objects.filter(rarity=pick_rarity(odds, available)).order_by("?").first()
+            pullable.filter(rarity=pick_rarity(odds, available)).order_by("?").first()
             for odds in slots
         ]
         Pull.objects.bulk_create(Pull(user=user, card=card, opened_at=now) for card in cards)
