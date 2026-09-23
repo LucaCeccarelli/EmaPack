@@ -1,6 +1,35 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'game/pack.css' %}">{% endblock %}
 {% block content %}
 <section id="stage" class="stage" data-open-url="{% url 'open_pack' %}" data-next-pack-at="{{ next_pack_at|default:'' }}">
   {% csrf_token %}
+  <div id="packWrap" class="pack-wrap">
+    <div id="pack" class="pack" tabindex="0" role="button" aria-label="Open a pack: drag across the top edge, or press Enter">
+      <div class="pack-top"><div id="tearLine" class="tear-line"></div></div>
+      <div class="pack-body">
+        <div class="pack-logo">KOMI</div>
+        <div class="pack-sub">Trading Card Game · 5 cards</div>
+      </div>
+      <div class="pack-shine"></div>
+    </div>
+    <p id="hint" class="hint">Swipe across the top to tear it open</p>
+    <p id="timer" class="timer" aria-live="polite"></p>
+  </div>
+
+  <div id="summary" class="summary" hidden>
+    <h2>Your pulls</h2>
+    <div id="summaryCards" class="summary-cards"></div>
+    <div class="summary-actions">
+      <a class="btn" href="{% url 'collection' %}">View collection</a>
+      <button id="again" class="btn ghost" type="button">Back</button>
+    </div>
+  </div>
 </section>
+<div id="reveal" class="reveal" hidden></div>
+<button id="skip" class="btn ghost skip" type="button" hidden>Skip ⏭</button>
+<canvas id="fx" class="fx" aria-hidden="true"></canvas>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'game/fx.js' %}"></script>
+<script src="{% static 'game/pack.js' %}"></script>
 {% endblock %}

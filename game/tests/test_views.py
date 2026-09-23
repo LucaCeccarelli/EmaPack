@@ -86,6 +86,12 @@ class GameViewTests(TestCase):
         self.assertNotContains(response, "Not mine")
         self.assertContains(response, "1 / 2")
 
+    def test_home_loads_pack_opening(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'id="pack"')
+        self.assertContains(response, "game/pack.js")
+        self.assertContains(response, "game/fx.js")
+
     def test_card_detail_only_for_owned_cards(self):
         mine = make_card(name="BDE", description="Bienvenue au BDE")
         Pull.objects.create(user=self.user, card=mine, opened_at=timezone.now())
