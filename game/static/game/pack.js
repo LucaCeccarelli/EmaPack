@@ -18,7 +18,7 @@
     const left = nextPackAt ? nextPackAt - Date.now() : 0;
     pack.classList.toggle('locked', left > 0 && !busy);
     pack.setAttribute('aria-disabled', String(left > 0));
-    hint.hidden = left > 0 || busy;
+    hint.style.visibility = left > 0 || busy ? 'hidden' : ''; // keep its space so the pack never jumps
     let text;
     if (message) {
       text = message;
@@ -46,34 +46,60 @@
       });
   }
 
-  // ---------- Tear (drag across the pack) ----------
-  let tearFrom = null, torn = 0;
+  // ---------- Pack tilt: it leans toward the pointer and catches the light ----------
+  function tiltPack(e) {
+    const r = pack.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+    pack.style.setProperty('--rx', `${(0.5 - py) * 14}deg`);
+    pack.style.setProperty('--ry', `${(px - 0.5) * 18}deg`);
+    pack.style.setProperty('--gx', `${px * 100}%`);
+    pack.style.setProperty('--gy', `${py * 100}%`);
+  }
+  const untiltPack = () => ['--rx', '--ry', '--gx', '--gy'].forEach(v => pack.style.removeProperty(v));
+  pack.addEventListener('pointerleave', () => { if (tearFrom === null) untiltPack(); });
+
+  // ---------- Tear (drag across the pack, either direction) ----------
+  let tearFrom = null, torn = 0, tearDir = 1;
   pack.addEventListener('pointerdown', e => {
     FX.unlock();
     message = '';
     if (busy || !ready()) return;
     tearFrom = e.clientX;
     torn = 0;
+    pack.classList.add('tearing');
     pack.setPointerCapture(e.pointerId);
     fetchPack().catch(() => {}); // errors are handled when the tear finishes
   });
   pack.addEventListener('pointermove', e => {
-    if (tearFrom === null || busy) return;
-    torn = Math.max(torn, Math.abs(e.clientX - tearFrom) / pack.offsetWidth);
+    if (busy) return;
+    tiltPack(e);
+    if (tearFrom === null) return;
+    const dx = e.clientX - tearFrom;
+    if (Math.abs(dx) > 4) {
+      tearDir = Math.sign(dx);
+      pack.classList.toggle('tear-left', tearDir < 0); // the tear line grows from the side you started on
+    }
+    torn = Math.max(torn, Math.abs(dx) / pack.offsetWidth);
     tearLine.style.setProperty('--p', Math.min(torn / TEAR_DONE, 1));
     const r = pack.getBoundingClientRect();
     if (Math.random() < 0.6) FX.burst(e.clientX, r.top + r.height * 0.14, '#fff6c0', 4, 3);
     if (torn >= TEAR_DONE) finishTear();
   });
-  pack.addEventListener('pointerup', () => {
-    if (!busy) { tearFrom = null; tearLine.style.setProperty('--p', 0); }
-  });
+  const cancelTear = () => {
+    if (busy) return;
+    tearFrom = null;
+    pack.classList.remove('tearing');
+    tearLine.style.setProperty('--p', 0);
+  };
+  pack.addEventListener('pointerup', cancelTear);
+  pack.addEventListener('pointercancel', cancelTear);
   pack.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     FX.unlock();
     message = '';
     if (!busy && ready()) {
       e.preventDefault();
+      tearDir = 1;
       finishTear();
     }
   });
@@ -82,10 +108,14 @@
     if (busy) return;
     busy = true;
     tearFrom = null;
-    hint.hidden = true;
+    hint.style.visibility = 'hidden';
     const r = pack.getBoundingClientRect();
     FX.sound('tear');
+    FX.buzz(35);
     FX.flash('#fff', 250);
+    pack.classList.remove('tearing');
+    pack.style.setProperty('--dir', tearDir);
+    untiltPack();
     pack.classList.add('torn');
     FX.burst(r.left + r.width / 2, r.top + r.height * 0.14, '#fff3b0', 90, 10, -Math.PI / 2);
     let data;
@@ -114,7 +144,7 @@
 
   // ---------- Reveal ----------
   function buildStack(cards) {
-    reveal.innerHTML = '';
+    reveal.innerHTML = '<p class="reveal-hint" id="revealHint" aria-live="polite"></p>';
     return cards.map((c, i) => {
       const el = document.createElement('div');
       el.className = `flip rarity-${c.slug}`;
@@ -130,7 +160,9 @@
 
   const nextTap = () => (skip ? Promise.resolve() : new Promise(res => { pendingTap = res; }));
   function tap() { const res = pendingTap; pendingTap = null; res?.(); }
-  reveal.addEventListener('click', tap);
+  let suppressClick = false; // a swipe ends with a click event; don't count it twice
+  reveal.addEventListener('click', () => { if (suppressClick) { suppressClick = false; return; } tap(); });
+  reveal.addEventListener('pointerdown', () => { suppressClick = false; }, true);
   addEventListener('keydown', e => {
     if (pendingTap && ['Enter', ' ', 'ArrowRight'].includes(e.key)) { e.preventDefault(); tap(); }
   });
@@ -139,26 +171,44 @@
   async function revealAll(cards, els) {
     reveal.hidden = false;
     skipBtn.hidden = false;
-    packWrap.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60vh) rotate(8deg)', opacity: 0 }],
-      { duration: dur(600), easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
+    // 1. Cards rise halfway out of the torn opening (hidden below its edge).
+    // 2. The empty pack drops away completely.  3. Only then the cards settle, ready to open.
+    const pr = pack.getBoundingClientRect();
+    const fromY = pr.top + pr.height * 0.35 - innerHeight / 2, outY = fromY - 110;
+    const edge = Math.max(0, innerHeight - (pr.top + pr.height * 0.15));
+    reveal.style.clipPath = `inset(0 0 ${edge}px 0)`;
     await Promise.all(els.map((el, i) => {
       el.style.visibility = '';
       return el.animate(
-        [{ transform: 'translateY(60vh) scale(.5)', opacity: 0 },
-         { transform: `translateY(${i * -3}px) rotate(${(i - 2) * 1.5}deg)`, opacity: 1 }],
-        { duration: dur(700), delay: dur(i * 90), easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'both' }).finished;
+        [{ transform: `translateY(${fromY}px) scale(.5)`, opacity: 0 },
+         { transform: `translateY(${outY}px) scale(.62) rotate(${(i - 2) * 2}deg)`, opacity: 1 }],
+        { duration: dur(650), delay: dur(i * 90), easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'both' }).finished;
     }));
+    const fall = { duration: dur(700), easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' };
+    reveal.animate([{ clipPath: `inset(0 0 ${edge}px 0)` }, { clipPath: 'inset(0 0 0 0)' }], fall);
+    await packWrap.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60vh) rotate(8deg)', opacity: 0 }], fall).finished;
+    reveal.getAnimations().forEach(a => a.cancel());
+    reveal.style.clipPath = '';
+    await Promise.all(els.map((el, i) => el.animate(
+      [{ transform: `translateY(${outY}px) scale(.62) rotate(${(i - 2) * 2}deg)` },
+       { transform: `translateY(${i * -3}px) rotate(${(i - 2) * 1.5}deg)` }],
+      { duration: dur(550), delay: dur(i * 40), easing: 'cubic-bezier(.3,1.3,.4,1)', fill: 'both' }).finished));
+    const hintText = $('revealHint');
     for (const [i, c] of cards.entries()) {
+      hintText.textContent = i === 0 ? 'Tap to reveal' : '';
+      if (c.rarity >= 3) els[i].classList.add('hinting'); // Hearthstone-style: the back glows its rarity color
       await nextTap();
       await flip(els[i], c);
-      await nextTap();
-      await flyAway(els[i], i);
+      hintText.textContent = i === 0 ? 'Swipe it away, or tap for the next card' : '';
+      const dir = await swipeOrTap(els[i]);
+      await flyAway(els[i], i, dir);
     }
     showSummary(cards);
   }
 
   async function flip(el, c) {
     const inner = el.querySelector('.flip-inner'), card = el.querySelector('.card');
+    el.classList.remove('hinting');
     if (c.rarity >= 3 && !skip) { // anticipation: the aura builds, better cards tremble harder
       el.classList.add('charging');
       FX.sound('charge');
@@ -181,6 +231,7 @@
     if (c.rarity >= 2) FX.burst(x, y, color, 25 * c.rarity, 3 + c.rarity * 2);
     if (c.rarity >= 3) {
       FX.sound(SOUND[c.rarity]);
+      FX.buzz(c.rarity === 5 ? [60, 40, 60, 40, 160] : c.rarity === 4 ? [50, 30, 90] : 40);
       FX.flash(color, 120 * c.rarity);
       // light sweeps across the foil once
       card.animate([{ '--mx': '0%', '--my': '0%', '--hyp': 1 }, { '--mx': '100%', '--my': '100%', '--hyp': 0 }],
@@ -195,9 +246,39 @@
     }
   }
 
-  function flyAway(el, i) {
+  // Resolves with the throw direction (-1 / 1) once the revealed card is swiped far enough, or 0 on a tap.
+  function swipeOrTap(el) {
+    if (skip) return Promise.resolve(0);
+    return new Promise(res => {
+      let from = null, dx = 0, dy = 0;
+      const done = dir => {
+        el.onpointerdown = el.onpointermove = el.onpointerup = el.onpointercancel = null;
+        pendingTap = null;
+        res(dir);
+      };
+      pendingTap = () => done(0); // tap, Enter/→ and Skip still work
+      el.onpointerdown = e => { from = [e.clientX, e.clientY]; el.setPointerCapture(e.pointerId); el.style.transition = 'none'; };
+      el.onpointermove = e => {
+        if (!from) return;
+        dx = e.clientX - from[0]; dy = e.clientY - from[1];
+        el.style.translate = `${dx}px ${dy}px`;
+        el.style.rotate = `${dx / 14}deg`;
+      };
+      el.onpointerup = el.onpointercancel = () => {
+        if (!from) return;
+        from = null;
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) suppressClick = true;
+        if (Math.abs(dx) > 90) return done(Math.sign(dx));
+        el.style.transition = 'translate .35s cubic-bezier(.3,1.5,.5,1), rotate .35s'; // not far enough: spring back
+        el.style.translate = el.style.rotate = '';
+        dx = dy = 0;
+      };
+    });
+  }
+
+  function flyAway(el, i, dir = 0) {
     stage.classList.remove('dim', 'rays');
-    const side = i % 2 ? 1 : -1;
+    const side = dir || (i % 2 ? 1 : -1);
     return el.animate(
       [{ opacity: 1 }, { transform: `translate(${side * 110}vw, -15vh) rotate(${side * 30}deg)`, opacity: 0 }],
       { duration: dur(450), easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }).finished;
@@ -232,7 +313,10 @@
     skipBtn.hidden = true;
     stage.classList.remove('dim', 'rays');
     packWrap.getAnimations().forEach(a => a.cancel());
-    pack.classList.remove('torn', 'glowing');
+    pack.classList.remove('torn', 'glowing', 'tearing', 'tear-left');
+    pack.style.removeProperty('--glow');
+    tearFrom = null;
+    untiltPack();
     tearLine.style.setProperty('--p', 0);
     ready();
   }
