@@ -215,12 +215,16 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .color input[type=color]::-webkit-color-swatch, .color input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 .editor-form .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .editor-preview { --card-w: min(300px, 80vw); position: sticky; top: 90px; display: grid; justify-items: center; gap: 16px; text-align: center; }
-.rarity-toggle { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 320px; }
-.rarity-toggle button {
-  padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--muted);
-  font: 600 .8rem Outfit, system-ui, sans-serif; cursor: pointer;
+.rarity-toggle { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 320px; margin: 0; padding: 0; border: 0; }
+.rarity-toggle legend { width: 100%; margin-bottom: 8px; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.rarity-toggle label { position: relative; cursor: pointer; }
+.rarity-toggle input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.rarity-toggle span {
+  display: block; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--muted);
+  font: 600 .8rem Outfit, system-ui, sans-serif;
 }
-.rarity-toggle button[aria-pressed=true] { color: var(--text); border-color: var(--text); }
+.rarity-toggle input:checked + span { color: var(--text); border-color: var(--text); }
+.rarity-toggle input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
 .editor-preview .small { margin: 0; }
 .my-proposals { margin-top: 32px; padding: 20px 24px; }
 .my-proposals h2 { margin: 0 0 12px; font-size: 1.2rem; }

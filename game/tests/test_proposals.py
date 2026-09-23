@@ -66,6 +66,17 @@ class ProposePageTests(TestCase):
         self.assertEqual((card.primary_color, card.secondary_color), ("#112233", "#445566"))
         self.assertContains(self.client.get(self.url), "Club Échecs")  # listed under "your proposals"
 
+    def test_suggested_rarity_is_saved_for_the_admin(self):
+        self.client.post(self.url, valid_data(rarity=Rarity.LEGENDARY))
+        self.assertEqual(Card.objects.get().rarity, Rarity.LEGENDARY)
+
+    def test_rarity_defaults_to_common_and_rejects_nonsense(self):
+        self.client.post(self.url, valid_data())
+        self.assertEqual(Card.objects.get().rarity, Rarity.COMMON)
+        response = self.client.post(self.url, valid_data(name="Other", rarity=9))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Card.objects.filter(name="Other").exists())
+
     def test_images_are_optional(self):
         self.client.post(self.url, valid_data())
         self.assertEqual(Card.objects.get().logo.name, "")

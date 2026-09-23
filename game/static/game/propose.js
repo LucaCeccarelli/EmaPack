@@ -55,12 +55,12 @@
     update();
   });
 
-  // Preview-only rarity switch (the admin picks the real one).
+  // Suggested rarity: restyles the preview's frame and holo foil.
+  const SLUGS = { 1: 'common', 2: 'uncommon', 3: 'rare', 4: 'epic', 5: 'legendary' };
   const rarityLabel = $('.card-rarity');
-  document.querySelectorAll('.rarity-toggle button').forEach(btn => btn.addEventListener('click', () => {
-    card.className = card.className.replace(/rarity-\w+/, `rarity-${btn.dataset.rarity}`);
-    rarityLabel.textContent = btn.textContent;
-    document.querySelectorAll('.rarity-toggle button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  document.querySelectorAll('.rarity-toggle input').forEach(radio => radio.addEventListener('change', () => {
+    card.className = card.className.replace(/rarity-\w+/, `rarity-${SLUGS[radio.value]}`);
+    rarityLabel.textContent = radio.nextElementSibling.textContent;
   }));
 
   updateText();

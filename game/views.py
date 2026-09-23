@@ -29,10 +29,14 @@ class ProposalForm(forms.ModelForm):
     # ImageField (Pillow) checks the upload really is an image, whatever its name or content type says.
     logo = forms.ImageField(required=False)
     banner = forms.ImageField(required=False)
+    # The player's suggestion; the admin sees it pre-selected and can change it before approving.
+    # form="card-editor": the buttons sit under the preview, outside the <form> element.
+    rarity = forms.TypedChoiceField(choices=Rarity.choices, coerce=int, required=False, initial=Rarity.COMMON,
+                                    widget=forms.RadioSelect(attrs={"form": "card-editor"}))
 
     class Meta:
         model = Card
-        fields = ["name", "tagline", "description", "logo", "banner", "primary_color", "secondary_color"]
+        fields = ["name", "tagline", "description", "logo", "banner", "primary_color", "secondary_color", "rarity"]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "Club Échecs"}),
             "tagline": forms.TextInput(attrs={"placeholder": "A short line under the name"}),
@@ -63,6 +67,9 @@ class ProposalForm(forms.ModelForm):
         if value and not HEX_COLOR.fullmatch(value):  # ends up in an inline style attribute
             raise forms.ValidationError("Pick a color like #3a3f58.")
         return value
+
+    def clean_rarity(self):
+        return self.cleaned_data["rarity"] or Rarity.COMMON
 
     def clean_logo(self):
         return self._image("logo")
@@ -151,10 +158,11 @@ def propose_card(request):
     # Server preview uses only validated text/colors; images are previewed in the browser (never saved ones).
     data = getattr(form, "cleaned_data", {})
     preview = Card(name=data.get("name") or "Your card", tagline=data.get("tagline", ""),
+                   rarity=data.get("rarity") or Rarity.COMMON,
                    primary_color=data.get("primary_color") or "#3a3f58",
                    secondary_color=data.get("secondary_color") or "#1b1e2e")
     return render(request, "game/propose.html", {
         "form": form, "preview": preview, "proposals": mine, "at_limit": at_limit,
         "max_pending": MAX_PENDING_PROPOSALS,
-        "rarities": [(r.name.lower(), r.label) for r in Rarity], "max_mb": settings.PROPOSAL_MAX_IMAGE_BYTES // (1024 * 1024),
+        "max_mb": settings.PROPOSAL_MAX_IMAGE_BYTES // (1024 * 1024),
     })

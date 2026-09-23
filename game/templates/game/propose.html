@@ -63,10 +63,12 @@
 
   <aside class="editor-preview" id="preview" aria-label="Live preview">
     {% include "game/_card.html" with card=preview %}
-    <div class="rarity-toggle" role="group" aria-label="Preview the card as">
-      {% for slug, label in rarities %}<button type="button" data-rarity="{{ slug }}" {% if forloop.first %}aria-pressed="true"{% endif %}>{{ label }}</button>{% endfor %}
-    </div>
-    <p class="muted small">Preview only: the admin chooses the final rarity.</p>
+    <fieldset class="rarity-toggle">
+      <legend>Suggested rarity</legend>
+      {% for radio in form.rarity %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
+    </fieldset>
+    {{ form.rarity.errors }}
+    <p class="muted small">The admin can adjust it before approving the card.</p>
   </aside>
 </div>
 
@@ -78,6 +80,7 @@
     <li>
       <span class="swatch" style="--c1: {{ p.primary_color|default:'#3a3f58' }}; --c2: {{ p.secondary_color|default:'#1b1e2e' }}"></span>
       <strong>{{ p.name }}</strong>
+      <span class="muted">{{ p.get_rarity_display }}</span>
       <span class="muted">{{ p.proposed_at|date:"j M Y" }}</span>
       <span class="chip status-{{ p.status }}">{{ p.get_status_display }}</span>
     </li>
