@@ -5,12 +5,15 @@
   {% csrf_token %}
   <div id="packWrap" class="pack-wrap">
     <div id="pack" class="pack" tabindex="0" role="button" aria-label="Open a pack: drag across the top edge, or press Enter">
-      <div class="pack-top"><div id="tearLine" class="tear-line"></div></div>
-      <div class="pack-body">
-        <div class="pack-logo">EMA</div>
-        <div class="pack-sub">Trading Card Game · IMT Alès</div>
+      <div class="pack-foil">
+        <div class="pack-body">
+          <div class="pack-logo">EMA</div>
+          <div class="pack-sub">Trading Card Game · IMT Alès</div>
+        </div>
+        <div class="pack-shine"></div>
+        <div class="pack-glare"></div>
       </div>
-      <div class="pack-shine"></div>
+      <div class="pack-top"><div id="tearLine" class="tear-line"></div></div>
     </div>
     <p id="hint" class="hint">Swipe across the top to tear it open</p>
     <p id="timer" class="timer" role="timer"></p>

@@ -11,41 +11,62 @@ body:has(.stage.dim)::before { opacity: .75; }
 
 /* ---------- The pack ---------- */
 .pack-wrap { display: grid; justify-items: center; gap: 12px; text-align: center; }
+/* The pack is two pieces sharing one foil: a body and a top strip, joined along a jagged tear.
+   The strip is what flies off, so the body is left with a torn edge. Seam: between 13% and 15.5% height. */
 .pack {
-  --glow: #fff;
-  position: relative; width: min(260px, 70vw); aspect-ratio: 5 / 8; border-radius: 10px 10px 16px 16px;
-  background:
-    radial-gradient(circle at 30% 20%, #fff6 0 2px, transparent 3px) 0 0 / 22px 22px,
-    conic-gradient(from 200deg at 50% 60%, #ff3d77, #ffb800, #4dffb5, #3aa0ff, #b35cff, #ff3d77);
-  box-shadow: 0 30px 60px #000a, inset 0 0 0 3px #fff4, inset 0 0 50px #0007;
+  --glow: transparent; --dir: 1; --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 30%;
+  --foil: radial-gradient(circle at 30% 20%, #fff6 0 2px, transparent 3px),
+          conic-gradient(from 200deg at 50% 60%, #ff3d77, #ffb800, #4dffb5, #3aa0ff, #b35cff, #ff3d77);
+  position: relative; width: min(260px, 70vw); aspect-ratio: 5 / 8;
   cursor: grab; touch-action: none; user-select: none;
+  filter: drop-shadow(0 30px 30px #000a) drop-shadow(0 0 0 var(--glow)) drop-shadow(0 0 0 var(--glow));
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
   animation: bob 3s ease-in-out infinite;
-  transition: box-shadow .5s, filter .3s;
+  transition: filter .5s, transform .15s ease-out;
 }
 .pack:focus-visible { outline: 3px solid #fff; outline-offset: 6px; }
-.pack.locked { filter: grayscale(.9) brightness(.5); cursor: not-allowed; animation: none; }
-@keyframes bob { 50% { transform: translateY(-10px) rotate(-1deg); } }
-.pack-top { position: absolute; inset: 0 0 auto; height: 14%; border-radius: inherit; border-bottom: 2px dashed #fff9; background: linear-gradient(#fff4, transparent); }
-.tear-line { position: absolute; left: 0; bottom: -3px; height: 4px; width: calc(var(--p, 0) * 100%); background: #fff; box-shadow: 0 0 12px #fff, 0 0 28px #ffe98a; }
-.pack-body { position: absolute; inset: 14% 0 0; display: grid; place-content: center; }
+@keyframes bob { 50% { translate: 0 -10px; rotate: -1deg; } }
+.pack-foil, .pack-top { position: absolute; background-image: var(--foil); transition: filter .3s; }
+.pack-foil {
+  inset: 0; border-radius: 10px 10px 16px 16px; background-size: 22px 22px, 100% 100%;
+  box-shadow: inset 0 0 0 3px #fff4, inset 0 0 50px #0007;
+  clip-path: polygon(0 13%, 4.17% 15.5%, 8.33% 13%, 12.5% 15.5%, 16.67% 13%, 20.83% 15.5%, 25% 13%, 29.17% 15.5%, 33.33% 13%, 37.5% 15.5%, 41.67% 13%, 45.83% 15.5%, 50% 13%, 54.17% 15.5%, 58.33% 13%, 62.5% 15.5%, 66.67% 13%, 70.83% 15.5%, 75% 13%, 79.17% 15.5%, 83.33% 13%, 87.5% 15.5%, 91.67% 13%, 95.83% 15.5%, 100% 13%, 100% 100%, 0 100%);
+}
+.pack-top {
+  inset: 0 0 auto; height: 15.5%; border-radius: 10px 10px 0 0;
+  background-size: 22px 22px, 100% 645.2%; /* same foil, scaled to the whole pack (1 / 15.5%) */
+  box-shadow: inset 0 0 0 3px #fff4, inset 0 12px 20px -10px #fff6;
+  clip-path: polygon(0 0, 100% 0, 100% 83.9%, 95.83% 100%, 91.67% 83.9%, 87.5% 100%, 83.33% 83.9%, 79.17% 100%, 75% 83.9%, 70.83% 100%, 66.67% 83.9%, 62.5% 100%, 58.33% 83.9%, 54.17% 100%, 50% 83.9%, 45.83% 100%, 41.67% 83.9%, 37.5% 100%, 33.33% 83.9%, 29.17% 100%, 25% 83.9%, 20.83% 100%, 16.67% 83.9%, 12.5% 100%, 8.33% 83.9%, 4.17% 100%, 0 83.9%);
+}
+.tear-line { position: absolute; left: 0; top: calc(83.9% - 4px); height: 4px; width: calc(var(--p, 0) * 100%); background: #fff; box-shadow: 0 0 12px #fff, 0 0 28px #ffe98a; }
+.pack.tear-left .tear-line { left: auto; right: 0; }
+.pack.locked { cursor: not-allowed; animation: none; }
+.pack.locked .pack-foil, .pack.locked .pack-top { filter: grayscale(.9) brightness(.5); }
+.pack-body { position: absolute; inset: 15.5% 0 0; display: grid; place-content: center; }
 .pack-logo { font-size: 3rem; font-weight: 900; letter-spacing: .12em; color: #fff; text-shadow: 0 4px 0 #0005, 0 0 24px #fff9; }
 .pack-sub { font-size: .8rem; font-weight: 700; opacity: .9; }
+.pack-shine, .pack-glare { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; }
 .pack-shine {
-  position: absolute; inset: 0; border-radius: inherit; pointer-events: none; mix-blend-mode: overlay;
   background: linear-gradient(105deg, transparent 40%, #fffa 50%, transparent 60%) -200% 0 / 250% 100% no-repeat;
   animation: sheen 3.5s ease-in-out infinite;
 }
 @keyframes sheen { 60%, 100% { background-position: 200% 0; } }
-.pack.torn { animation: none; pointer-events: none; }
-.pack.torn .pack-top { animation: strip-off .7s cubic-bezier(.2, .6, .3, 1) forwards; }
-@keyframes strip-off { to { transform: translate(140%, -140%) rotate(40deg); opacity: 0; } }
+.pack-glare { background: radial-gradient(circle at var(--gx) var(--gy), #fff8, transparent 45%); opacity: 0; transition: opacity .3s; }
+.pack:hover .pack-glare, .pack.tearing .pack-glare { opacity: 1; }
+.pack.torn { animation: none; pointer-events: none; outline: none; }
+/* The strip rips off in the swipe direction: a short tug, then it's flung away spinning. */
+.pack.torn .pack-top { transform-origin: 50% 100%; animation: strip-off .8s cubic-bezier(.2, .6, .3, 1) forwards; }
+@keyframes strip-off {
+  18% { transform: translate(calc(var(--dir) * 6%), -25%) rotate(calc(var(--dir) * 6deg)); }
+  to { transform: translate(calc(var(--dir) * 170%), -260%) rotate(calc(var(--dir) * 70deg)); opacity: 0; }
+}
 .pack.torn::after {
-  content: ''; position: absolute; left: 5%; right: 5%; top: 10%; height: 60%; filter: blur(6px);
+  content: ''; position: absolute; left: 5%; right: 5%; top: 12%; height: 60%; filter: blur(6px);
   background: radial-gradient(ellipse at 50% 0, #fff 0, #fff8 25%, transparent 70%);
   transform-origin: top; animation: spill .6s ease-out forwards;
 }
 @keyframes spill { from { opacity: 0; transform: scaleY(.2); } }
-.pack.glowing { box-shadow: 0 0 40px 10px var(--glow), 0 0 120px 30px var(--glow), inset 0 0 0 3px #fff4; }
+.pack.glowing { filter: drop-shadow(0 30px 30px #000a) drop-shadow(0 0 18px var(--glow)) drop-shadow(0 0 50px var(--glow)); }
 .hint { margin: 0; color: var(--muted); animation: blink 1.6s ease-in-out infinite; }
 @keyframes blink { 50% { opacity: .4; } }
 .timer { margin: 0; font-size: 1.1rem; font-weight: 800; min-height: 1.5em; }
@@ -59,7 +80,11 @@ body:has(.stage.dim)::before { opacity: .75; }
   animation: spin 14s linear infinite;
 }
 @keyframes spin { to { transform: rotate(1turn); } }
-.flip { grid-area: 1 / 1; position: relative; perspective: 1200px; }
+.flip { grid-area: 1 / 1; position: relative; perspective: 1200px; touch-action: none; }
+.flip.hinting .flip-back { animation: hint-pulse 1.3s ease-in-out infinite; }
+@keyframes hint-pulse { 50% { filter: drop-shadow(0 0 14px var(--rc)) drop-shadow(0 0 30px var(--rc)); } }
+.flip.revealed { cursor: grab; }
+.reveal-hint { position: fixed; bottom: 28px; left: 0; right: 0; margin: 0; text-align: center; color: #fffc; font-weight: 600; text-shadow: 0 1px 4px #000; pointer-events: none; z-index: 6; }
 .flip-inner { position: relative; width: var(--card-w); aspect-ratio: 63 / 88; transform-style: preserve-3d; }
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; }
 .flip-front { transform: rotateY(180deg); }
@@ -86,5 +111,6 @@ body:has(.stage.dim)::before { opacity: .75; }
 .summary-actions { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pack, .pack-shine, .hint, .stage.rays ~ .reveal::before, .flip.revealed.rarity-legendary .card, .summary .rarity-legendary, .new-badge, .pack.torn .pack-top, .pack.torn::after { animation: none !important; }
+  .pack, .pack-shine, .hint, .stage.rays ~ .reveal::before, .flip.revealed.rarity-legendary .card, .summary .rarity-legendary, .new-badge, .pack.torn .pack-top, .pack.torn::after, .flip.hinting .flip-back { animation: none !important; }
+  .pack.torn .pack-top { opacity: 0; }
 }

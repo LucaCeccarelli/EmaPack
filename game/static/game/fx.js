@@ -47,7 +47,7 @@ window.FX = (() => {
         ctx.restore();
       } else {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, Math.max(0, p.size * p.life), 0, Math.PI * 2); // life can dip below 0 on its last frame
         ctx.fill();
       }
     }
@@ -140,5 +140,10 @@ window.FX = (() => {
     el.addEventListener('pointerleave', () => vars.forEach(v => el.style.removeProperty(v)));
   }
 
-  return { reduced, init, burst, flash, shake, sound, tilt, unlock };
+  // Phone haptics; silently ignored where unsupported (desktop, iOS Safari).
+  function buzz(pattern) {
+    try { navigator.vibrate?.(pattern); } catch { /* not allowed: ignore */ }
+  }
+
+  return { reduced, init, burst, flash, shake, sound, tilt, buzz, unlock };
 })();
