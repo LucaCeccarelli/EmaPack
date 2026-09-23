@@ -171,26 +171,28 @@
   async function revealAll(cards, els) {
     reveal.hidden = false;
     skipBtn.hidden = false;
-    // Cards slide up out of the pack's opening, then the empty pack drops away.
+    // 1. Cards rise halfway out of the torn opening (hidden below its edge).
+    // 2. The empty pack drops away completely.  3. Only then the cards settle, ready to open.
     const pr = pack.getBoundingClientRect();
-    const fromY = pr.top + pr.height * 0.35 - innerHeight / 2;
-    packWrap.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60vh) rotate(8deg)', opacity: 0 }],
-      { duration: dur(650), delay: dur(350), easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
-    // Hide the cards below the torn edge, and lower that edge as the pack falls: they seem to come out of it.
+    const fromY = pr.top + pr.height * 0.35 - innerHeight / 2, outY = fromY - 110;
     const edge = Math.max(0, innerHeight - (pr.top + pr.height * 0.15));
-    reveal.animate([
-      { clipPath: `inset(0 0 ${edge}px 0)` },
-      { clipPath: `inset(0 0 ${edge}px 0)`, offset: 0.35 },
-      { clipPath: 'inset(0 0 0 0)' },
-    ], { duration: dur(1000), easing: 'cubic-bezier(.5,0,.75,0)' });
+    reveal.style.clipPath = `inset(0 0 ${edge}px 0)`;
     await Promise.all(els.map((el, i) => {
       el.style.visibility = '';
       return el.animate(
         [{ transform: `translateY(${fromY}px) scale(.5)`, opacity: 0 },
-         { transform: `translateY(${fromY - 140}px) scale(.62)`, opacity: 1, offset: 0.45 },
-         { transform: `translateY(${i * -3}px) rotate(${(i - 2) * 1.5}deg)`, opacity: 1 }],
-        { duration: dur(900), delay: dur(i * 110), easing: 'cubic-bezier(.3,1.2,.4,1)', fill: 'both' }).finished;
+         { transform: `translateY(${outY}px) scale(.62) rotate(${(i - 2) * 2}deg)`, opacity: 1 }],
+        { duration: dur(650), delay: dur(i * 90), easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'both' }).finished;
     }));
+    const fall = { duration: dur(700), easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' };
+    reveal.animate([{ clipPath: `inset(0 0 ${edge}px 0)` }, { clipPath: 'inset(0 0 0 0)' }], fall);
+    await packWrap.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60vh) rotate(8deg)', opacity: 0 }], fall).finished;
+    reveal.getAnimations().forEach(a => a.cancel());
+    reveal.style.clipPath = '';
+    await Promise.all(els.map((el, i) => el.animate(
+      [{ transform: `translateY(${outY}px) scale(.62) rotate(${(i - 2) * 2}deg)` },
+       { transform: `translateY(${i * -3}px) rotate(${(i - 2) * 1.5}deg)` }],
+      { duration: dur(550), delay: dur(i * 40), easing: 'cubic-bezier(.3,1.3,.4,1)', fill: 'both' }).finished));
     const hintText = $('revealHint');
     for (const [i, c] of cards.entries()) {
       hintText.textContent = i === 0 ? 'Tap to reveal' : '';
