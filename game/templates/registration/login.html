@@ -1,12 +1,12 @@
-{% extends "base.html" %}
-{% block title %}Log in · Pack Ema{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Log in" %} · Pack Ema{% endblock %}
 {% block content %}
 <form method="post" class="panel form">{% csrf_token %}
   <span class="brand-mark big">EMA</span>
-  <h1>Welcome back</h1>
-  <p class="muted">Your next pack might be waiting.</p>
+  <h1>{% trans "Welcome back" %}</h1>
+  <p class="muted">{% trans "Your next pack might be waiting." %}</p>
   {{ form.as_div }}
-  <button class="btn block">Log in</button>
-  <p class="form-foot">No account yet? <a href="{% url 'signup' %}">Sign up</a></p>
+  <button class="btn block">{% trans "Log in" %}</button>
+  <p class="form-foot">{% trans "No account yet?" %} <a href="{% url 'signup' %}">{% trans "Sign up" %}</a></p>
 </form>
 {% endblock %}
