@@ -39,6 +39,13 @@ own UI strings (nav, buttons, flash messages, form errors, pack-opening copy).
   - `game/views.py` — `messages.success`/`messages.error` calls, `forms.ValidationError` messages.
   - `game/friends.py` — `FriendError` messages.
   - `game/packs.py` — `PackUnavailable` messages.
+  - `game/models.py` — `Rarity` (`IntegerChoices`) labels (`"Common"`, `"Uncommon"`,
+    `"Rare"`, `"Epic"`, `"Legendary"`) wrapped in `gettext_lazy` (must be `_lazy`,
+    not `gettext`, since choices are evaluated at import time). This is a *label*
+    translation, not a data migration — `get_rarity_display()` picks it up
+    automatically everywhere it's already called (`_card.html`, `card_detail.html`,
+    `collection.html`, `propose.html`'s pending-proposals list, and the rarity
+    radio-select rendered from `Rarity.choices` in `views.py`'s proposal form).
 - **`game/static/game/pack.js`**: has ~4 hardcoded English strings (`"Tap to reveal"`,
   `"Swipe it away, or tap for the next card"`, `"A pack is ready!"`, the
   `"Next pack in {mm}:{ss}"` template, and the two network-error fallback strings).
