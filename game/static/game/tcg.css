@@ -191,10 +191,12 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .add-friend-row input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
 .friend-list { padding: 20px 24px; margin-bottom: 24px; }
 .friend-list h2 { margin: 0 0 12px; font-size: 1.2rem; }
-.friend-list ul { margin: 0; padding: 0; list-style: none; }
+.friend-list ul, .friend-list ol { margin: 0; padding: 0; list-style: none; }
 .friend-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .friend-list li:first-child { border-top: 0; }
 .friend-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.rank { min-width: 3ch; font-weight: 800; color: var(--muted); }
+.friend-list li.me .rank, .friend-list li.me > strong { color: var(--accent-2); }
 .btn.small { padding: 6px 16px; font-size: .85rem; }
 
 /* ---------- Card editor ---------- */

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard · Pack Ema{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Leaderboard</h1>
+</header>
+<section class="panel friend-list">
+  {% if players %}
+  <ol>
+    {% for player in players %}
+    <li{% if player == user %} class="me"{% endif %}>
+      <span class="rank">#{{ forloop.counter }}</span>
+      <strong>{{ player.username }}</strong>
+      <span class="friend-actions muted"><strong>{{ player.unique }}</strong> / {{ total }} cards · {{ player.pulled }} pulled</span>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="muted">Nobody has opened a pack yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
