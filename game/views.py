@@ -160,6 +160,7 @@ def friends(request):
             messages.error(request, str(e))
         return redirect("friends")
     return render(request, "game/friends.html", {
+        "search_min_chars": USERNAME_SEARCH_MIN_CHARS,
         "friends": friend_logic.friends_of(request.user),
         "incoming": Friendship.objects.filter(
             to_user=request.user, status=Friendship.Status.PENDING
@@ -168,6 +169,22 @@ def friends(request):
             from_user=request.user, status=Friendship.Status.PENDING
         ).select_related("to_user"),
     })
+
+
+USERNAME_SEARCH_MIN_CHARS = 2
+
+
+@login_required
+def friend_search(request):
+    """Username suggestions for the add-friend input (prefix match, case-insensitive)."""
+    q = request.GET.get("q", "").strip()
+    if len(q) < USERNAME_SEARCH_MIN_CHARS:
+        return JsonResponse({"usernames": []})
+    usernames = (
+        User.objects.filter(username__istartswith=q).exclude(pk=request.user.pk)
+        .order_by("username").values_list("username", flat=True)[:8]
+    )
+    return JsonResponse({"usernames": list(usernames)})
 
 
 @login_required

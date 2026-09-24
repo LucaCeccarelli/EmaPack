@@ -13,6 +13,7 @@ urlpatterns = [
     path("cards/<int:pk>/", views.card_detail, name="card_detail"),
     path("cards/propose/", views.propose_card, name="propose_card"),
     path("friends/", views.friends, name="friends"),
+    path("friends/search/", views.friend_search, name="friend_search"),
     path("friends/<int:pk>/accept/", views.friend_accept, name="friend_accept"),
     path("friends/<int:pk>/remove/", views.friend_remove, name="friend_remove"),
     path("friends/<str:username>/collection/", views.friend_collection, name="friend_collection"),

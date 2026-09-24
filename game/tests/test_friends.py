@@ -169,6 +169,19 @@ class FriendViewTests(TestCase):
         self.assertEqual(self.client.get(reverse("friend_remove", args=[friendship.pk])).status_code, 405)
 
 
+class FriendSearchViewTests(TestCase):
+    def test_prefix_match_excludes_self_and_short_queries(self):
+        for name in ("ash", "gary", "garrett", "misty"):
+            User.objects.create_user(name, password="pw")
+        self.client.force_login(User.objects.get(username="gary"))
+        search = lambda q: self.client.get(reverse("friend_search"), {"q": q}).json()["usernames"]
+        self.assertEqual(search("GA"), ["garrett"])
+        self.assertEqual(search("g"), [])
+
+    def test_requires_login(self):
+        self.assertEqual(self.client.get(reverse("friend_search"), {"q": "ga"}).status_code, 302)
+
+
 class FriendCollectionViewTests(TestCase):
     def setUp(self):
         self.ash = User.objects.create_user("ash", password="pw")

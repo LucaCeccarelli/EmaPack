@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Friends · Pack Ema{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const input = document.getElementById('username');
+  const list = document.getElementById('username-suggestions');
+  let timer;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < +input.dataset.minChars) { list.replaceChildren(); return; }
+    timer = setTimeout(async () => {
+      const res = await fetch(`${input.dataset.searchUrl}?q=${encodeURIComponent(q)}`);
+      if (!res.ok || input.value.trim() !== q) return;  // stale response: user kept typing
+      const { usernames } = await res.json();
+      list.replaceChildren(...usernames.map(name => Object.assign(document.createElement('option'), { value: name })));
+    }, 150);
+  });
+})();
+</script>
+{% endblock %}
 {% block content %}
 <header class="page-head">
   <h1>Friends</h1>
@@ -9,7 +29,9 @@
   {% csrf_token %}
   <label for="username">Add a friend</label>
   <div class="add-friend-row">
-    <input type="text" name="username" id="username" placeholder="Username" required>
+    <input type="text" name="username" id="username" placeholder="Username" required
+           list="username-suggestions" autocomplete="off" data-search-url="{% url 'friend_search' %}" data-min-chars="{{ search_min_chars }}">
+    <datalist id="username-suggestions"></datalist>
     <button class="btn">Send request</button>
   </div>
 </form>
