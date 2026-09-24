@@ -1,7 +1,11 @@
 {% extends "base.html" %}{% load static %}
 {% block title %}{{ card.name }} · Pack Ema{% endblock %}
 {% block content %}
+{% if owner %}
+<a class="back" href="{% url 'friend_collection' owner.username %}">← {{ owner.username }}'s collection</a>
+{% else %}
 <a class="back" href="{% url 'collection' %}">← Collection</a>
+{% endif %}
 <div class="detail">
   {% include "game/_card.html" %}
   <section class="panel detail-text rarity-{{ card.rarity_slug }}">
@@ -9,7 +13,7 @@
     <h1>{{ card.name }}</h1>
     {% if card.tagline %}<p class="muted">{{ card.tagline }}</p>{% endif %}
     <dl class="stats">
-      <div><dt>Owned</dt><dd>×{{ copies }}</dd></div>
+      <div><dt>{% if owner %}{{ owner.username }} owns{% else %}Owned{% endif %}</dt><dd>×{{ copies }}</dd></div>
       <div><dt>Subscribers</dt><dd>{{ card.subscriber_count }}</dd></div>
       <div><dt>Posts</dt><dd>{{ card.post_count }}</dd></div>
       <div><dt>Events</dt><dd>{{ card.event_count }}</dd></div>

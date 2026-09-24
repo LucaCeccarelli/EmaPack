@@ -169,6 +169,19 @@ class FriendViewTests(TestCase):
         self.assertEqual(self.client.get(reverse("friend_remove", args=[friendship.pk])).status_code, 405)
 
 
+class FriendSearchViewTests(TestCase):
+    def test_prefix_match_excludes_self_and_short_queries(self):
+        for name in ("ash", "gary", "garrett", "misty"):
+            User.objects.create_user(name, password="pw")
+        self.client.force_login(User.objects.get(username="gary"))
+        search = lambda q: self.client.get(reverse("friend_search"), {"q": q}).json()["usernames"]
+        self.assertEqual(search("GA"), ["garrett"])
+        self.assertEqual(search("g"), [])
+
+    def test_requires_login(self):
+        self.assertEqual(self.client.get(reverse("friend_search"), {"q": "ga"}).status_code, 302)
+
+
 class FriendCollectionViewTests(TestCase):
     def setUp(self):
         self.ash = User.objects.create_user("ash", password="pw")
@@ -192,7 +205,20 @@ class FriendCollectionViewTests(TestCase):
         response = self.client.get(reverse("friend_collection", args=["gary"]))
         self.assertContains(response, "BDE")
         self.assertContains(response, "gary")
-        self.assertNotContains(response, f'href="{reverse("card_detail", args=[card.pk])}"')
+        self.assertContains(response, f'href="{reverse("friend_card_detail", args=["gary", card.pk])}"')
+
+    def test_friend_card_detail(self):
+        friendship = send_request(self.ash, "gary")
+        accept_request(self.gary, friendship.pk)
+        card = make_card(name="BDE")
+        Pull.objects.create(user=self.gary, card=card, opened_at=timezone.now())
+        url = reverse("friend_card_detail", args=["gary", card.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "BDE")
+        self.assertContains(response, reverse("friend_collection", args=["gary"]))
+        self.assertEqual(self.client.get(reverse("card_detail", args=[card.pk])).status_code, 404)  # ash doesn't own it
+        remove_friendship(self.ash, friendship.pk)
+        self.assertEqual(self.client.get(url).status_code, 404)
 
     def test_unknown_username_404s(self):
         response = self.client.get(reverse("friend_collection", args=["nobody"]))
