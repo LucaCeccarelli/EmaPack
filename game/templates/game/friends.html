@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}Friends · Pack Ema{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Friends" %} · Pack Ema{% endblock %}
 {% block scripts %}
 <script>
 (() => {
@@ -22,30 +22,30 @@
 {% endblock %}
 {% block content %}
 <header class="page-head">
-  <h1>Friends</h1>
+  <h1>{% trans "Friends" %}</h1>
 </header>
 
 <form class="panel add-friend" method="post">
   {% csrf_token %}
-  <label for="username">Add a friend</label>
+  <label for="username">{% trans "Add a friend" %}</label>
   <div class="add-friend-row">
-    <input type="text" name="username" id="username" placeholder="Username" required
+    <input type="text" name="username" id="username" placeholder="{% trans 'Username' %}" required
            list="username-suggestions" autocomplete="off" data-search-url="{% url 'friend_search' %}" data-min-chars="{{ search_min_chars }}">
     <datalist id="username-suggestions"></datalist>
-    <button class="btn">Send request</button>
+    <button class="btn">{% trans "Send request" %}</button>
   </div>
 </form>
 
 {% if incoming %}
 <section class="panel friend-list">
-  <h2>Requests</h2>
+  <h2>{% trans "Requests" %}</h2>
   <ul>
     {% for f in incoming %}
     <li>
       <strong>{{ f.from_user.username }}</strong>
       <span class="friend-actions">
-        <form method="post" action="{% url 'friend_accept' f.pk %}">{% csrf_token %}<button class="btn small">Accept</button></form>
-        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">Decline</button></form>
+        <form method="post" action="{% url 'friend_accept' f.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
+        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
       </span>
     </li>
     {% endfor %}
@@ -55,14 +55,14 @@
 
 {% if outgoing %}
 <section class="panel friend-list">
-  <h2>Sent requests</h2>
+  <h2>{% trans "Sent requests" %}</h2>
   <ul>
     {% for f in outgoing %}
     <li>
       <strong>{{ f.to_user.username }}</strong>
       <span class="friend-actions">
-        <span class="chip">Pending</span>
-        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">Cancel</button></form>
+        <span class="chip">{% trans "Pending" %}</span>
+        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Cancel" %}</button></form>
       </span>
     </li>
     {% endfor %}
@@ -71,21 +71,21 @@
 {% endif %}
 
 <section class="panel friend-list">
-  <h2>Your friends</h2>
+  <h2>{% trans "Your friends" %}</h2>
   {% if friends %}
   <ul>
     {% for user in friends %}
     <li>
       <strong>{{ user.username }}</strong>
       <span class="friend-actions">
-        <a class="btn small ghost" href="{% url 'friend_collection' user.username %}">View collection</a>
-        <form method="post" action="{% url 'friend_remove' user.friendship_id %}">{% csrf_token %}<button class="btn small ghost">Remove</button></form>
+        <a class="btn small ghost" href="{% url 'friend_collection' user.username %}">{% trans "View collection" %}</a>
+        <form method="post" action="{% url 'friend_remove' user.friendship_id %}">{% csrf_token %}<button class="btn small ghost">{% trans "Remove" %}</button></form>
       </span>
     </li>
     {% endfor %}
   </ul>
   {% else %}
-  <p class="muted">No friends yet — add one above.</p>
+  <p class="muted">{% trans "No friends yet — add one above." %}</p>
   {% endif %}
 </section>
 {% endblock %}

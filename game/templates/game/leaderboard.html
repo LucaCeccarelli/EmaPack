@@ -1,8 +1,8 @@
-{% extends "base.html" %}
-{% block title %}Leaderboard · Pack Ema{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Leaderboard" %} · Pack Ema{% endblock %}
 {% block content %}
 <header class="page-head">
-  <h1>Leaderboard</h1>
+  <h1>{% trans "Leaderboard" %}</h1>
 </header>
 <section class="panel friend-list">
   {% if players %}
@@ -11,12 +11,12 @@
     <li{% if player == user %} class="me"{% endif %}>
       <span class="rank">#{{ forloop.counter }}</span>
       <strong>{{ player.username }}</strong>
-      <span class="friend-actions muted"><strong>{{ player.unique }}</strong> / {{ total }} cards · {{ player.pulled }} pulled</span>
+      <span class="friend-actions muted"><strong>{{ player.unique }}</strong> {% blocktrans with total=total %}/ {{ total }} cards{% endblocktrans %} · {% blocktrans with pulled=player.pulled %}{{ pulled }} pulled{% endblocktrans %}</span>
     </li>
     {% endfor %}
   </ol>
   {% else %}
-  <p class="muted">Nobody has opened a pack yet.</p>
+  <p class="muted">{% trans "Nobody has opened a pack yet." %}</p>
   {% endif %}
 </section>
 {% endblock %}

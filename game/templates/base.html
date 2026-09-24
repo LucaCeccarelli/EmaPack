@@ -1,5 +1,5 @@
-{% load static %}<!doctype html>
-<html lang="en">
+{% load static i18n %}{% get_current_language as CURRENT_LANGUAGE %}<!doctype html>
+<html lang="{{ CURRENT_LANGUAGE }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,16 +14,24 @@
   {% with here=request.resolver_match.url_name %}
   <header class="topbar">
     <a class="brand" href="{% url 'home' %}"><span class="brand-mark">EMA</span> Pack Ema</a>
-    {% if user.is_authenticated %}
-    <nav class="nav">
-      <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>Packs</a>
-      <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>Collection</a>
-      <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}>Friends</a>
-      <a href="{% url 'leaderboard' %}" {% if here == 'leaderboard' %}class="active" aria-current="page"{% endif %}>Leaderboard</a>
-      <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}>Propose</a>
-      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="Log out {{ user.username }}">Log out</button></form>
-    </nav>
-    {% endif %}
+    <div class="topbar-right">
+      {% if user.is_authenticated %}
+      <nav class="nav">
+        <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>{% trans "Packs" %}</a>
+        <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Collection" %}</a>
+        <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Friends" %}</a>
+        <a href="{% url 'leaderboard' %}" {% if here == 'leaderboard' %}class="active" aria-current="page"{% endif %}>{% trans "Leaderboard" %}</a>
+        <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}>{% trans "Propose" %}</a>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="{% blocktrans with username=user.username %}Log out {{ username }}{% endblocktrans %}">{% trans "Log out" %}</button></form>
+      </nav>
+      {% endif %}
+      <form class="lang-switch" method="post" action="{% url 'set_language' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" name="language" value="en" class="{% if CURRENT_LANGUAGE == 'en' %}active{% endif %}" aria-label="{% trans 'Switch to English' %}">EN</button>
+        <button type="submit" name="language" value="fr" class="{% if CURRENT_LANGUAGE == 'fr' %}active{% endif %}" aria-label="{% trans 'Switch to French' %}">FR</button>
+      </form>
+    </div>
   </header>
   {% endwith %}
   <main>

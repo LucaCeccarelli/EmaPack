@@ -1,24 +1,24 @@
-{% extends "base.html" %}{% load static %}
-{% block title %}{% if owner %}{{ owner.username }}'s collection{% else %}Collection{% endif %} · Pack Ema{% endblock %}
+{% extends "base.html" %}{% load static i18n %}
+{% block title %}{% if owner %}{% blocktrans with username=owner.username %}{{ username }}'s collection{% endblocktrans %}{% else %}{% trans "Collection" %}{% endif %} · Pack Ema{% endblock %}
 {% block content %}
 {% with owned=cards|length %}
 <header class="page-head">
-  <h1>{% if owner %}{{ owner.username }}'s collection{% else %}Collection{% endif %}</h1>
-  <div class="progress" role="img" aria-label="{{ owned }} of {{ total }} cards discovered">
+  <h1>{% if owner %}{% blocktrans with username=owner.username %}{{ username }}'s collection{% endblocktrans %}{% else %}{% trans "Collection" %}{% endif %}</h1>
+  <div class="progress" role="img" aria-label="{% blocktrans %}{{ owned }} of {{ total }} cards discovered{% endblocktrans %}">
     <div class="progress-bar"><span style="width: {% widthratio owned total 100 %}%"></span></div>
-    <span class="progress-label"><strong>{{ owned }}</strong> / {{ total }} discovered</span>
+    <span class="progress-label"><strong>{{ owned }}</strong> {% blocktrans %}/ {{ total }} discovered{% endblocktrans %}</span>
   </div>
 </header>
 {% if not owned %}
 <div class="panel empty">
   <span class="brand-mark big">EMA</span>
   {% if owner %}
-  <h2>No cards yet</h2>
-  <p class="muted">{{ owner.username }} hasn't discovered any cards yet.</p>
+  <h2>{% trans "No cards yet" %}</h2>
+  <p class="muted">{% blocktrans with username=owner.username %}{{ username }} hasn't discovered any cards yet.{% endblocktrans %}</p>
   {% else %}
-  <h2>No cards yet</h2>
-  <p class="muted">Tear open your first pack to start collecting.</p>
-  <a class="btn" href="{% url 'home' %}">Open a pack</a>
+  <h2>{% trans "No cards yet" %}</h2>
+  <p class="muted">{% trans "Tear open your first pack to start collecting." %}</p>
+  <a class="btn" href="{% url 'home' %}">{% trans "Open a pack" %}</a>
   {% endif %}
 </div>
 {% endif %}

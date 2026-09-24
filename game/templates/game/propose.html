@@ -1,40 +1,40 @@
-{% extends "base.html" %}{% load static %}
-{% block title %}Propose a card · Pack Ema{% endblock %}
+{% extends "base.html" %}{% load static i18n %}
+{% block title %}{% trans "Propose a card" %} · Pack Ema{% endblock %}
 {% block content %}
 <header class="page-head">
   <div>
-    <h1>Propose a card</h1>
-    <p class="muted">Design a card for a club, an association or a legend of the school. An admin reviews it and, if approved, it joins the packs.</p>
+    <h1>{% trans "Propose a card" %}</h1>
+    <p class="muted">{% trans "Design a card for a club, an association or a legend of the school. An admin reviews it and, if approved, it joins the packs." %}</p>
   </div>
 </header>
 
 <div class="editor">
   <form id="card-editor" class="panel editor-form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
-    {% if at_limit %}<p class="flash flash-warning">You already have {{ max_pending }} cards waiting for review. Wait for a decision before proposing another one.</p>{% endif %}
+    {% if at_limit %}<p class="flash flash-warning">{% blocktrans %}You already have {{ max_pending }} cards waiting for review. Wait for a decision before proposing another one.{% endblocktrans %}</p>{% endif %}
     {{ form.non_field_errors }}
 
     <fieldset>
-      <legend>Identity</legend>
+      <legend>{% trans "Identity" %}</legend>
       <div class="field">
-        <label for="{{ form.name.id_for_label }}">Name <span class="count" data-for="{{ form.name.id_for_label }}"></span></label>
+        <label for="{{ form.name.id_for_label }}">{% trans "Name" %} <span class="count" data-for="{{ form.name.id_for_label }}"></span></label>
         {{ form.name }}{{ form.name.errors }}
       </div>
       <div class="field">
-        <label for="{{ form.tagline.id_for_label }}">Tagline <span class="count" data-for="{{ form.tagline.id_for_label }}"></span></label>
+        <label for="{{ form.tagline.id_for_label }}">{% trans "Tagline" %} <span class="count" data-for="{{ form.tagline.id_for_label }}"></span></label>
         {{ form.tagline }}{{ form.tagline.errors }}
       </div>
     </fieldset>
 
     <fieldset>
-      <legend>Images <span class="muted">PNG, JPG or WebP · max {{ max_mb }} MB</span></legend>
+      <legend>{% trans "Images" %} <span class="muted">{% blocktrans %}PNG, JPG or WebP · max {{ max_mb }} MB{% endblocktrans %}</span></legend>
       <div class="uploads">
         <label class="upload" for="{{ form.logo.id_for_label }}">
-          <span class="upload-title">Logo</span><span class="muted">square works best</span>
+          <span class="upload-title">{% trans "Logo" %}</span><span class="muted">{% trans "square works best" %}</span>
           <input type="file" name="logo" id="{{ form.logo.id_for_label }}" accept="image/*">
         </label>
         <label class="upload" for="{{ form.banner.id_for_label }}">
-          <span class="upload-title">Banner</span><span class="muted">wide picture, the card's art</span>
+          <span class="upload-title">{% trans "Banner" %}</span><span class="muted">{% trans "wide picture, the card's art" %}</span>
           <input type="file" name="banner" id="{{ form.banner.id_for_label }}" accept="image/*">
         </label>
       </div>
@@ -42,39 +42,39 @@
     </fieldset>
 
     <fieldset>
-      <legend>Colors</legend>
+      <legend>{% trans "Colors" %}</legend>
       <div class="colors">
-        <label class="color">{{ form.primary_color }}<span>Primary</span></label>
-        <label class="color">{{ form.secondary_color }}<span>Secondary</span></label>
+        <label class="color">{{ form.primary_color }}<span>{% trans "Primary" %}</span></label>
+        <label class="color">{{ form.secondary_color }}<span>{% trans "Secondary" %}</span></label>
       </div>
       {{ form.primary_color.errors }}{{ form.secondary_color.errors }}
     </fieldset>
 
     <fieldset>
-      <legend>Description</legend>
+      <legend>{% trans "Description" %}</legend>
       <div class="field">
-        <label for="{{ form.description.id_for_label }}">Shown on the card's page <span class="count" data-for="{{ form.description.id_for_label }}"></span></label>
+        <label for="{{ form.description.id_for_label }}">{% trans "Shown on the card's page" %} <span class="count" data-for="{{ form.description.id_for_label }}"></span></label>
         {{ form.description }}{{ form.description.errors }}
       </div>
     </fieldset>
 
-    <button class="btn block" {% if at_limit %}disabled{% endif %}>Send for review</button>
+    <button class="btn block" {% if at_limit %}disabled{% endif %}>{% trans "Send for review" %}</button>
   </form>
 
-  <aside class="editor-preview" id="preview" aria-label="Live preview">
+  <aside class="editor-preview" id="preview" aria-label="{% trans 'Live preview' %}">
     {% include "game/_card.html" with card=preview %}
     <fieldset class="rarity-toggle">
-      <legend>Suggested rarity</legend>
+      <legend>{% trans "Suggested rarity" %}</legend>
       {% for radio in form.rarity %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}
     </fieldset>
     {{ form.rarity.errors }}
-    <p class="muted small">The admin can adjust it before approving the card.</p>
+    <p class="muted small">{% trans "The admin can adjust it before approving the card." %}</p>
   </aside>
 </div>
 
 {% if proposals %}
 <section class="panel my-proposals">
-  <h2>Your proposals</h2>
+  <h2>{% trans "Your proposals" %}</h2>
   <ul>
     {% for p in proposals %}
     <li>

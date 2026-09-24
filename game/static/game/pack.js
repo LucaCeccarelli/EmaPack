@@ -3,6 +3,10 @@
   const stage = $('stage'), packWrap = $('packWrap'), pack = $('pack'), tearLine = $('tearLine');
   const hint = $('hint'), timer = $('timer'), reveal = $('reveal'), summary = $('summary'), skipBtn = $('skip');
   const csrf = stage.querySelector('[name=csrfmiddlewaretoken]').value;
+  const {
+    msgReady, msgNextIn, msgSessionExpired, msgGenericError,
+    msgOpenFailed, msgTapToReveal, msgSwipeNext, msgNewBadge,
+  } = stage.dataset;
   const COLOR = { 1: '#dfe5f5', 2: '#3ddc84', 3: '#3aa0ff', 4: '#b35cff', 5: '#ffb800' };
   const SOUND = { 3: 'rare', 4: 'epic', 5: 'legendary' };
   const TEAR_DONE = 0.75; // fraction of the pack width to drag
@@ -23,10 +27,10 @@
     if (message) {
       text = message;
     } else if (left <= 0) {
-      text = 'A pack is ready!';
+      text = msgReady;
     } else {
       const s = Math.ceil(left / 1000);
-      text = `Next pack in ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      text = msgNextIn.replace('{mm}', Math.floor(s / 60)).replace('{ss}', String(s % 60).padStart(2, '0'));
     }
     if (timer.textContent !== text) timer.textContent = text;
     return left <= 0;
@@ -39,7 +43,7 @@
     return request ??= fetch(stage.dataset.openUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf } })
       .then(async r => {
         const data = await r.json().catch(() => ({
-          error: r.redirected ? 'Your session expired. Please log in again.' : 'Something went wrong. Try again.',
+          error: r.redirected ? msgSessionExpired : msgGenericError,
         }));
         if (!r.ok || !data.cards) throw data;
         return data;
@@ -138,7 +142,7 @@
 
   function fail(err) {
     if (err && err.next_pack_at) nextPackAt = new Date(err.next_pack_at);
-    message = (err && err.error) || 'Could not open the pack. Try again.';
+    message = (err && err.error) || msgOpenFailed;
     reset();
   }
 
@@ -195,11 +199,11 @@
       { duration: dur(550), delay: dur(i * 40), easing: 'cubic-bezier(.3,1.3,.4,1)', fill: 'both' }).finished));
     const hintText = $('revealHint');
     for (const [i, c] of cards.entries()) {
-      hintText.textContent = i === 0 ? 'Tap to reveal' : '';
+      hintText.textContent = i === 0 ? msgTapToReveal : '';
       if (c.rarity >= 3) els[i].classList.add('hinting'); // Hearthstone-style: the back glows its rarity color
       await nextTap();
       await flip(els[i], c);
-      hintText.textContent = i === 0 ? 'Swipe it away, or tap for the next card' : '';
+      hintText.textContent = i === 0 ? msgSwipeNext : '';
       const dir = await swipeOrTap(els[i]);
       await flyAway(els[i], i, dir);
     }
@@ -222,7 +226,7 @@
       { duration: dur(ms), easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' }).finished;
     el.classList.remove('charging');
     el.classList.add('revealed');
-    if (c.is_new) el.insertAdjacentHTML('beforeend', '<span class="new-badge">NEW!</span>');
+    if (c.is_new) el.insertAdjacentHTML('beforeend', `<span class="new-badge">${msgNewBadge}</span>`);
     FX.tilt(card);
     if (skip) return;
 
@@ -294,7 +298,7 @@
     cards.forEach((c, i) => {
       const item = document.createElement('div');
       item.className = 'summary-item';
-      item.innerHTML = c.html + (c.is_new ? '<span class="new-badge">NEW!</span>' : '');
+      item.innerHTML = c.html + (c.is_new ? `<span class="new-badge">${msgNewBadge}</span>` : '');
       box.append(item);
       FX.tilt(item.querySelector('.card'));
       item.animate([{ transform: 'translateY(40px) scale(.8)', opacity: 0 }, { transform: 'none', opacity: 1 }],

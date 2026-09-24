@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
@@ -8,17 +9,17 @@ class User(AbstractUser):
 
 
 class Rarity(models.IntegerChoices):
-    COMMON = 1, "Common"
-    UNCOMMON = 2, "Uncommon"
-    RARE = 3, "Rare"
-    EPIC = 4, "Epic"
-    LEGENDARY = 5, "Legendary"
+    COMMON = 1, _("Common")
+    UNCOMMON = 2, _("Uncommon")
+    RARE = 3, _("Rare")
+    EPIC = 4, _("Epic")
+    LEGENDARY = 5, _("Legendary")
 
 
 class Status(models.TextChoices):
-    PENDING = "pending", "Pending review"
-    APPROVED = "approved", "Approved"
-    REJECTED = "rejected", "Rejected"
+    PENDING = "pending", _("Pending review")
+    APPROVED = "approved", _("Approved")
+    REJECTED = "rejected", _("Rejected")
 
 
 class Card(models.Model):

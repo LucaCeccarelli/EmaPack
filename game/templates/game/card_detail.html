@@ -1,10 +1,10 @@
-{% extends "base.html" %}{% load static %}
+{% extends "base.html" %}{% load static i18n %}
 {% block title %}{{ card.name }} · Pack Ema{% endblock %}
 {% block content %}
 {% if owner %}
-<a class="back" href="{% url 'friend_collection' owner.username %}">← {{ owner.username }}'s collection</a>
+<a class="back" href="{% url 'friend_collection' owner.username %}">← {% blocktrans with username=owner.username %}{{ username }}'s collection{% endblocktrans %}</a>
 {% else %}
-<a class="back" href="{% url 'collection' %}">← Collection</a>
+<a class="back" href="{% url 'collection' %}">← {% trans "Collection" %}</a>
 {% endif %}
 <div class="detail">
   {% include "game/_card.html" %}
@@ -13,13 +13,13 @@
     <h1>{{ card.name }}</h1>
     {% if card.tagline %}<p class="muted">{{ card.tagline }}</p>{% endif %}
     <dl class="stats">
-      <div><dt>{% if owner %}{{ owner.username }} owns{% else %}Owned{% endif %}</dt><dd>×{{ copies }}</dd></div>
-      <div><dt>Subscribers</dt><dd>{{ card.subscriber_count }}</dd></div>
-      <div><dt>Posts</dt><dd>{{ card.post_count }}</dd></div>
-      <div><dt>Events</dt><dd>{{ card.event_count }}</dd></div>
+      <div><dt>{% if owner %}{% blocktrans with username=owner.username %}{{ username }} owns{% endblocktrans %}{% else %}{% trans "Owned" %}{% endif %}</dt><dd>×{{ copies }}</dd></div>
+      <div><dt>{% trans "Subscribers" %}</dt><dd>{{ card.subscriber_count }}</dd></div>
+      <div><dt>{% trans "Posts" %}</dt><dd>{{ card.post_count }}</dd></div>
+      <div><dt>{% trans "Events" %}</dt><dd>{{ card.event_count }}</dd></div>
     </dl>
     <div class="prose">
-      {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">This page has no presentation yet.</p>{% endif %}
+      {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">{% trans "This page has no presentation yet." %}</p>{% endif %}
     </div>
   </section>
 </div>

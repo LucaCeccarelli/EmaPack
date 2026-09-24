@@ -111,6 +111,32 @@ player-proposed uploads are namespaced under `images/proposals/` (`upload_to="pr
 fields). In dev, Django serves `MEDIA_URL` directly (`static()` helper in `tcg/urls.py`, active only
 because `DEBUG=True`) — this setup is explicitly dev-only, not meant to be exposed as-is.
 
+## Translations (i18n)
+
+The UI ships in English and French (`LANGUAGES` in `tcg/settings.py`); the switcher in
+`base.html` posts to Django's built-in `set_language` view — no URL prefixing, French
+is a session/cookie choice. Komi-scraped card content (names, taglines, descriptions)
+is **never** translated, only app chrome: nav, buttons, flash messages, form errors,
+`Rarity`/`Status` choice labels, and the handful of `pack.js` strings routed through
+`data-msg-*` attributes on `#stage` (plain JS has no access to Django's translation
+system).
+
+Whenever you add or change a user-facing string, wrap it — `{% load i18n %}` +
+`{% trans %}`/`{% blocktrans %}` in templates, `gettext_lazy` in Python — and update
+the French catalog in the same change, or the string silently falls back to English
+for French users:
+
+```bash
+docker compose exec web python manage.py makemessages -l fr   # picks up new/changed msgids
+# edit game/locale/fr/LC_MESSAGES/django.po — fill every new msgstr; don't leave any empty
+docker compose exec web python manage.py compilemessages      # regenerates django.mo
+```
+
+Commit both `django.po` and `django.mo` — the `.mo` isn't rebuilt automatically at
+deploy time, so a stale one keeps serving the old (or missing) translation. The
+`gettext` system package (for `makemessages`/`compilemessages`) is already installed
+in the `Dockerfile`'s image.
+
 ## Known constraints (intentional, don't "fix" without checking with the user)
 
 - `DEBUG = True` and a hardcoded `SECRET_KEY` in `tcg/settings.py` — README explicitly flags this as

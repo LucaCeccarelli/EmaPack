@@ -9,6 +9,7 @@ from django.db.models import Count
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
@@ -40,8 +41,8 @@ class ProposalForm(forms.ModelForm):
         fields = ["name", "tagline", "description", "logo", "banner", "primary_color", "secondary_color", "rarity"]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "Club Échecs"}),
-            "tagline": forms.TextInput(attrs={"placeholder": "A short line under the name"}),
-            "description": forms.Textarea(attrs={"rows": 5, "placeholder": "Shown on the card's page: what is this club or person about?"}),
+            "tagline": forms.TextInput(attrs={"placeholder": _("A short line under the name")}),
+            "description": forms.Textarea(attrs={"rows": 5, "placeholder": _("Shown on the card's page: what is this club or person about?")}),
             "primary_color": forms.TextInput(attrs={"type": "color"}),
             "secondary_color": forms.TextInput(attrs={"type": "color"}),
         }
@@ -66,7 +67,7 @@ class ProposalForm(forms.ModelForm):
     def _color(self, field):
         value = self.cleaned_data[field]
         if value and not HEX_COLOR.fullmatch(value):  # ends up in an inline style attribute
-            raise forms.ValidationError("Pick a color like #3a3f58.")
+            raise forms.ValidationError(_("Pick a color like #3a3f58."))
         return value
 
     def clean_rarity(self):
@@ -81,7 +82,8 @@ class ProposalForm(forms.ModelForm):
     def _image(self, field):
         image = self.cleaned_data[field]
         if image and image.size > settings.PROPOSAL_MAX_IMAGE_BYTES:
-            raise forms.ValidationError(f"Image too large (max {settings.PROPOSAL_MAX_IMAGE_BYTES // (1024 * 1024)} MB).")
+            max_mb = settings.PROPOSAL_MAX_IMAGE_BYTES // (1024 * 1024)
+            raise forms.ValidationError(_("Image too large (max %(max_mb)s MB).") % {"max_mb": max_mb})
         return image
 
 
@@ -169,7 +171,7 @@ def friends(request):
     if request.method == "POST":
         try:
             friend_logic.send_request(request.user, request.POST.get("username", ""))
-            messages.success(request, "Friend request sent!")
+            messages.success(request, _("Friend request sent!"))
         except friend_logic.FriendError as e:
             messages.error(request, str(e))
         return redirect("friends")
@@ -246,7 +248,10 @@ def propose_card(request):
         card.proposed_by = request.user
         card.proposed_at = timezone.now()
         card.save()
-        messages.success(request, f"“{card.name}” was sent for review. If it's approved, it will show up in packs!")
+        messages.success(
+            request,
+            _("“%(name)s” was sent for review. If it's approved, it will show up in packs!") % {"name": card.name},
+        )
         return redirect("propose_card")
     # Server preview uses only validated text/colors; images are previewed in the browser (never saved ones).
     data = getattr(form, "cleaned_data", {})
