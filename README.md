@@ -6,8 +6,8 @@ Sign up, open a pack of 5 cards every 10 minutes, and build your collection.
 ## What you need
 
 - [Docker](https://docs.docker.com/get-docker/) with Compose — or [uv](https://docs.astral.sh/uv/) to run without Docker
-- The scraped data at the root of the project (not in git):
-  - `komi_pages_dump.json` — the dump
+- The data at the root of the project (not in git):
+  - `dump.json` — the dump
   - `images/` — the downloaded pictures (`images/<page id>/<file>`)
 
 ## Launch
