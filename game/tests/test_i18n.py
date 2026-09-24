@@ -83,3 +83,8 @@ class FrenchRenderingTests(TestCase):
     def test_english_is_unaffected_by_the_french_catalog(self):
         response = self.client.get(reverse("home"))
         self.assertContains(response, "A pack is ready!")
+
+    def test_backend_error_message_is_translated(self):
+        self.client.post(reverse("set_language"), {"language": "fr", "next": "/"})
+        response = self.client.post(reverse("friends"), {"username": "nobody"}, follow=True)
+        self.assertContains(response, "Aucun joueur nommé")

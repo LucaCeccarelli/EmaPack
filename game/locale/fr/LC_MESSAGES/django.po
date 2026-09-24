@@ -104,7 +104,7 @@ msgstr "Se déconnecter (%(username)s)"
 
 #: game/templates/base.html:24
 msgid "Log out"
-msgstr "Se déconnecter"
+msgstr "Déconnexion"
 
 #: game/templates/base.html:30
 msgid "Switch to English"
