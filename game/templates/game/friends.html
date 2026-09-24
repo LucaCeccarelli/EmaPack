@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Friends · Pack Ema{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Friends</h1>
+</header>
+
+<form class="panel add-friend" method="post">
+  {% csrf_token %}
+  <label for="username">Add a friend</label>
+  <div class="add-friend-row">
+    <input type="text" name="username" id="username" placeholder="Username" required>
+    <button class="btn">Send request</button>
+  </div>
+</form>
+
+{% if incoming %}
+<section class="panel friend-list">
+  <h2>Requests</h2>
+  <ul>
+    {% for f in incoming %}
+    <li>
+      <strong>{{ f.from_user.username }}</strong>
+      <span class="friend-actions">
+        <form method="post" action="{% url 'friend_accept' f.pk %}">{% csrf_token %}<button class="btn small">Accept</button></form>
+        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">Decline</button></form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if outgoing %}
+<section class="panel friend-list">
+  <h2>Sent requests</h2>
+  <ul>
+    {% for f in outgoing %}
+    <li>
+      <strong>{{ f.to_user.username }}</strong>
+      <span class="friend-actions">
+        <span class="chip">Pending</span>
+        <form method="post" action="{% url 'friend_remove' f.pk %}">{% csrf_token %}<button class="btn small ghost">Cancel</button></form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="panel friend-list">
+  <h2>Your friends</h2>
+  {% if friends %}
+  <ul>
+    {% for user in friends %}
+    <li>
+      <strong>{{ user.username }}</strong>
+      <span class="friend-actions">
+        <a class="btn small ghost" href="{% url 'friend_collection' user.username %}">View collection</a>
+        <form method="post" action="{% url 'friend_remove' user.friendship_id %}">{% csrf_token %}<button class="btn small ghost">Remove</button></form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No friends yet — add one above.</p>
+  {% endif %}
+</section>
+{% endblock %}

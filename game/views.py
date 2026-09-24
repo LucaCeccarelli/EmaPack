@@ -6,14 +6,15 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Count
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
+from . import friends as friend_logic
 from .management.commands.import_komi import HEX_COLOR
-from .models import Card, Rarity, Status, User
+from .models import Card, Friendship, Rarity, Status, User
 from .packs import PackUnavailable, open_pack
 
 
@@ -140,6 +141,60 @@ def card_detail(request, pk):
     card = get_object_or_404(Card.objects.filter(pulls__user=request.user).distinct(), pk=pk)
     copies = request.user.pulls.filter(card=card).count()
     return render(request, "game/card_detail.html", {"card": card, "copies": copies})
+
+
+@login_required
+def friends(request):
+    if request.method == "POST":
+        try:
+            friend_logic.send_request(request.user, request.POST.get("username", ""))
+            messages.success(request, "Friend request sent!")
+        except friend_logic.FriendError as e:
+            messages.error(request, str(e))
+        return redirect("friends")
+    return render(request, "game/friends.html", {
+        "friends": friend_logic.friends_of(request.user),
+        "incoming": Friendship.objects.filter(
+            to_user=request.user, status=Friendship.Status.PENDING
+        ).select_related("from_user"),
+        "outgoing": Friendship.objects.filter(
+            from_user=request.user, status=Friendship.Status.PENDING
+        ).select_related("to_user"),
+    })
+
+
+@login_required
+@require_POST
+def friend_accept(request, pk):
+    try:
+        friend_logic.accept_request(request.user, pk)
+    except friend_logic.FriendError as e:
+        messages.error(request, str(e))
+    return redirect("friends")
+
+
+@login_required
+@require_POST
+def friend_remove(request, pk):
+    try:
+        friend_logic.remove_friendship(request.user, pk)
+    except friend_logic.FriendError as e:
+        messages.error(request, str(e))
+    return redirect("friends")
+
+
+@login_required
+def friend_collection(request, username):
+    friend = get_object_or_404(User, username__iexact=username)
+    if not friend_logic.are_friends(request.user, friend):
+        raise Http404
+    cards = (
+        Card.objects.filter(pulls__user=friend)
+        .annotate(copies=Count("pulls"))
+        .order_by("-rarity", "name")
+    )
+    total = Card.objects.filter(status=Status.APPROVED).count()
+    return render(request, "game/collection.html", {"cards": cards, "total": total, "owner": friend})
 
 
 @login_required

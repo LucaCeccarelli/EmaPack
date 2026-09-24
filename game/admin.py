@@ -2,10 +2,11 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 
-from .models import Card, CardProposal, Pull, Status, User
+from .models import Card, CardProposal, Friendship, Pull, Status, User
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Pull)
+admin.site.register(Friendship)
 
 
 def thumb(image):
