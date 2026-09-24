@@ -74,8 +74,13 @@ own UI strings (nav, buttons, flash messages, form errors, pack-opening copy).
 
 ## Testing
 
-- No new dedicated i18n test — this is standard Django middleware/template-tag
-  behavior, not new business logic.
 - Existing `game.tests.*` suite must keep passing unchanged: since `LANGUAGE_CODE`
   stays `en-us` and tests don't set `Accept-Language`, any assertions on message
   text keep matching the English strings by default.
+- `game/tests/test_i18n.py` (added during implementation) covers what plain
+  regression testing can't: the middleware/URL wiring itself, the switcher's
+  rendered markup, the `pack.js` data attributes, and — critically — that the
+  French catalog actually changes rendered output (session-switcher persistence,
+  `Accept-Language` detection, and a French-language check on a backend message
+  built with `gettext_lazy` + `%` formatting, since that code path is the one most
+  likely to silently freeze in English if it's ever refactored).
