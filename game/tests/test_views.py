@@ -101,3 +101,19 @@ class GameViewTests(TestCase):
         self.assertContains(response, "<dd>×2</dd>")
         other = make_card(name="Secret")
         self.assertEqual(self.client.get(reverse("card_detail", args=[other.pk])).status_code, 404)
+
+
+class LeaderboardTests(TestCase):
+    def test_ranks_by_unique_cards_then_total_pulls(self):
+        a, b, c = make_card(name="A"), make_card(name="B"), make_card(name="C")
+        now = timezone.now()
+        ash, gary, misty = (User.objects.create_user(n, password="pw") for n in ["ash", "gary", "misty"])
+        User.objects.create_user("brock", password="pw")  # no pulls: not listed
+        for user, cards in [(ash, [a, a, a]), (gary, [a, b]), (misty, [a, b, b])]:
+            for card in cards:
+                Pull.objects.create(user=user, card=card, opened_at=now)
+        self.client.force_login(ash)
+        response = self.client.get(reverse("leaderboard"))
+        self.assertEqual([p.username for p in response.context["players"]], ["misty", "gary", "ash"])
+        self.assertEqual(response.context["players"][0].unique, 2)
+        self.assertNotContains(response, "brock")

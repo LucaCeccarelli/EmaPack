@@ -136,6 +136,20 @@ def collection(request):
     return render(request, "game/collection.html", {"cards": cards, "total": total})
 
 
+LEADERBOARD_SIZE = 50
+
+
+@login_required
+def leaderboard(request):
+    players = (
+        User.objects.annotate(unique=Count("pulls__card", distinct=True), pulled=Count("pulls"))
+        .filter(unique__gt=0)
+        .order_by("-unique", "-pulled", "username")[:LEADERBOARD_SIZE]
+    )
+    total = Card.objects.filter(status=Status.APPROVED).count()
+    return render(request, "game/leaderboard.html", {"players": players, "total": total})
+
+
 @login_required
 def card_detail(request, pk, username=None):
     owner = request.user

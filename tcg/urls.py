@@ -10,6 +10,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("packs/open/", views.open_pack_view, name="open_pack"),
     path("collection/", views.collection, name="collection"),
+    path("leaderboard/", views.leaderboard, name="leaderboard"),
     path("cards/<int:pk>/", views.card_detail, name="card_detail"),
     path("cards/propose/", views.propose_card, name="propose_card"),
     path("friends/", views.friends, name="friends"),
