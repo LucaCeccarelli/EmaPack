@@ -68,3 +68,22 @@ class Pull(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pulls")
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="pulls")
     opened_at = models.DateTimeField(db_index=True)
+
+
+class Friendship(models.Model):
+    """A friend request from `from_user` to `to_user`; accepted once the recipient confirms it."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACCEPTED = "accepted", "Accepted"
+
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friendships_sent")
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friendships_received")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["from_user", "to_user"], name="unique_friendship_pair")]
+
+    def __str__(self):
+        return f"{self.from_user} -> {self.to_user} ({self.status})"
