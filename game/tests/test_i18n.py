@@ -40,3 +40,20 @@ class LanguageSwitcherTests(TestCase):
         self.client.logout()
         response = self.client.get(reverse("login"))
         self.assertContains(response, f'action="{reverse("set_language")}"')
+
+
+class PackDataAttributesTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("ash", password="pw")
+        self.client.force_login(self.user)
+
+    def test_stage_exposes_translatable_pack_messages(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'data-msg-ready="A pack is ready!"')
+        self.assertContains(response, 'data-msg-next-in="Next pack in {mm}:{ss}"')
+        self.assertContains(response, 'data-msg-session-expired="Your session expired. Please log in again."')
+        self.assertContains(response, 'data-msg-generic-error="Something went wrong. Try again."')
+        self.assertContains(response, 'data-msg-open-failed="Could not open the pack. Try again."')
+        self.assertContains(response, 'data-msg-tap-to-reveal="Tap to reveal"')
+        self.assertContains(response, 'data-msg-swipe-next="Swipe it away, or tap for the next card"')
+        self.assertContains(response, 'data-msg-new-badge="NEW!"')

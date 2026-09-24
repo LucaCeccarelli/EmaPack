@@ -1,7 +1,17 @@
 {% extends "base.html" %}{% load static i18n %}
 {% block head %}<link rel="stylesheet" href="{% static 'game/pack.css' %}">{% endblock %}
 {% block content %}
-<section id="stage" class="stage" data-open-url="{% url 'open_pack' %}" data-next-pack-at="{{ next_pack_at|default:'' }}">
+<section id="stage" class="stage"
+  data-open-url="{% url 'open_pack' %}"
+  data-next-pack-at="{{ next_pack_at|default:'' }}"
+  data-msg-ready="{% trans 'A pack is ready!' %}"
+  data-msg-next-in="{% trans 'Next pack in {mm}:{ss}' %}"
+  data-msg-session-expired="{% trans 'Your session expired. Please log in again.' %}"
+  data-msg-generic-error="{% trans 'Something went wrong. Try again.' %}"
+  data-msg-open-failed="{% trans 'Could not open the pack. Try again.' %}"
+  data-msg-tap-to-reveal="{% trans 'Tap to reveal' %}"
+  data-msg-swipe-next="{% trans 'Swipe it away, or tap for the next card' %}"
+  data-msg-new-badge="{% trans 'NEW!' %}">
   {% csrf_token %}
   <div id="packWrap" class="pack-wrap">
     <div id="pack" class="pack" tabindex="0" role="button" aria-label="{% trans 'Open a pack: drag across the top edge, or press Enter' %}">
