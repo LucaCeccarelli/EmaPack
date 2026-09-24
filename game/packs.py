@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from .models import Card, Pull, Rarity, Status, User
 
@@ -33,11 +34,11 @@ def open_pack(user, now=None):
             .update(next_pack_at=now + settings.PACK_COOLDOWN)
         )
         if not claimed:
-            raise PackUnavailable("Your next pack isn't ready yet.")
+            raise PackUnavailable(_("Your next pack isn't ready yet."))
         pullable = Card.objects.filter(status=Status.APPROVED)
         available = set(pullable.values_list("rarity", flat=True).distinct())
         if not available:
-            raise PackUnavailable("No cards exist yet. Run the import first.")  # rolls back the claim
+            raise PackUnavailable(_("No cards exist yet. Run the import first."))  # rolls back the claim
         slots = [SLOT_ODDS] * (PACK_SIZE - 1) + [HIT_ODDS]
         # ponytail: order_by("?") scans the rarity bucket; fine for ~2k cards, precompute ids if it grows.
         cards = [

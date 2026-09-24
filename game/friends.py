@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from .models import Friendship, User
 
@@ -36,11 +37,11 @@ def send_request(user, username):
     try:
         target = User.objects.get(username__iexact=username)
     except User.DoesNotExist:
-        raise FriendError(f"No player named “{username}”.")
+        raise FriendError(_("No player named “%(username)s”.") % {"username": username})
     if target.pk == user.pk:
-        raise FriendError("You can't add yourself.")
+        raise FriendError(_("You can't add yourself."))
     if are_friends(user, target):
-        raise FriendError(f"You're already friends with {target.username}.")
+        raise FriendError(_("You're already friends with %(username)s.") % {"username": target.username})
     reverse_request = Friendship.objects.filter(
         from_user=target, to_user=user, status=Friendship.Status.PENDING
     ).first()
@@ -50,7 +51,7 @@ def send_request(user, username):
         return reverse_request
     friendship, created = Friendship.objects.get_or_create(from_user=user, to_user=target)
     if not created:
-        raise FriendError(f"You already sent {target.username} a request.")
+        raise FriendError(_("You already sent %(username)s a request.") % {"username": target.username})
     return friendship
 
 
@@ -59,7 +60,7 @@ def accept_request(user, friendship_id):
         pk=friendship_id, to_user=user, status=Friendship.Status.PENDING
     ).first()
     if not friendship:
-        raise FriendError("That request no longer exists.")
+        raise FriendError(_("That request no longer exists."))
     friendship.status = Friendship.Status.ACCEPTED
     friendship.save(update_fields=["status"])
     return friendship
@@ -67,6 +68,6 @@ def accept_request(user, friendship_id):
 
 def remove_friendship(user, friendship_id):
     """Decline a request, cancel one you sent, or remove an accepted friend — all just delete the row."""
-    deleted, _ = Friendship.objects.filter(pk=friendship_id).filter(Q(from_user=user) | Q(to_user=user)).delete()
+    deleted, _counts = Friendship.objects.filter(pk=friendship_id).filter(Q(from_user=user) | Q(to_user=user)).delete()
     if not deleted:
-        raise FriendError("That request no longer exists.")
+        raise FriendError(_("That request no longer exists."))
