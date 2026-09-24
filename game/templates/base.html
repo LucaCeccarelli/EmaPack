@@ -18,7 +18,7 @@
     <nav class="nav">
       <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>Packs</a>
       <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>Collection</a>
-      <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' %}class="active" aria-current="page"{% endif %}>Friends</a>
+      <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}>Friends</a>
       <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}>Propose</a>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="Log out {{ user.username }}">Log out</button></form>
     </nav>

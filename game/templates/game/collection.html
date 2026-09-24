@@ -25,17 +25,10 @@
 {% endwith %}
 <div class="grid">
   {% for card in cards %}
-  {% if owner %}
-  <div class="grid-item" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
-    {% include "game/_card.html" %}
-    {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
-  </div>
-  {% else %}
-  <a class="grid-item" href="{% url 'card_detail' card.pk %}" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+  <a class="grid-item" href="{% if owner %}{% url 'friend_card_detail' owner.username card.pk %}{% else %}{% url 'card_detail' card.pk %}{% endif %}" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
     {% include "game/_card.html" %}
     {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
   </a>
-  {% endif %}
   {% endfor %}
 </div>
 {% endblock %}

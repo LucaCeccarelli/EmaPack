@@ -137,10 +137,17 @@ def collection(request):
 
 
 @login_required
-def card_detail(request, pk):
-    card = get_object_or_404(Card.objects.filter(pulls__user=request.user).distinct(), pk=pk)
-    copies = request.user.pulls.filter(card=card).count()
-    return render(request, "game/card_detail.html", {"card": card, "copies": copies})
+def card_detail(request, pk, username=None):
+    owner = request.user
+    if username is not None:
+        owner = get_object_or_404(User, username__iexact=username)
+        if not friend_logic.are_friends(request.user, owner):
+            raise Http404
+    card = get_object_or_404(Card.objects.filter(pulls__user=owner).distinct(), pk=pk)
+    copies = owner.pulls.filter(card=card).count()
+    return render(request, "game/card_detail.html", {
+        "card": card, "copies": copies, "owner": owner if username is not None else None,
+    })
 
 
 @login_required
