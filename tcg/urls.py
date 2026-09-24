@@ -2,11 +2,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 
 from game import views
 
 urlpatterns = [
+    path("i18n/", include("django.conf.urls.i18n")),
     path("", views.home, name="home"),
     path("packs/open/", views.open_pack_view, name="open_pack"),
     path("collection/", views.collection, name="collection"),
