@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 09:57+0000\n"
+"POT-Creation-Date: 2026-09-24 11:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
+
 #: game/friends.py:40
 #, python-format
 msgid "No player named “%(username)s”."
@@ -83,34 +84,39 @@ msgstr "Aucune carte n'existe encore. Lancez d'abord l'import."
 msgid "Packs"
 msgstr "Packs"
 
-#: game/templates/base.html:21 game/templates/game/card_detail.html:4
+#: game/templates/base.html:21 game/templates/game/card_detail.html:7
 #: game/templates/game/collection.html:2 game/templates/game/collection.html:6
 msgid "Collection"
 msgstr "Collection"
 
 #: game/templates/base.html:22 game/templates/game/friends.html:2
-#: game/templates/game/friends.html:5
+#: game/templates/game/friends.html:25
 msgid "Friends"
 msgstr "Amis"
 
-#: game/templates/base.html:23
+#: game/templates/base.html:23 game/templates/game/leaderboard.html:2
+#: game/templates/game/leaderboard.html:5
+msgid "Leaderboard"
+msgstr "Classement"
+
+#: game/templates/base.html:24
 msgid "Propose"
 msgstr "Proposer"
 
-#: game/templates/base.html:24
+#: game/templates/base.html:25
 #, python-format
 msgid "Log out %(username)s"
 msgstr "Se déconnecter (%(username)s)"
 
-#: game/templates/base.html:24
+#: game/templates/base.html:25
 msgid "Log out"
 msgstr "Déconnexion"
 
-#: game/templates/base.html:30
+#: game/templates/base.html:31
 msgid "Switch to English"
 msgstr "Passer en anglais"
 
-#: game/templates/base.html:31
+#: game/templates/base.html:32
 msgid "Switch to French"
 msgstr "Passer en français"
 
@@ -118,30 +124,36 @@ msgstr "Passer en français"
 msgid "Subs"
 msgstr "Abonnés"
 
-#: game/templates/game/_card.html:9 game/templates/game/card_detail.html:14
+#: game/templates/game/_card.html:9 game/templates/game/card_detail.html:18
 msgid "Posts"
 msgstr "Publications"
 
-#: game/templates/game/_card.html:10 game/templates/game/card_detail.html:15
+#: game/templates/game/_card.html:10 game/templates/game/card_detail.html:19
 msgid "Events"
 msgstr "Événements"
 
-#: game/templates/game/card_detail.html:12
-msgid "Owned"
-msgstr "Possédées"
-
-#: game/templates/game/card_detail.html:13
-msgid "Subscribers"
-msgstr "Abonnés"
-
-#: game/templates/game/card_detail.html:18
-msgid "This page has no presentation yet."
-msgstr "Cette page n'a pas encore de présentation."
-
-#: game/templates/game/collection.html:2 game/templates/game/collection.html:6
+#: game/templates/game/card_detail.html:5 game/templates/game/collection.html:2
+#: game/templates/game/collection.html:6
 #, python-format
 msgid "%(username)s's collection"
 msgstr "Collection de %(username)s"
+
+#: game/templates/game/card_detail.html:16
+#, python-format
+msgid "%(username)s owns"
+msgstr "%(username)s possède"
+
+#: game/templates/game/card_detail.html:16
+msgid "Owned"
+msgstr "Possédées"
+
+#: game/templates/game/card_detail.html:17
+msgid "Subscribers"
+msgstr "Abonnés"
+
+#: game/templates/game/card_detail.html:22
+msgid "This page has no presentation yet."
+msgstr "Cette page n'a pas encore de présentation."
 
 #: game/templates/game/collection.html:7
 #, python-format
@@ -171,55 +183,55 @@ msgstr "Ouvrez votre premier pack pour commencer à collectionner."
 msgid "Open a pack"
 msgstr "Ouvrir un pack"
 
-#: game/templates/game/friends.html:10
+#: game/templates/game/friends.html:30
 msgid "Add a friend"
 msgstr "Ajouter un ami"
 
-#: game/templates/game/friends.html:12
+#: game/templates/game/friends.html:32
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: game/templates/game/friends.html:13
+#: game/templates/game/friends.html:35
 msgid "Send request"
 msgstr "Envoyer la demande"
 
-#: game/templates/game/friends.html:19
+#: game/templates/game/friends.html:41
 msgid "Requests"
 msgstr "Demandes"
 
-#: game/templates/game/friends.html:25
+#: game/templates/game/friends.html:47
 msgid "Accept"
 msgstr "Accepter"
 
-#: game/templates/game/friends.html:26
+#: game/templates/game/friends.html:48
 msgid "Decline"
 msgstr "Refuser"
 
-#: game/templates/game/friends.html:36
+#: game/templates/game/friends.html:58
 msgid "Sent requests"
 msgstr "Demandes envoyées"
 
-#: game/templates/game/friends.html:42
+#: game/templates/game/friends.html:64
 msgid "Pending"
 msgstr "En attente"
 
-#: game/templates/game/friends.html:43
+#: game/templates/game/friends.html:65
 msgid "Cancel"
 msgstr "Annuler"
 
-#: game/templates/game/friends.html:52
+#: game/templates/game/friends.html:74
 msgid "Your friends"
 msgstr "Vos amis"
 
-#: game/templates/game/friends.html:59 game/templates/game/home.html:36
+#: game/templates/game/friends.html:81 game/templates/game/home.html:36
 msgid "View collection"
 msgstr "Voir la collection"
 
-#: game/templates/game/friends.html:60
+#: game/templates/game/friends.html:82
 msgid "Remove"
 msgstr "Retirer"
 
-#: game/templates/game/friends.html:66
+#: game/templates/game/friends.html:88
 msgid "No friends yet — add one above."
 msgstr "Pas encore d'amis — ajoutez-en un ci-dessus."
 
@@ -258,7 +270,8 @@ msgstr "NOUVEAU !"
 
 #: game/templates/game/home.html:17
 msgid "Open a pack: drag across the top edge, or press Enter"
-msgstr "Ouvrir un pack : glissez le long du bord supérieur, ou appuyez sur Entrée"
+msgstr ""
+"Ouvrir un pack : glissez le long du bord supérieur, ou appuyez sur Entrée"
 
 #: game/templates/game/home.html:21
 msgid "Trading Card Game · IMT Alès"
@@ -280,6 +293,20 @@ msgstr "Retour"
 msgid "Skip"
 msgstr "Passer"
 
+#: game/templates/game/leaderboard.html:14
+#, python-format
+msgid "/ %(total)s cards"
+msgstr "/ %(total)s cartes"
+
+#: game/templates/game/leaderboard.html:14
+#, python-format
+msgid "%(pulled)s pulled"
+msgstr "%(pulled)s tirées"
+
+#: game/templates/game/leaderboard.html:19
+msgid "Nobody has opened a pack yet."
+msgstr "Personne n'a encore ouvert de pack."
+
 #: game/templates/game/propose.html:2 game/templates/game/propose.html:6
 msgid "Propose a card"
 msgstr "Proposer une carte"
@@ -299,8 +326,8 @@ msgid ""
 "You already have %(max_pending)s cards waiting for review. Wait for a "
 "decision before proposing another one."
 msgstr ""
-"Vous avez déjà %(max_pending)s cartes en attente de validation. Attendez "
-"une décision avant d'en proposer une autre."
+"Vous avez déjà %(max_pending)s cartes en attente de validation. Attendez une "
+"décision avant d'en proposer une autre."
 
 #: game/templates/game/propose.html:18
 msgid "Identity"
@@ -421,7 +448,8 @@ msgstr "Une courte ligne sous le nom"
 
 #: game/views.py:45
 msgid "Shown on the card's page: what is this club or person about?"
-msgstr "Affiché sur la page de la carte : de quoi parle ce club ou cette personne ?"
+msgstr ""
+"Affiché sur la page de la carte : de quoi parle ce club ou cette personne ?"
 
 #: game/views.py:70
 msgid "Pick a color like #3a3f58."
@@ -432,11 +460,11 @@ msgstr "Choisissez une couleur comme #3a3f58."
 msgid "Image too large (max %(max_mb)s MB)."
 msgstr "Image trop grande (max %(max_mb)s Mo)."
 
-#: game/views.py:153
+#: game/views.py:174
 msgid "Friend request sent!"
 msgstr "Demande d'ami envoyée !"
 
-#: game/views.py:215
+#: game/views.py:253
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"
