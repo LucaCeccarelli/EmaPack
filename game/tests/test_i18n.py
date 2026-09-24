@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import translation
 
-from game.models import User
+from game.models import Rarity, User
 
 
 class I18nInfrastructureTests(TestCase):
@@ -57,3 +58,28 @@ class PackDataAttributesTests(TestCase):
         self.assertContains(response, 'data-msg-tap-to-reveal="Tap to reveal"')
         self.assertContains(response, 'data-msg-swipe-next="Swipe it away, or tap for the next card"')
         self.assertContains(response, 'data-msg-new-badge="NEW!"')
+
+
+class FrenchRenderingTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("ash", password="pw")
+        self.client.force_login(self.user)
+
+    def test_home_renders_in_french_via_accept_language(self):
+        response = self.client.get(reverse("home"), HTTP_ACCEPT_LANGUAGE="fr")
+        self.assertContains(response, "Un pack est prêt !")
+        self.assertContains(response, "Vos cartes obtenues")
+
+    def test_switching_language_via_the_switcher_persists_across_requests(self):
+        self.client.post(reverse("set_language"), {"language": "fr", "next": "/"})
+        response = self.client.get(reverse("friends"))
+        self.assertContains(response, "Amis")
+        self.assertContains(response, "Ajouter un ami")
+
+    def test_rarity_label_is_translated(self):
+        with translation.override("fr"):
+            self.assertEqual(str(Rarity.LEGENDARY.label), "Légendaire")
+
+    def test_english_is_unaffected_by_the_french_catalog(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "A pack is ready!")
