@@ -2,6 +2,8 @@ from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 
+from game.models import User
+
 
 class I18nInfrastructureTests(TestCase):
     def test_locale_middleware_is_installed_between_session_and_common(self):
@@ -17,3 +19,24 @@ class I18nInfrastructureTests(TestCase):
         response = self.client.post(reverse("set_language"), {"language": "fr", "next": "/"})
         self.assertRedirects(response, "/", fetch_redirect_response=False)
         self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
+
+
+class LanguageSwitcherTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("ash", password="pw")
+        self.client.force_login(self.user)
+
+    def test_switcher_posts_to_set_language_with_both_options(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, f'action="{reverse("set_language")}"')
+        self.assertContains(response, 'name="language" value="fr"')
+        self.assertContains(response, 'name="language" value="en"')
+
+    def test_english_is_marked_active_by_default(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, 'value="en" class="active"')
+
+    def test_switcher_is_visible_when_logged_out(self):
+        self.client.logout()
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, f'action="{reverse("set_language")}"')
