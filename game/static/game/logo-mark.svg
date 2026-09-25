@@ -22,7 +22,7 @@
     </clipPath>
   </defs>
 
-  <!-- back card: still dark, but reads clearly against the app's own --bg -->
+  <!-- back card: still dark, but reads clearly against the app's own background -->
   <g transform="rotate(-18 100 150)">
     <rect x="70" y="64" width="60" height="86" rx="9" fill="url(#backGrad)" stroke="#a79fc8" stroke-opacity="0.75" stroke-width="3"/>
   </g>
