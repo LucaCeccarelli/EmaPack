@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.core.validators import MaxLengthValidator
 from django.contrib import messages
 from django.contrib.auth import login
@@ -127,6 +128,46 @@ def open_pack_view(request):
     })
 
 
+COLLECTION_PAGE_SIZE = 24
+
+
+def _render_collection(request, owned_cards, owner=None):
+    """Shared by `collection` and `friend_collection`: search + rarity filter + pagination.
+
+    `owned_cards` is the full (unfiltered) queryset of cards the viewed player owns; its
+    unfiltered count drives the discovery progress bar even when a filter narrows the grid.
+    """
+    q = request.GET.get("q", "").strip()
+    rarity = request.GET.get("rarity", "")
+    cards = owned_cards
+    if q:
+        cards = cards.filter(name__icontains=q)
+    if rarity.isdigit() and int(rarity) in Rarity.values:
+        rarity = int(rarity)
+        cards = cards.filter(rarity=rarity)
+    else:
+        rarity = ""
+
+    page_obj = Paginator(cards, COLLECTION_PAGE_SIZE).get_page(request.GET.get("page"))
+
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    context = {
+        "cards": page_obj,
+        "page_obj": page_obj,
+        "owned": owned_cards.count(),
+        "total": Card.objects.filter(status=Status.APPROVED).count(),
+        "q": q,
+        "rarity": rarity,
+        "rarity_choices": Rarity.choices,
+        "extra_qs": params.urlencode(),
+    }
+    if owner is not None:
+        context["owner"] = owner
+    return render(request, "game/collection.html", context)
+
+
 @login_required
 def collection(request):
     cards = (
@@ -134,8 +175,7 @@ def collection(request):
         .annotate(copies=Count("pulls"))  # counts only this user's pulls: filter comes first
         .order_by("-rarity", "name")
     )
-    total = Card.objects.filter(status=Status.APPROVED).count()
-    return render(request, "game/collection.html", {"cards": cards, "total": total})
+    return _render_collection(request, cards)
 
 
 LEADERBOARD_SIZE = 50
@@ -233,8 +273,7 @@ def friend_collection(request, username):
         .annotate(copies=Count("pulls"))
         .order_by("-rarity", "name")
     )
-    total = Card.objects.filter(status=Status.APPROVED).count()
-    return render(request, "game/collection.html", {"cards": cards, "total": total, "owner": friend})
+    return _render_collection(request, cards, owner=friend)
 
 
 @login_required

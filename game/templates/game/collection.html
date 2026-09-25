@@ -1,7 +1,6 @@
 {% extends "base.html" %}{% load static i18n %}
 {% block title %}{% if owner %}{% blocktrans with username=owner.username %}{{ username }}'s collection{% endblocktrans %}{% else %}{% trans "Collection" %}{% endif %} · Pack Ema{% endblock %}
 {% block content %}
-{% with owned=cards|length %}
 <header class="page-head">
   <h1>{% if owner %}{% blocktrans with username=owner.username %}{{ username }}'s collection{% endblocktrans %}{% else %}{% trans "Collection" %}{% endif %}</h1>
   <div class="progress" role="img" aria-label="{% blocktrans %}{{ owned }} of {{ total }} cards discovered{% endblocktrans %}">
@@ -21,8 +20,25 @@
   <a class="btn" href="{% url 'home' %}">{% trans "Open a pack" %}</a>
   {% endif %}
 </div>
-{% endif %}
-{% endwith %}
+{% else %}
+<form class="panel collection-filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="{% trans 'Search a card…' %}" aria-label="{% trans 'Search a card' %}">
+  <select name="rarity" aria-label="{% trans 'Filter by rarity' %}" onchange="this.form.submit()">
+    <option value="">{% trans "All rarities" %}</option>
+    {% for value, label in rarity_choices %}
+    <option value="{{ value }}"{% if rarity == value %} selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn">{% trans "Search" %}</button>
+  {% if q or rarity %}<a class="btn ghost" href="{% if owner %}{% url 'friend_collection' owner.username %}{% else %}{% url 'collection' %}{% endif %}">{% trans "Clear" %}</a>{% endif %}
+</form>
+{% if not page_obj.paginator.count %}
+<div class="panel empty">
+  <span class="brand-mark big">EMA</span>
+  <h2>{% trans "No cards match" %}</h2>
+  <p class="muted">{% trans "Try a different search or rarity." %}</p>
+</div>
+{% else %}
 <div class="grid">
   {% for card in cards %}
   <a class="grid-item" href="{% if owner %}{% url 'friend_card_detail' owner.username card.pk %}{% else %}{% url 'card_detail' card.pk %}{% endif %}" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
@@ -31,6 +47,19 @@
   </a>
   {% endfor %}
 </div>
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="{% trans 'Pagination' %}">
+  {% if page_obj.has_previous %}
+  <a class="btn ghost small" href="?{% if extra_qs %}{{ extra_qs }}&{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+  {% endif %}
+  <span class="pagination-status">{% blocktrans with number=page_obj.number num_pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ num_pages }}{% endblocktrans %}</span>
+  {% if page_obj.has_next %}
+  <a class="btn ghost small" href="?{% if extra_qs %}{{ extra_qs }}&{% endif %}page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endif %}
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'game/fx.js' %}"></script>
