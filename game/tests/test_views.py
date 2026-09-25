@@ -86,6 +86,43 @@ class GameViewTests(TestCase):
         self.assertNotContains(response, "Not mine")
         self.assertContains(response, "1 of 2 cards discovered")
 
+    def test_collection_search_filters_by_name(self):
+        bde = make_card(name="BDE")
+        chess = make_card(name="Club Échecs")
+        now = timezone.now()
+        Pull.objects.create(user=self.user, card=bde, opened_at=now)
+        Pull.objects.create(user=self.user, card=chess, opened_at=now)
+        response = self.client.get(reverse("collection"), {"q": "chec"})
+        self.assertContains(response, "Club Échecs")
+        self.assertNotContains(response, "BDE")
+        self.assertContains(response, "2 of 2 cards discovered")  # progress ignores the filter
+
+    def test_collection_filters_by_rarity(self):
+        common = make_card(name="BDE", rarity=Rarity.COMMON)
+        rare = make_card(name="Club Robotique", rarity=Rarity.RARE)
+        now = timezone.now()
+        Pull.objects.create(user=self.user, card=common, opened_at=now)
+        Pull.objects.create(user=self.user, card=rare, opened_at=now)
+        response = self.client.get(reverse("collection"), {"rarity": Rarity.RARE})
+        self.assertContains(response, "Club Robotique")
+        self.assertNotContains(response, "BDE")
+
+    def test_collection_search_with_no_match_shows_empty_state(self):
+        Pull.objects.create(user=self.user, card=make_card(name="BDE"), opened_at=timezone.now())
+        response = self.client.get(reverse("collection"), {"q": "nonexistent"})
+        self.assertContains(response, "No cards match")
+
+    def test_collection_paginates(self):
+        now = timezone.now()
+        for i in range(30):
+            Pull.objects.create(user=self.user, card=make_card(name=f"Card {i:02d}"), opened_at=now)
+        page1 = self.client.get(reverse("collection"))
+        self.assertEqual(len(page1.context["page_obj"]), 24)
+        self.assertContains(page1, "Page 1 of 2")
+        page2 = self.client.get(reverse("collection"), {"page": 2})
+        self.assertEqual(len(page2.context["page_obj"]), 6)
+        self.assertContains(page2, "Page 2 of 2")
+
     def test_home_loads_pack_opening(self):
         response = self.client.get(reverse("home"))
         self.assertContains(response, 'id="pack"')

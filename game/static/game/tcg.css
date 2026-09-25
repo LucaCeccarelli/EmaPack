@@ -160,6 +160,13 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .empty { max-width: 420px; margin: 8vh auto; padding: 40px 28px; text-align: center; }
 .empty h2 { margin: 16px 0 4px; }
 .empty .muted { margin: 0 0 20px; }
+.collection-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; margin-bottom: 24px; }
+.collection-filters input[type="search"] { flex: 1 1 220px; padding: 10px 14px; border-radius: 999px; font: inherit; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); }
+.collection-filters select { padding: 10px 14px; border-radius: 999px; font: inherit; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); }
+.collection-filters input:focus, .collection-filters select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+.collection-filters .btn { padding: 10px 22px; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin: 32px 0 8px; }
+.pagination-status { color: var(--muted); font-size: .9rem; }
 .grid { --card-w: 200px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 28px 24px; justify-items: center; }
 @media (max-width: 480px) { .grid { --card-w: 160px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px 12px; } }
 .grid-item { position: relative; text-decoration: none; border-radius: 12px; transition: transform .2s; }

@@ -1,12 +1,12 @@
 # French translations for Pack Ema.
 # Copyright (C) 2026
 # This file is distributed under the same license as the Pack Ema package.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 11:23+0000\n"
+"POT-Creation-Date: 2026-09-25 07:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgid "Packs"
 msgstr "Packs"
 
 #: game/templates/base.html:21 game/templates/game/card_detail.html:7
-#: game/templates/game/collection.html:2 game/templates/game/collection.html:6
+#: game/templates/game/collection.html:2 game/templates/game/collection.html:5
 msgid "Collection"
 msgstr "Collection"
 
@@ -133,7 +133,7 @@ msgid "Events"
 msgstr "Événements"
 
 #: game/templates/game/card_detail.html:5 game/templates/game/collection.html:2
-#: game/templates/game/collection.html:6
+#: game/templates/game/collection.html:5
 #, python-format
 msgid "%(username)s's collection"
 msgstr "Collection de %(username)s"
@@ -155,33 +155,82 @@ msgstr "Abonnés"
 msgid "This page has no presentation yet."
 msgstr "Cette page n'a pas encore de présentation."
 
-#: game/templates/game/collection.html:7
+#: game/templates/game/collection.html:6
 #, python-format
 msgid "%(owned)s of %(total)s cards discovered"
 msgstr "%(owned)s cartes découvertes sur %(total)s"
 
-#: game/templates/game/collection.html:9
+#: game/templates/game/collection.html:8
 #, python-format
 msgid "/ %(total)s discovered"
 msgstr "sur %(total)s"
 
-#: game/templates/game/collection.html:16
-#: game/templates/game/collection.html:19
+#: game/templates/game/collection.html:15
+#: game/templates/game/collection.html:18
 msgid "No cards yet"
 msgstr "Aucune carte pour l'instant"
 
-#: game/templates/game/collection.html:17
+#: game/templates/game/collection.html:16
 #, python-format
 msgid "%(username)s hasn't discovered any cards yet."
 msgstr "%(username)s n'a encore découvert aucune carte."
 
-#: game/templates/game/collection.html:20
+#: game/templates/game/collection.html:19
 msgid "Tear open your first pack to start collecting."
 msgstr "Ouvrez votre premier pack pour commencer à collectionner."
 
-#: game/templates/game/collection.html:21
+#: game/templates/game/collection.html:20
 msgid "Open a pack"
 msgstr "Ouvrir un pack"
+
+#: game/templates/game/collection.html:25
+msgid "Search a card…"
+msgstr "Rechercher une carte…"
+
+#: game/templates/game/collection.html:25
+msgid "Search a card"
+msgstr "Rechercher une carte"
+
+#: game/templates/game/collection.html:26
+msgid "Filter by rarity"
+msgstr "Filtrer par rareté"
+
+#: game/templates/game/collection.html:27
+msgid "All rarities"
+msgstr "Toutes les raretés"
+
+#: game/templates/game/collection.html:32
+msgid "Search"
+msgstr "Rechercher"
+
+#: game/templates/game/collection.html:33
+msgid "Clear"
+msgstr "Réinitialiser"
+
+#: game/templates/game/collection.html:38
+msgid "No cards match"
+msgstr "Aucune carte ne correspond"
+
+#: game/templates/game/collection.html:39
+msgid "Try a different search or rarity."
+msgstr "Essayez une autre recherche ou une autre rareté."
+
+#: game/templates/game/collection.html:51
+msgid "Pagination"
+msgstr "Pagination"
+
+#: game/templates/game/collection.html:53
+msgid "Previous"
+msgstr "Précédent"
+
+#: game/templates/game/collection.html:55
+#, python-format
+msgid "Page %(number)s of %(num_pages)s"
+msgstr "Page %(number)s sur %(num_pages)s"
+
+#: game/templates/game/collection.html:57
+msgid "Next"
+msgstr "Suivant"
 
 #: game/templates/game/friends.html:30
 msgid "Add a friend"
@@ -442,29 +491,29 @@ msgstr "Chaque club et étudiant de l'école, un pack à la fois."
 msgid "Already playing?"
 msgstr "Déjà inscrit ?"
 
-#: game/views.py:44
+#: game/views.py:45
 msgid "A short line under the name"
 msgstr "Une courte ligne sous le nom"
 
-#: game/views.py:45
+#: game/views.py:46
 msgid "Shown on the card's page: what is this club or person about?"
 msgstr ""
 "Affiché sur la page de la carte : de quoi parle ce club ou cette personne ?"
 
-#: game/views.py:70
+#: game/views.py:71
 msgid "Pick a color like #3a3f58."
 msgstr "Choisissez une couleur comme #3a3f58."
 
-#: game/views.py:86
+#: game/views.py:87
 #, python-format
 msgid "Image too large (max %(max_mb)s MB)."
 msgstr "Image trop grande (max %(max_mb)s Mo)."
 
-#: game/views.py:174
+#: game/views.py:214
 msgid "Friend request sent!"
 msgstr "Demande d'ami envoyée !"
 
-#: game/views.py:253
+#: game/views.py:292
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"
