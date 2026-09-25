@@ -11,7 +11,7 @@
 </header>
 {% if not owned %}
 <div class="panel empty">
-  <span class="brand-mark big">EMA</span>
+  <img class="brand-mark big" src="{% static 'game/logo-mark.svg' %}" alt="">
   {% if owner %}
   <h2>{% trans "No cards yet" %}</h2>
   <p class="muted">{% blocktrans with username=owner.username %}{{ username }} hasn't discovered any cards yet.{% endblocktrans %}</p>

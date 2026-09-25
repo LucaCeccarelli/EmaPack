@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load static i18n %}
 {% block title %}{% trans "Log in" %} · Pack Ema{% endblock %}
 {% block content %}
 <form method="post" class="panel form">{% csrf_token %}
-  <span class="brand-mark big">EMA</span>
+  <img class="brand-mark big" src="{% static 'game/logo-mark.svg' %}" alt="">
   <h1>{% trans "Welcome back" %}</h1>
   <p class="muted">{% trans "Your next pack might be waiting." %}</p>
   {{ form.as_div }}
