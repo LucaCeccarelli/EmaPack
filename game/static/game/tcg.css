@@ -47,11 +47,10 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; text-decoration: none; white-space: nowrap; }
 .brand-mark {
-  display: inline-grid; place-items: center; padding: .2em .55em; border-radius: 8px;
-  background: var(--accent-grad); color: #fff; font-weight: 900; font-size: .8rem; letter-spacing: .12em;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+  display: inline-block; width: 1.7em; height: 1.7em; vertical-align: -.4em;
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent));
 }
-.brand-mark.big { font-size: 1.1rem; padding: .35em .8em; border-radius: 10px; }
+.brand-mark.big { display: block; width: 72px; height: 72px; margin: 0 auto 12px; }
 .nav { display: flex; align-items: center; gap: 4px; }
 .nav a, .nav-logout {
   padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;

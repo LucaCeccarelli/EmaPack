@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180">
+  <defs>
+    <linearGradient id="backGrad2" x1="70" y1="64" x2="130" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#463a72"/>
+      <stop offset="1" stop-color="#241c44"/>
+    </linearGradient>
+    <linearGradient id="midGrad2" x1="67" y1="60" x2="133" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5c2758"/>
+      <stop offset="1" stop-color="#33163a"/>
+    </linearGradient>
+    <linearGradient id="rimGrad2" x1="53" y1="38" x2="150" y2="163" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff3d77"/>
+      <stop offset="0.55" stop-color="#ff7a3d"/>
+      <stop offset="1" stop-color="#ffb800"/>
+    </linearGradient>
+    <linearGradient id="cardGrad2" x1="65" y1="52" x2="135" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfc6f0"/>
+    </linearGradient>
+    <clipPath id="cardClip2">
+      <rect x="65" y="52" width="70" height="98" rx="11"/>
+    </clipPath>
+  </defs>
+
+  <g transform="translate(-24,-26) scale(0.85)">
+    <g transform="rotate(-18 100 150)">
+      <rect x="70" y="64" width="60" height="86" rx="9" fill="url(#backGrad2)" stroke="#a79fc8" stroke-opacity="0.75" stroke-width="3"/>
+    </g>
+    <g transform="rotate(-3 100 150)">
+      <rect x="67" y="60" width="66" height="90" rx="9" fill="url(#midGrad2)" stroke="#ff3d77" stroke-width="3.5"/>
+    </g>
+    <g transform="rotate(15 100 150)">
+      <rect x="65" y="52" width="70" height="98" rx="11" fill="url(#cardGrad2)" stroke="#ffb800" stroke-width="5"/>
+      <g clip-path="url(#cardClip2)">
+        <polygon points="53,44 85,44 125,160 93,160" fill="url(#rimGrad2)" opacity="0.55"/>
+        <polygon points="93,44 107,44 147,160 133,160" fill="#ffffff" opacity="0.35"/>
+      </g>
+      <path d="M77 78 l4 -10 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 Z" fill="#ffffff"/>
+      <path d="M109 68 l2.5 -6 2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 Z" fill="#ffffff" opacity="0.8"/>
+    </g>
+  </g>
+
+  <text x="172" y="118" font-family="Outfit, system-ui, sans-serif" font-size="64" font-weight="800" fill="#f5f2ff">Pack <tspan fill="url(#rimGrad2)">Ema</tspan></text>
+</svg>

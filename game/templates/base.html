@@ -8,12 +8,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
   <link rel="stylesheet" href="{% static 'game/tcg.css' %}">
+  <link rel="icon" type="image/svg+xml" href="{% static 'game/logo-mark.svg' %}">
   {% block head %}{% endblock %}
 </head>
 <body>
   {% with here=request.resolver_match.url_name %}
   <header class="topbar">
-    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">EMA</span> Pack Ema</a>
+    <a class="brand" href="{% url 'home' %}"><img class="brand-mark" src="{% static 'game/logo-mark.svg' %}" alt=""> Pack Ema</a>
     <div class="topbar-right">
       {% if user.is_authenticated %}
       <nav class="nav">
