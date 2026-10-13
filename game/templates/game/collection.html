@@ -30,7 +30,12 @@
     {% endfor %}
   </select>
   <button class="btn">{% trans "Search" %}</button>
-  {% if q or rarity %}<a class="btn ghost" href="{% if owner %}{% url 'friend_collection' owner.username %}{% else %}{% url 'collection' %}{% endif %}">{% trans "Clear" %}</a>{% endif %}
+  {% if q or rarity %}<a class="btn ghost" href="?{% if show_all %}show_all=1{% endif %}">{% trans "Clear" %}</a>{% endif %}
+  <label class="switch">
+    <input type="checkbox" name="show_all" value="1" onchange="this.form.submit()"{% if show_all %} checked{% endif %}>
+    <span class="switch-track"><span class="switch-thumb"></span></span>
+    <span class="switch-label">{% trans "Show all cards" %}</span>
+  </label>
 </form>
 {% if not page_obj.paginator.count %}
 <div class="panel empty">
@@ -41,10 +46,16 @@
 {% else %}
 <div class="grid">
   {% for card in cards %}
+  {% if card.copies %}
   <a class="grid-item" href="{% if owner %}{% url 'friend_card_detail' owner.username card.pk %}{% else %}{% url 'card_detail' card.pk %}{% endif %}" aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
     {% include "game/_card.html" %}
     {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
   </a>
+  {% else %}
+  <div class="grid-item locked" aria-label="{% trans 'Not discovered yet' %}">
+    {% include "game/_card.html" %}
+  </div>
+  {% endif %}
   {% endfor %}
 </div>
 {% if page_obj.paginator.num_pages > 1 %}
