@@ -9,6 +9,11 @@ Sign up, open a pack of 5 cards every 10 minutes, and build your collection.
 - The data at the root of the project (not in git):
   - `dump.json` — the dump
   - `images/` — the downloaded pictures (`images/<page id>/<file>`)
+- A `.env` file (not in git — copy it from the template and keep the defaults for local dev):
+
+```bash
+cp .env.example .env
+```
 
 ## Launch
 
@@ -76,4 +81,23 @@ Tests run against PostgreSQL too (Django creates a temporary `test_pack_ema` dat
 docker compose exec web python manage.py test game   # or: uv run python manage.py test game
 ```
 
-> Development setup only (`DEBUG=True`, Django dev server, images served by Django). Don't expose it to the internet as is.
+## Deploying
+
+All config that differs between dev and prod — `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, the
+Postgres credentials — lives in `.env` (see `.env.example`), never in the source. For a real
+deployment:
+
+1. Generate a real secret: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`.
+2. In the server's `.env`: `SECRET_KEY=<that value>`, `DEBUG=False`, `ALLOWED_HOSTS=<your domain>`,
+   and real Postgres credentials.
+3. `docker compose up --build`.
+
+With `DEBUG=False`, the same image automatically switches from the Django dev server to
+`gunicorn`, and from `django.contrib.staticfiles` to WhiteNoise (`collectstatic` runs
+automatically on container start) for serving CSS/JS — see the `Dockerfile` and
+`STORAGES`/`MIDDLEWARE` in `tcg/settings.py`. Card images (`MEDIA_ROOT`) are still served by
+Django itself in every environment — there's no separate media server.
+
+This still isn't a hardened production setup (no TLS termination, no process
+supervisor/orchestration beyond Compose) — treat it as "safe to point a domain at", not
+"internet-scale".
