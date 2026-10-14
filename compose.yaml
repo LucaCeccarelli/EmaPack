@@ -1,16 +1,13 @@
 services:
   db:
     image: postgres:17
-    environment:
-      POSTGRES_DB: pack_ema
-      POSTGRES_USER: pack_ema
-      POSTGRES_PASSWORD: pack_ema  # local dev only
+    env_file: .env  # POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD — see .env.example
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"  # so `uv run` on the host can reach it too
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pack_ema -d pack_ema"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 2s
       timeout: 5s
       retries: 15
@@ -20,10 +17,11 @@ services:
     user: "${UID:-1000}:${GID:-1000}"  # files written to the mounted project stay yours, not root's
     ports:
       - "8000:8000"
+    env_file: .env  # SECRET_KEY / DEBUG / ALLOWED_HOSTS / POSTGRES_* — see .env.example
     environment:
       # Seconds between two packs (600 = 10 min). Override: PACK_COOLDOWN_SECONDS=10 docker compose up
       PACK_COOLDOWN_SECONDS: ${PACK_COOLDOWN_SECONDS:-600}
-      POSTGRES_HOST: db
+      POSTGRES_HOST: db  # overrides .env's POSTGRES_HOST, which targets the non-Docker `uv run` setup
     depends_on:
       db:
         condition: service_healthy
