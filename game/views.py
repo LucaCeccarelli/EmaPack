@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -131,15 +131,25 @@ def open_pack_view(request):
 COLLECTION_PAGE_SIZE = 24
 
 
-def _render_collection(request, owned_cards, owner=None):
+def _render_collection(request, owned_cards, viewer, owner=None):
     """Shared by `collection` and `friend_collection`: search + rarity filter + pagination.
 
-    `owned_cards` is the full (unfiltered) queryset of cards the viewed player owns; its
-    unfiltered count drives the discovery progress bar even when a filter narrows the grid.
+    `owned_cards` is the full (unfiltered) queryset of cards `viewer` owns; its unfiltered
+    count drives the discovery progress bar even when a filter narrows the grid. When
+    `show_all` is on, the grid instead lists every approved card (owned or not) so unowned
+    ones can be rendered grayed-out in the template.
     """
     q = request.GET.get("q", "").strip()
     rarity = request.GET.get("rarity", "")
-    cards = owned_cards
+    show_all = request.GET.get("show_all") == "1"
+    if show_all:
+        cards = (
+            Card.objects.filter(status=Status.APPROVED)
+            .annotate(copies=Count("pulls", filter=Q(pulls__user=viewer)))
+            .order_by("-rarity", "name")
+        )
+    else:
+        cards = owned_cards
     if q:
         cards = cards.filter(name__icontains=q)
     if rarity.isdigit() and int(rarity) in Rarity.values:
@@ -160,6 +170,7 @@ def _render_collection(request, owned_cards, owner=None):
         "total": Card.objects.filter(status=Status.APPROVED).count(),
         "q": q,
         "rarity": rarity,
+        "show_all": show_all,
         "rarity_choices": Rarity.choices,
         "extra_qs": params.urlencode(),
     }
@@ -175,7 +186,7 @@ def collection(request):
         .annotate(copies=Count("pulls"))  # counts only this user's pulls: filter comes first
         .order_by("-rarity", "name")
     )
-    return _render_collection(request, cards)
+    return _render_collection(request, cards, request.user)
 
 
 LEADERBOARD_SIZE = 50
@@ -273,7 +284,7 @@ def friend_collection(request, username):
         .annotate(copies=Count("pulls"))
         .order_by("-rarity", "name")
     )
-    return _render_collection(request, cards, owner=friend)
+    return _render_collection(request, cards, friend, owner=friend)
 
 
 @login_required

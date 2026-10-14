@@ -207,6 +207,14 @@ msgstr "Rechercher"
 msgid "Clear"
 msgstr "Réinitialiser"
 
+#: game/templates/game/collection.html:37
+msgid "Show all cards"
+msgstr "Afficher toutes les cartes"
+
+#: game/templates/game/collection.html:55
+msgid "Not discovered yet"
+msgstr "Pas encore découverte"
+
 #: game/templates/game/collection.html:38
 msgid "No cards match"
 msgstr "Aucune carte ne correspond"
