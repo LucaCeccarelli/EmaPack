@@ -24,4 +24,9 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("admin/", admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # only active when DEBUG
+]
+
+# Always served, not just when DEBUG: there is no separate media server
+# (nginx/S3/...) in front of this app, so Django has to serve card images
+# itself in every environment.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
