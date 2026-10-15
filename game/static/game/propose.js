@@ -7,8 +7,9 @@
 
   // Text: name, tagline, and the initial letter shown when there's no logo.
   const nameEl = $('.card-name'), taglineEl = $('.card-tagline');
+  const defaultName = document.getElementById('preview').dataset.msgDefaultName;
   function updateText() {
-    nameEl.textContent = field('name').value.trim() || 'Your card';
+    nameEl.textContent = field('name').value.trim() || defaultName;
     taglineEl.textContent = field('tagline').value.trim();
     const initial = $('.card-logo span');
     if (initial) initial.textContent = nameEl.textContent[0].toUpperCase();

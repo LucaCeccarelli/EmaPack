@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 07:26+0000\n"
+"POT-Creation-Date: 2026-10-14 06:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,45 +80,49 @@ msgstr "Votre prochain pack n'est pas encore prêt."
 msgid "No cards exist yet. Run the import first."
 msgstr "Aucune carte n'existe encore. Lancez d'abord l'import."
 
-#: game/templates/base.html:20
+#: game/templates/base.html:22
 msgid "Packs"
 msgstr "Packs"
 
-#: game/templates/base.html:21 game/templates/game/card_detail.html:7
+#: game/templates/base.html:23 game/templates/game/card_detail.html:7
 #: game/templates/game/collection.html:2 game/templates/game/collection.html:5
 msgid "Collection"
 msgstr "Collection"
 
-#: game/templates/base.html:22 game/templates/game/friends.html:2
+#: game/templates/base.html:24 game/templates/game/friends.html:2
 #: game/templates/game/friends.html:25
 msgid "Friends"
 msgstr "Amis"
 
-#: game/templates/base.html:23 game/templates/game/leaderboard.html:2
+#: game/templates/base.html:25 game/templates/game/leaderboard.html:2
 #: game/templates/game/leaderboard.html:5
 msgid "Leaderboard"
 msgstr "Classement"
 
-#: game/templates/base.html:24
+#: game/templates/base.html:26
 msgid "Propose"
 msgstr "Proposer"
 
-#: game/templates/base.html:25
+#: game/templates/base.html:27
 #, python-format
 msgid "Log out %(username)s"
 msgstr "Se déconnecter (%(username)s)"
 
-#: game/templates/base.html:25
+#: game/templates/base.html:27
 msgid "Log out"
 msgstr "Déconnexion"
 
-#: game/templates/base.html:31
+#: game/templates/base.html:33
 msgid "Switch to English"
 msgstr "Passer en anglais"
 
-#: game/templates/base.html:32
+#: game/templates/base.html:34
 msgid "Switch to French"
 msgstr "Passer en français"
+
+#: game/templates/base.html:37
+msgid "Menu"
+msgstr "Menu"
 
 #: game/templates/game/_card.html:8
 msgid "Subs"
@@ -443,6 +447,10 @@ msgstr "Envoyer pour validation"
 msgid "Live preview"
 msgstr "Aperçu en direct"
 
+#: game/templates/game/propose.html:64 game/views.py:297
+msgid "Your card"
+msgstr "Votre carte"
+
 #: game/templates/game/propose.html:67
 msgid "Suggested rarity"
 msgstr "Rareté suggérée"
@@ -490,6 +498,10 @@ msgstr "Chaque club et étudiant de l'école, un pack à la fois."
 #: game/templates/registration/signup.html:10
 msgid "Already playing?"
 msgstr "Déjà inscrit ?"
+
+#: game/views.py:44
+msgid "Chess Club"
+msgstr "Club d'échecs"
 
 #: game/views.py:45
 msgid "A short line under the name"

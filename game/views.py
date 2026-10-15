@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
@@ -41,7 +41,7 @@ class ProposalForm(forms.ModelForm):
         model = Card
         fields = ["name", "tagline", "description", "logo", "banner", "primary_color", "secondary_color", "rarity"]
         widgets = {
-            "name": forms.TextInput(attrs={"placeholder": "Club Échecs"}),
+            "name": forms.TextInput(attrs={"placeholder": _("Chess Club")}),
             "tagline": forms.TextInput(attrs={"placeholder": _("A short line under the name")}),
             "description": forms.Textarea(attrs={"rows": 5, "placeholder": _("Shown on the card's page: what is this club or person about?")}),
             "primary_color": forms.TextInput(attrs={"type": "color"}),
@@ -294,7 +294,7 @@ def propose_card(request):
         return redirect("propose_card")
     # Server preview uses only validated text/colors; images are previewed in the browser (never saved ones).
     data = getattr(form, "cleaned_data", {})
-    preview = Card(name=data.get("name") or "Your card", tagline=data.get("tagline", ""),
+    preview = Card(name=data.get("name") or gettext("Your card"), tagline=data.get("tagline", ""),
                    rarity=data.get("rarity") or Rarity.COMMON,
                    primary_color=data.get("primary_color") or "#3a3f58",
                    secondary_color=data.get("secondary_color") or "#1b1e2e")

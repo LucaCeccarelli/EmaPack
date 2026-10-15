@@ -61,7 +61,7 @@
     <button class="btn block" {% if at_limit %}disabled{% endif %}>{% trans "Send for review" %}</button>
   </form>
 
-  <aside class="editor-preview" id="preview" aria-label="{% trans 'Live preview' %}">
+  <aside class="editor-preview" id="preview" aria-label="{% trans 'Live preview' %}" data-msg-default-name="{% trans 'Your card' %}">
     {% include "game/_card.html" with card=preview %}
     <fieldset class="rarity-toggle">
       <legend>{% trans "Suggested rarity" %}</legend>

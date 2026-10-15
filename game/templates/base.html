@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
+  <script>document.documentElement.classList.add('js')</script>
   <link rel="stylesheet" href="{% static 'game/tcg.css' %}">
   <link rel="icon" type="image/svg+xml" href="{% static 'game/logo-mark.svg' %}">
   {% block head %}{% endblock %}
@@ -17,7 +18,7 @@
     <a class="brand" href="{% url 'home' %}"><img class="brand-mark" src="{% static 'game/logo-mark.svg' %}" alt=""> Pack Ema</a>
     <div class="topbar-right">
       {% if user.is_authenticated %}
-      <nav class="nav">
+      <nav class="nav" id="site-nav">
         <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>{% trans "Packs" %}</a>
         <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Collection" %}</a>
         <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Friends" %}</a>
@@ -32,6 +33,11 @@
         <button type="submit" name="language" value="en" class="{% if CURRENT_LANGUAGE == 'en' %}active{% endif %}" aria-label="{% trans 'Switch to English' %}">EN</button>
         <button type="submit" name="language" value="fr" class="{% if CURRENT_LANGUAGE == 'fr' %}active{% endif %}" aria-label="{% trans 'Switch to French' %}">FR</button>
       </form>
+      {% if user.is_authenticated %}
+      <button type="button" class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="{% trans 'Menu' %}">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      {% endif %}
     </div>
   </header>
   {% endwith %}
@@ -39,6 +45,7 @@
     {% for message in messages %}<p class="flash flash-{{ message.tags }}" role="status">{{ message }}</p>{% endfor %}
     {% block content %}{% endblock %}
   </main>
+  {% if user.is_authenticated %}<script src="{% static 'game/nav.js' %}"></script>{% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

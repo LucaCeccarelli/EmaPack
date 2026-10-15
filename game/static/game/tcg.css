@@ -21,9 +21,11 @@
 .rarity-legendary { --rc: var(--legendary); }
 
 * { box-sizing: border-box; }
+/* Reserve the scrollbar's room on every page (no 15px jump between short and long pages), and keep it dark and slim. */
+html { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #4a3f73 var(--bg); }
 [hidden] { display: none !important; }
 body {
-  margin: 0; min-height: 100vh; color: var(--text);
+  margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; color: var(--text);
   background:
     radial-gradient(60rem 40rem at 15% -10%, var(--bg-glow), transparent 70%),
     radial-gradient(50rem 40rem at 110% 110%, var(--bg-glow-2), transparent 70%),
@@ -35,12 +37,12 @@ h1, h2 { line-height: 1.15; letter-spacing: -.01em; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .muted { color: var(--muted); font-weight: 400; }
-main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+main { flex: 1 0 auto; width: 100%; max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
 
 /* ---------- Header ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 10px max(16px, calc((100vw - 1100px) / 2 + 16px));
+  padding: 10px max(16px, calc((100% - 1100px) / 2 + 16px));
   background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap; row-gap: 6px;
@@ -50,7 +52,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
   display: inline-block; width: 1.7em; height: 1.7em; vertical-align: -.4em;
   filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent));
 }
-.brand-mark.big { display: block; width: 72px; height: 72px; margin: 0 auto 12px; }
+.brand-mark.big { display: block; width: 60px; height: 60px; margin: 0 auto 8px; }
 .nav { display: flex; align-items: center; gap: 4px; }
 .nav a, .nav-logout {
   padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;
@@ -60,7 +62,6 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .nav a.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .nav form { margin: 0 0 0 8px; }
 .nav a, .nav-logout { white-space: nowrap; }
-@media (max-width: 480px) { .brand { font-size: 0; gap: 0; } .brand-mark { font-size: .8rem; } .nav { gap: 0; } .nav a, .nav-logout { padding: 7px 8px; font-size: .88rem; } .nav form { margin-left: 0; } }
 
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .lang-switch { display: flex; gap: 2px; margin: 0; }
@@ -70,7 +71,25 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 }
 .lang-switch button:hover { color: var(--text); background: var(--surface-2); }
 .lang-switch button.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-@media (max-width: 480px) { .lang-switch button { padding: 6px 8px; } }
+
+/* Small screens: the links fold into a burger menu (without JS they simply stack under the header). */
+.nav-toggle { display: none; }
+@media (max-width: 860px) {
+  .topbar-right { display: contents; }
+  .brand { margin-right: auto; }
+  .lang-switch { order: 1; }
+  .lang-switch button { padding: 10px 12px; }
+  .js .nav-toggle {
+    order: 2; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 40px;
+    border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; transition: color .15s, background .15s;
+  }
+  .nav-toggle:hover, .nav-toggle[aria-expanded="true"] { color: var(--text); background: var(--surface-2); }
+  .nav { order: 3; flex: 1 0 100%; flex-direction: column; align-items: stretch; gap: 2px; padding: 4px 0 8px; max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px); overflow-y: auto; }
+  .js .nav:not(.open) { display: none; }
+  .nav a, .nav-logout { padding: 12px 14px; text-align: left; }
+  .nav form { margin: 0; }
+  .nav-logout { width: 100%; }
+}
 
 /* ---------- Surfaces, buttons, forms ---------- */
 .panel { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 20px 50px #0006; }
@@ -82,8 +101,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .btn:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 45%, transparent); }
 .btn.ghost { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .btn.block { display: block; width: 100%; }
-.form { max-width: 420px; margin: 6vh auto; padding: 32px 28px; text-align: left; }
-.form h1 { margin: 16px 0 4px; font-size: 1.8rem; }
+.form { max-width: 420px; margin: clamp(0px, 2vh, 24px) auto; padding: 28px; text-align: left; }
+main:has(> .form) { padding-bottom: 32px; }
+.form h1 { margin: 12px 0 4px; font-size: 1.8rem; }
 .form > .muted { margin: 0 0 20px; }
 .form label { display: block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; }
 .form input {
@@ -200,9 +220,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
 .add-friend label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
-.add-friend-row { display: flex; gap: 10px; }
+.add-friend-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .add-friend-row input {
-  flex: 1; padding: 11px 14px; border-radius: 12px; font: inherit;
+  flex: 1 1 200px; min-width: 0; padding: 11px 14px; border-radius: 12px; font: inherit;
   border: 1px solid var(--line-strong); background: var(--bg); color: var(--text);
 }
 .add-friend-row input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }

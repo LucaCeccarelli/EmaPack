@@ -304,6 +304,8 @@
       item.animate([{ transform: 'translateY(40px) scale(.8)', opacity: 0 }, { transform: 'none', opacity: 1 }],
         { duration: dur(400), delay: dur(i * 90), easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'backwards' });
     });
+    // The torn pack has fallen out of view; drop it so its transform doesn't stretch the page (reset() brings it back).
+    packWrap.hidden = true;
     summary.hidden = false;
   }
 
@@ -317,6 +319,7 @@
     skipBtn.hidden = true;
     stage.classList.remove('dim', 'rays');
     packWrap.getAnimations().forEach(a => a.cancel());
+    packWrap.hidden = false;
     pack.classList.remove('torn', 'glowing', 'tearing', 'tear-left');
     pack.style.removeProperty('--glow');
     tearFrom = null;

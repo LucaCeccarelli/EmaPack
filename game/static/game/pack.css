@@ -6,7 +6,9 @@ body:has(.stage)::before { /* dimmer for legendary reveals, toggled via .stage.d
 }
 body:has(.stage.dim)::before { opacity: .75; }
 
-.stage { position: relative; display: grid; place-items: center; min-height: calc(100vh - 90px); }
+/* main is a flex column: the stage takes the room left under the header, so the page never scrolls for nothing. */
+main:has(> .stage) { display: flex; flex-direction: column; }
+.stage { position: relative; flex: 1; display: grid; place-items: center; }
 .stage > .pack-wrap, .stage > .summary { grid-area: 1 / 1; }
 
 /* ---------- The pack ---------- */
