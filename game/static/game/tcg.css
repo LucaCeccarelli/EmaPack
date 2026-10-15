@@ -20,30 +20,53 @@
 .rarity-epic { --rc: var(--epic); }
 .rarity-legendary { --rc: var(--legendary); }
 
+:root {
+  /* Height of the mobile bottom tab bar, incl. the home-indicator safe area —
+     read by any page that needs to keep fixed elements clear of it. Scoped
+     to body:has(.nav) so logged-out pages (login/signup), which render no
+     tab bar at all, don't reserve empty space for one. */
+  --bottom-nav-h: 0px;
+}
+@media (max-width: 600px) {
+  body:has(.nav) { --bottom-nav-h: calc(60px + env(safe-area-inset-bottom)); }
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; min-height: 100vh; color: var(--text);
+  margin: 0; min-height: 100vh; min-height: 100dvh; color: var(--text);
   background:
     radial-gradient(60rem 40rem at 15% -10%, var(--bg-glow), transparent 70%),
     radial-gradient(50rem 40rem at 110% 110%, var(--bg-glow-2), transparent 70%),
     var(--bg);
   background-attachment: fixed;
   font: 16px/1.5 Outfit, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 h1, h2 { line-height: 1.15; letter-spacing: -.01em; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .muted { color: var(--muted); font-weight: 400; }
-main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+main {
+  max-width: 1100px; margin: 0 auto;
+  padding: 24px 16px calc(64px + var(--bottom-nav-h));
+}
 
 /* ---------- Header ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 10px max(16px, calc((100vw - 1100px) / 2 + 16px));
-  background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
+  padding: calc(10px + env(safe-area-inset-top)) max(16px, calc((100vw - 1100px) / 2 + 16px)) 10px;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap; row-gap: 6px;
+}
+/* The blurred background lives on a pseudo-element, not .topbar itself:
+   backdrop-filter on .topbar would make it the containing block for any
+   position:fixed descendant (like .nav below 600px), pinning it to the
+   header instead of the viewport. */
+.topbar::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; text-decoration: none; white-space: nowrap; }
 .brand-mark {
@@ -53,14 +76,34 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .brand-mark.big { display: block; width: 72px; height: 72px; margin: 0 auto 12px; }
 .nav { display: flex; align-items: center; gap: 4px; }
 .nav a, .nav-logout {
-  padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;
+  display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;
   text-decoration: none; background: none; border: 0; cursor: pointer; transition: color .15s, background .15s;
 }
 .nav a:hover, .nav-logout:hover { color: var(--text); background: var(--surface-2); }
 .nav a.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-.nav form { margin: 0 0 0 8px; }
 .nav a, .nav-logout { white-space: nowrap; }
-@media (max-width: 480px) { .brand { font-size: 0; gap: 0; } .brand-mark { font-size: .8rem; } .nav { gap: 0; } .nav a, .nav-logout { padding: 7px 8px; font-size: .88rem; } .nav form { margin-left: 0; } }
+.nav-icon { display: none; }
+
+/* Below 600px the top nav becomes a fixed bottom tab bar (a thumb-friendly,
+   app-like pattern) instead of being squeezed into the header, where 5
+   destinations don't fit next to the brand on an iPhone-width screen. */
+@media (max-width: 600px) {
+  .brand { font-size: 0; gap: 0; }
+  .brand-mark { font-size: .9rem; }
+  .nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 4;
+    justify-content: space-around; gap: 0; margin: 0;
+    background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    padding: 4px max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
+  }
+  .nav a {
+    flex: 1 1 0; flex-direction: column; justify-content: center; gap: 2px;
+    padding: 6px 2px; border-radius: 10px; font-size: .64rem; text-align: center;
+  }
+  .nav-icon { display: block; font-size: 1.25rem; line-height: 1; }
+  .nav-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+}
 
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .lang-switch { display: flex; gap: 2px; margin: 0; }
@@ -70,7 +113,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 }
 .lang-switch button:hover { color: var(--text); background: var(--surface-2); }
 .lang-switch button.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-@media (max-width: 480px) { .lang-switch button { padding: 6px 8px; } }
+@media (max-width: 600px) { .lang-switch button { padding: 6px 8px; } }
 
 /* ---------- Surfaces, buttons, forms ---------- */
 .panel { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 20px 50px #0006; }
@@ -83,6 +126,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .btn.ghost { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .btn.block { display: block; width: 100%; }
 .form { max-width: 420px; margin: 6vh auto; padding: 32px 28px; text-align: left; }
+@media (max-width: 480px) { .form { padding: 24px 20px; } }
 .form h1 { margin: 16px 0 4px; font-size: 1.8rem; }
 .form > .muted { margin: 0 0 20px; }
 .form label { display: block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; }
@@ -150,8 +194,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 
 /* ---------- Collection & detail ---------- */
 .page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
-.page-head h1 { margin: 0; font-size: 2.2rem; font-weight: 900; }
-.progress { flex: 0 1 320px; display: grid; gap: 6px; }
+.page-head h1 { margin: 0; font-size: clamp(1.5rem, 7vw, 2.2rem); font-weight: 900; }
+.progress { flex: 1 1 260px; max-width: 320px; display: grid; gap: 6px; }
 .progress-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
 .progress-bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent-grad); }
 .progress-label { font-size: .9rem; color: var(--muted); text-align: right; }
@@ -160,7 +204,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .empty h2 { margin: 16px 0 4px; }
 .empty .muted { margin: 0 0 20px; }
 .collection-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; margin-bottom: 24px; }
-.collection-filters input[type="search"] { flex: 1 1 220px; padding: 10px 14px; border-radius: 999px; font: inherit; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); }
+.collection-filters input[type="search"] { flex: 1 1 220px; min-width: 0; padding: 10px 14px; border-radius: 999px; font: inherit; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); }
 .collection-filters select { padding: 10px 14px; border-radius: 999px; font: inherit; border: 1px solid var(--line-strong); background: var(--bg); color: var(--text); }
 .collection-filters input:focus, .collection-filters select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
 .collection-filters .btn { padding: 10px 22px; }
@@ -176,6 +220,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .pagination-status { color: var(--muted); font-size: .9rem; }
 .grid { --card-w: 200px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 28px 24px; justify-items: center; }
 @media (max-width: 480px) { .grid { --card-w: 160px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px 12px; } }
+@media (max-width: 600px) { .switch { margin-left: 0; } }
 .grid-item { position: relative; text-decoration: none; border-radius: 12px; transition: transform .2s; }
 .grid-item:hover { transform: translateY(-4px); }
 .grid-item.locked { cursor: default; }
@@ -189,8 +234,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .back { display: inline-block; margin-bottom: 20px; color: var(--muted); text-decoration: none; font-weight: 600; }
 .back:hover { color: var(--text); }
 .detail { --card-w: min(340px, 90vw); display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: center; }
-.detail-text { flex: 1 1 340px; max-width: 640px; padding: 28px; border-top: 3px solid var(--rc); }
-.detail-text h1 { margin: 12px 0 4px; font-size: 2rem; font-weight: 900; }
+.detail-text { flex: 1 1 340px; min-width: 0; max-width: 640px; padding: 28px; border-top: 3px solid var(--rc); }
+.detail-text h1 { margin: 12px 0 4px; font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 900; }
+@media (max-width: 480px) { .detail-text { padding: 20px; } }
 .chip {
   display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
   color: var(--rc); background: color-mix(in srgb, var(--rc) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 45%, transparent);
@@ -209,29 +255,53 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .flash-error { border-color: color-mix(in srgb, var(--danger) 50%, transparent); background: color-mix(in srgb, var(--danger) 12%, var(--surface)); }
 .small { font-size: .85rem; }
 
+/* ---------- Install prompt (mobile "add to home screen") ---------- */
+.install-prompt {
+  position: fixed; left: 12px; right: 12px; z-index: 7;
+  bottom: calc(12px + var(--bottom-nav-h));
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--line-strong); border-radius: 16px; box-shadow: 0 20px 50px #0008;
+  animation: install-prompt-in .3s ease-out;
+}
+@keyframes install-prompt-in { from { transform: translateY(12px); opacity: 0; } }
+.install-prompt-icon { width: 42px; height: 42px; flex: none; border-radius: 10px; }
+.install-prompt-body { flex: 1; min-width: 0; }
+.install-prompt-body strong { display: block; font-size: .95rem; }
+.install-prompt-body p { margin: 2px 0 0; }
+.install-prompt-close {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--surface-2);
+  color: var(--muted); font-size: .85rem; cursor: pointer; transition: color .15s, background .15s;
+}
+.install-prompt-close:hover { color: var(--text); background: var(--line-strong); }
+
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
 .add-friend label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
-.add-friend-row { display: flex; gap: 10px; }
+.add-friend-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .add-friend-row input {
-  flex: 1; padding: 11px 14px; border-radius: 12px; font: inherit;
+  flex: 1 1 160px; min-width: 0; padding: 11px 14px; border-radius: 12px; font: inherit;
   border: 1px solid var(--line-strong); background: var(--bg); color: var(--text);
 }
 .add-friend-row input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
 .friend-list { padding: 20px 24px; margin-bottom: 24px; }
 .friend-list h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .friend-list ul, .friend-list ol { margin: 0; padding: 0; list-style: none; }
-.friend-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.friend-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .friend-list li:first-child { border-top: 0; }
-.friend-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-.rank { min-width: 3ch; font-weight: 800; color: var(--muted); }
+.friend-list li > strong { overflow-wrap: anywhere; }
+.friend-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rank { flex: none; min-width: 3ch; font-weight: 800; color: var(--muted); }
+@media (max-width: 480px) { .friend-list li { padding: 12px 0; } }
 .friend-list li.me .rank, .friend-list li.me > strong { color: var(--accent-2); }
+@media (max-width: 480px) { .friend-actions { margin-left: 0; width: 100%; } }
 .btn.small { padding: 6px 16px; font-size: .85rem; }
 
 /* ---------- Card editor ---------- */
 .page-head p { margin: 8px 0 0; max-width: 60ch; }
 .editor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: start; }
 .editor-form { padding: 24px 28px; }
+@media (max-width: 480px) { .editor-form { padding: 18px 16px; } }
 .editor-form fieldset { margin: 0 0 22px; padding: 0; border: 0; }
 .editor-form legend { margin-bottom: 12px; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .editor-form legend .muted { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
@@ -278,9 +348,10 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .my-proposals { margin-top: 32px; padding: 20px 24px; }
 .my-proposals h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .my-proposals ul { margin: 0; padding: 0; list-style: none; }
-.my-proposals li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.my-proposals li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .my-proposals li:first-child { border-top: 0; }
 .my-proposals .chip { margin-left: auto; }
+@media (max-width: 480px) { .my-proposals .chip { margin-left: 0; } }
 .swatch { width: 28px; height: 28px; flex: none; border-radius: 8px; background: linear-gradient(135deg, var(--c1), var(--c2)); border: 1px solid var(--line-strong); }
 .status-pending { --rc: var(--accent-2); }
 .status-approved { --rc: var(--uncommon); }

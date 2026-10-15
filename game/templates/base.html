@@ -2,13 +2,20 @@
 <html lang="{{ CURRENT_LANGUAGE }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0a18">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pack Ema">
   <title>{% block title %}Pack Ema{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
   <link rel="stylesheet" href="{% static 'game/tcg.css' %}">
+  <link rel="manifest" href="{% static 'game/manifest.json' %}">
   <link rel="icon" type="image/svg+xml" href="{% static 'game/logo-mark.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'game/apple-touch-icon.png' %}">
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -18,13 +25,13 @@
     <div class="topbar-right">
       {% if user.is_authenticated %}
       <nav class="nav">
-        <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}>{% trans "Packs" %}</a>
-        <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Collection" %}</a>
-        <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}>{% trans "Friends" %}</a>
-        <a href="{% url 'leaderboard' %}" {% if here == 'leaderboard' %}class="active" aria-current="page"{% endif %}>{% trans "Leaderboard" %}</a>
-        <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}>{% trans "Propose" %}</a>
-        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="{% blocktrans with username=user.username %}Log out {{ username }}{% endblocktrans %}">{% trans "Log out" %}</button></form>
+        <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">📦</span><span class="nav-label">{% trans "Packs" %}</span></a>
+        <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">🗂️</span><span class="nav-label">{% trans "Collection" %}</span></a>
+        <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">👥</span><span class="nav-label">{% trans "Friends" %}</span></a>
+        <a href="{% url 'leaderboard' %}" {% if here == 'leaderboard' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">🏆</span><span class="nav-label">{% trans "Leaderboard" %}</span></a>
+        <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">✏️</span><span class="nav-label">{% trans "Propose" %}</span></a>
       </nav>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" title="{% blocktrans with username=user.username %}Log out {{ username }}{% endblocktrans %}">{% trans "Log out" %}</button></form>
       {% endif %}
       <form class="lang-switch" method="post" action="{% url 'set_language' %}">
         {% csrf_token %}
@@ -39,6 +46,15 @@
     {% for message in messages %}<p class="flash flash-{{ message.tags }}" role="status">{{ message }}</p>{% endfor %}
     {% block content %}{% endblock %}
   </main>
+  <div id="installPrompt" class="install-prompt" hidden role="dialog" aria-label="{% trans 'Install Pack Ema' %}">
+    <img class="install-prompt-icon" src="{% static 'game/apple-touch-icon.png' %}" alt="">
+    <div class="install-prompt-body">
+      <strong>{% trans "Install Pack Ema" %}</strong>
+      <p id="installPromptText" class="muted small"></p>
+    </div>
+    <button id="installPromptClose" class="install-prompt-close" type="button" aria-label="{% trans 'Close' %}">✕</button>
+  </div>
   {% block scripts %}{% endblock %}
+  <script src="{% static 'game/install-prompt.js' %}" data-msg-ios="{% trans 'Tap Share, then ‘Add to Home Screen’.' %}" data-msg-android="{% trans 'Open the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’.' %}"></script>
 </body>
 </html>
