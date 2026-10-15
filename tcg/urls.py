@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 
 from game import views
 
@@ -28,5 +28,8 @@ urlpatterns = [
 
 # Always served, not just when DEBUG: there is no separate media server
 # (nginx/S3/...) in front of this app, so Django has to serve card images
-# itself in every environment.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# itself in every environment. Not via the `static()` helper: it silently
+# returns no route when DEBUG=False.
+urlpatterns += [
+    re_path(rf"^{settings.MEDIA_URL.lstrip('/')}(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+]
