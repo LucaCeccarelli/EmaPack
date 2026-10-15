@@ -295,6 +295,7 @@ main {
 .page-head p { margin: 8px 0 0; max-width: 60ch; }
 .editor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: start; }
 .editor-form { padding: 24px 28px; }
+@media (max-width: 480px) { .editor-form { padding: 18px 16px; } }
 .editor-form fieldset { margin: 0 0 22px; padding: 0; border: 0; }
 .editor-form legend { margin-bottom: 12px; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .editor-form legend .muted { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
@@ -341,9 +342,10 @@ main {
 .my-proposals { margin-top: 32px; padding: 20px 24px; }
 .my-proposals h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .my-proposals ul { margin: 0; padding: 0; list-style: none; }
-.my-proposals li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.my-proposals li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .my-proposals li:first-child { border-top: 0; }
 .my-proposals .chip { margin-left: auto; }
+@media (max-width: 480px) { .my-proposals .chip { margin-left: 0; } }
 .swatch { width: 28px; height: 28px; flex: none; border-radius: 8px; background: linear-gradient(135deg, var(--c1), var(--c2)); border: 1px solid var(--line-strong); }
 .status-pending { --rc: var(--accent-2); }
 .status-approved { --rc: var(--uncommon); }
