@@ -1,12 +1,12 @@
 # French translations for Pack Ema.
 # Copyright (C) 2026
 # This file is distributed under the same license as the Pack Ema package.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 07:26+0000\n"
+"POT-Creation-Date: 2026-10-15 07:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,45 +80,61 @@ msgstr "Votre prochain pack n'est pas encore prêt."
 msgid "No cards exist yet. Run the import first."
 msgstr "Aucune carte n'existe encore. Lancez d'abord l'import."
 
-#: game/templates/base.html:20
+#: game/templates/base.html:28
 msgid "Packs"
 msgstr "Packs"
 
-#: game/templates/base.html:21 game/templates/game/card_detail.html:7
+#: game/templates/base.html:29 game/templates/game/card_detail.html:7
 #: game/templates/game/collection.html:2 game/templates/game/collection.html:5
 msgid "Collection"
 msgstr "Collection"
 
-#: game/templates/base.html:22 game/templates/game/friends.html:2
+#: game/templates/base.html:30 game/templates/game/friends.html:2
 #: game/templates/game/friends.html:25
 msgid "Friends"
 msgstr "Amis"
 
-#: game/templates/base.html:23 game/templates/game/leaderboard.html:2
+#: game/templates/base.html:31 game/templates/game/leaderboard.html:2
 #: game/templates/game/leaderboard.html:5
 msgid "Leaderboard"
 msgstr "Classement"
 
-#: game/templates/base.html:24
+#: game/templates/base.html:32
 msgid "Propose"
 msgstr "Proposer"
 
-#: game/templates/base.html:25
+#: game/templates/base.html:34
 #, python-format
 msgid "Log out %(username)s"
 msgstr "Se déconnecter (%(username)s)"
 
-#: game/templates/base.html:25
+#: game/templates/base.html:34
 msgid "Log out"
 msgstr "Déconnexion"
 
-#: game/templates/base.html:31
+#: game/templates/base.html:39
 msgid "Switch to English"
 msgstr "Passer en anglais"
 
-#: game/templates/base.html:32
+#: game/templates/base.html:40
 msgid "Switch to French"
 msgstr "Passer en français"
+
+#: game/templates/base.html:49 game/templates/base.html:52
+msgid "Install Pack Ema"
+msgstr "Installer Pack Ema"
+
+#: game/templates/base.html:55
+msgid "Close"
+msgstr "Fermer"
+
+#: game/templates/base.html:58
+msgid "Tap Share, then ‘Add to Home Screen’."
+msgstr "Appuyez sur Partager, puis « Sur l’écran d’accueil »."
+
+#: game/templates/base.html:58
+msgid "Open the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’."
+msgstr "Ouvrez le menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil »."
 
 #: game/templates/game/_card.html:8
 msgid "Subs"
@@ -211,32 +227,32 @@ msgstr "Réinitialiser"
 msgid "Show all cards"
 msgstr "Afficher toutes les cartes"
 
+#: game/templates/game/collection.html:43
+msgid "No cards match"
+msgstr "Aucune carte ne correspond"
+
+#: game/templates/game/collection.html:44
+msgid "Try a different search or rarity."
+msgstr "Essayez une autre recherche ou une autre rareté."
+
 #: game/templates/game/collection.html:55
 msgid "Not discovered yet"
 msgstr "Pas encore découverte"
 
-#: game/templates/game/collection.html:38
-msgid "No cards match"
-msgstr "Aucune carte ne correspond"
-
-#: game/templates/game/collection.html:39
-msgid "Try a different search or rarity."
-msgstr "Essayez une autre recherche ou une autre rareté."
-
-#: game/templates/game/collection.html:51
+#: game/templates/game/collection.html:62
 msgid "Pagination"
 msgstr "Pagination"
 
-#: game/templates/game/collection.html:53
+#: game/templates/game/collection.html:64
 msgid "Previous"
 msgstr "Précédent"
 
-#: game/templates/game/collection.html:55
+#: game/templates/game/collection.html:66
 #, python-format
 msgid "Page %(number)s of %(num_pages)s"
 msgstr "Page %(number)s sur %(num_pages)s"
 
-#: game/templates/game/collection.html:57
+#: game/templates/game/collection.html:68
 msgid "Next"
 msgstr "Suivant"
 
@@ -517,11 +533,11 @@ msgstr "Choisissez une couleur comme #3a3f58."
 msgid "Image too large (max %(max_mb)s MB)."
 msgstr "Image trop grande (max %(max_mb)s Mo)."
 
-#: game/views.py:214
+#: game/views.py:225
 msgid "Friend request sent!"
 msgstr "Demande d'ami envoyée !"
 
-#: game/views.py:292
+#: game/views.py:303
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"
