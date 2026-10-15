@@ -22,11 +22,13 @@
 
 :root {
   /* Height of the mobile bottom tab bar, incl. the home-indicator safe area —
-     read by any page that needs to keep fixed elements clear of it. */
+     read by any page that needs to keep fixed elements clear of it. Scoped
+     to body:has(.nav) so logged-out pages (login/signup), which render no
+     tab bar at all, don't reserve empty space for one. */
   --bottom-nav-h: 0px;
 }
 @media (max-width: 600px) {
-  :root { --bottom-nav-h: calc(60px + env(safe-area-inset-bottom)); }
+  body:has(.nav) { --bottom-nav-h: calc(60px + env(safe-area-inset-bottom)); }
 }
 
 * { box-sizing: border-box; }
@@ -124,6 +126,7 @@ main {
 .btn.ghost { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .btn.block { display: block; width: 100%; }
 .form { max-width: 420px; margin: 6vh auto; padding: 32px 28px; text-align: left; }
+@media (max-width: 480px) { .form { padding: 24px 20px; } }
 .form h1 { margin: 16px 0 4px; font-size: 1.8rem; }
 .form > .muted { margin: 0 0 20px; }
 .form label { display: block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; }
