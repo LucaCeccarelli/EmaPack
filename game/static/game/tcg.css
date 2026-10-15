@@ -55,9 +55,16 @@ main {
 .topbar {
   position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: calc(10px + env(safe-area-inset-top)) max(16px, calc((100vw - 1100px) / 2 + 16px)) 10px;
-  background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap; row-gap: 6px;
+}
+/* The blurred background lives on a pseudo-element, not .topbar itself:
+   backdrop-filter on .topbar would make it the containing block for any
+   position:fixed descendant (like .nav below 600px), pinning it to the
+   header instead of the viewport. */
+.topbar::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; text-decoration: none; white-space: nowrap; }
 .brand-mark {
