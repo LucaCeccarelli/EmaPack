@@ -3,6 +3,10 @@ images/
 komi_pages_dump.json
 *.zip
 db.sqlite3
+# Secrets — never commit, see .env.example
+.env
+# collectstatic output (prod only)
+staticfiles/
 # Python
 .venv/
 __pycache__/

@@ -137,9 +137,31 @@ deploy time, so a stale one keeps serving the old (or missing) translation. The
 `gettext` system package (for `makemessages`/`compilemessages`) is already installed
 in the `Dockerfile`'s image.
 
+## Configuration (`.env`)
+
+`SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` and the `POSTGRES_*` credentials are read from environment
+variables in `tcg/settings.py` (`load_dotenv()` loads `.env` at the project root; `compose.yaml` also
+injects it into both containers via `env_file: .env`). There is no hardcoded fallback for `SECRET_KEY` —
+every environment must have its own `.env` (`cp .env.example .env` for local dev). See `.env.example`
+for the full list and the "Deploying" section of `README.md` for going to production.
+
+`DEBUG` also drives which static-file pipeline and app server run, all inside the same `Dockerfile`/image
+— nothing else to configure:
+
+- `DEBUG=True` (dev): Django's dev server (`runserver`), autoreload, static files served directly by
+  `django.contrib.staticfiles` — unchanged from before this was introduced.
+- `DEBUG=False` (prod): `gunicorn`, with static files `collectstatic`'d into `STATIC_ROOT` and served by
+  WhiteNoise (`STORAGES["staticfiles"]` / `MIDDLEWARE` in `tcg/settings.py`). Forgetting this — e.g.
+  running with `DEBUG=False` the old hardcoded way, with no WhiteNoise/`collectstatic` — is exactly what
+  silently breaks CSS/JS in prod (switches render as raw checkboxes, locked cards don't grey out, etc.)
+  while working fine in dev.
+
+Card images (`MEDIA_ROOT`) are served by Django in every environment, not just when `DEBUG=True` (`tcg/urls.py`)
+— there's no separate media server for this app.
+
 ## Known constraints (intentional, don't "fix" without checking with the user)
 
-- `DEBUG = True` and a hardcoded `SECRET_KEY` in `tcg/settings.py` — README explicitly flags this as
-  development-only.
 - Card selection in `open_pack` uses `order_by("?")`; acceptable at current data volume per the inline
   comment, not an oversight.
+- No TLS termination or process supervisor beyond Compose/gunicorn — "safe to point a domain at", not a
+  hardened internet-scale deployment.

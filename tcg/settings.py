@@ -14,20 +14,24 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+# Loads .env (git-ignored) if present — see .env.example for the variables
+# this project reads. docker compose also injects them via `env_file: .env`.
+load_dotenv(BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nic)&66g8w#o!if(d5zn5k_i30b@&=8)2372r(ft(jl$^np!r_'
+# No hardcoded fallback on purpose: every environment (dev included) must
+# define its own SECRET_KEY in .env — see .env.example.
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
 
 
 # Application definition
@@ -52,6 +56,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if not DEBUG:
+    # Dev serves static files via django.contrib.staticfiles instead (no
+    # STATIC_ROOT/collectstatic needed) — see STORAGES below.
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'tcg.urls'
 
@@ -128,8 +137,28 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
+#
+# Dev (DEBUG=True): served straight from game/static/ by
+# django.contrib.staticfiles, no collectstatic needed — unchanged from before.
+# Prod (DEBUG=False): served by WhiteNoise from STATIC_ROOT, which
+# `collectstatic` populates (see Dockerfile) — there is no separate
+# nginx/CDN in front of this app.
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 
 # Email
