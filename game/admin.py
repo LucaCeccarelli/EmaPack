@@ -15,8 +15,8 @@ def thumb(image):
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
-    list_display = ["name", "rarity", "subscriber_count"]
-    list_filter = ["rarity"]
+    list_display = ["name", "rarity", "subscriber_count", "signature"]
+    list_filter = ["rarity", "signature"]
     search_fields = ["name"]
 
     def get_queryset(self, request):

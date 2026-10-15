@@ -153,3 +153,16 @@ class CommandTests(TestCase):
 
         self.assertEqual(Card.objects.count(), 2)
         self.assertEqual(Pull.objects.get().card.name, "BDE 2027")
+
+    def test_reimport_keeps_signature_rarity_and_stats(self):
+        self.call_import({"clubs": [CLUB], "members": [MEMBER]})
+        Card.objects.filter(komi_id=MEMBER["id"]).update(
+            signature=True, rarity=Rarity.LEGENDARY, subscriber_count=999, post_count=999, event_count=999
+        )
+
+        self.call_import({"clubs": [CLUB], "members": [{**MEMBER, "name": "Alex M."}]})
+
+        card = Card.objects.get(komi_id=MEMBER["id"])
+        self.assertEqual(card.name, "Alex M.")  # the rest still follows the dump
+        self.assertEqual(card.rarity, Rarity.LEGENDARY)
+        self.assertEqual((card.subscriber_count, card.post_count, card.event_count), (999, 999, 999))
