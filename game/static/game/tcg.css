@@ -20,27 +20,41 @@
 .rarity-epic { --rc: var(--epic); }
 .rarity-legendary { --rc: var(--legendary); }
 
+:root {
+  /* Height of the mobile bottom tab bar, incl. the home-indicator safe area —
+     read by any page that needs to keep fixed elements clear of it. */
+  --bottom-nav-h: 0px;
+}
+@media (max-width: 600px) {
+  :root { --bottom-nav-h: calc(60px + env(safe-area-inset-bottom)); }
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; min-height: 100vh; color: var(--text);
+  margin: 0; min-height: 100vh; min-height: 100dvh; color: var(--text);
   background:
     radial-gradient(60rem 40rem at 15% -10%, var(--bg-glow), transparent 70%),
     radial-gradient(50rem 40rem at 110% 110%, var(--bg-glow-2), transparent 70%),
     var(--bg);
   background-attachment: fixed;
   font: 16px/1.5 Outfit, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 h1, h2 { line-height: 1.15; letter-spacing: -.01em; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .muted { color: var(--muted); font-weight: 400; }
-main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+main {
+  max-width: 1100px; margin: 0 auto;
+  padding: 24px 16px calc(64px + var(--bottom-nav-h));
+}
 
 /* ---------- Header ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 10px max(16px, calc((100vw - 1100px) / 2 + 16px));
+  padding: calc(10px + env(safe-area-inset-top)) max(16px, calc((100vw - 1100px) / 2 + 16px)) 10px;
   background: color-mix(in srgb, var(--bg) 75%, transparent); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap; row-gap: 6px;
@@ -53,14 +67,34 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .brand-mark.big { display: block; width: 72px; height: 72px; margin: 0 auto 12px; }
 .nav { display: flex; align-items: center; gap: 4px; }
 .nav a, .nav-logout {
-  padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;
+  display: flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--muted); font: 600 .95rem Outfit, system-ui, sans-serif;
   text-decoration: none; background: none; border: 0; cursor: pointer; transition: color .15s, background .15s;
 }
 .nav a:hover, .nav-logout:hover { color: var(--text); background: var(--surface-2); }
 .nav a.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-.nav form { margin: 0 0 0 8px; }
 .nav a, .nav-logout { white-space: nowrap; }
-@media (max-width: 480px) { .brand { font-size: 0; gap: 0; } .brand-mark { font-size: .8rem; } .nav { gap: 0; } .nav a, .nav-logout { padding: 7px 8px; font-size: .88rem; } .nav form { margin-left: 0; } }
+.nav-icon { display: none; }
+
+/* Below 600px the top nav becomes a fixed bottom tab bar (a thumb-friendly,
+   app-like pattern) instead of being squeezed into the header, where 5
+   destinations don't fit next to the brand on an iPhone-width screen. */
+@media (max-width: 600px) {
+  .brand { font-size: 0; gap: 0; }
+  .brand-mark { font-size: .9rem; }
+  .nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 4;
+    justify-content: space-around; gap: 0; margin: 0;
+    background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    padding: 4px max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
+  }
+  .nav a {
+    flex: 1 1 0; flex-direction: column; justify-content: center; gap: 2px;
+    padding: 6px 2px; border-radius: 10px; font-size: .64rem; text-align: center;
+  }
+  .nav-icon { display: block; font-size: 1.25rem; line-height: 1; }
+  .nav-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+}
 
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .lang-switch { display: flex; gap: 2px; margin: 0; }
@@ -70,7 +104,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 }
 .lang-switch button:hover { color: var(--text); background: var(--surface-2); }
 .lang-switch button.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
-@media (max-width: 480px) { .lang-switch button { padding: 6px 8px; } }
+@media (max-width: 600px) { .lang-switch button { padding: 6px 8px; } }
 
 /* ---------- Surfaces, buttons, forms ---------- */
 .panel { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 20px 50px #0006; }
@@ -208,6 +242,26 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
 .flash-warning { border-color: color-mix(in srgb, var(--accent-2) 50%, transparent); background: color-mix(in srgb, var(--accent-2) 12%, var(--surface)); }
 .flash-error { border-color: color-mix(in srgb, var(--danger) 50%, transparent); background: color-mix(in srgb, var(--danger) 12%, var(--surface)); }
 .small { font-size: .85rem; }
+
+/* ---------- Install prompt (mobile "add to home screen") ---------- */
+.install-prompt {
+  position: fixed; left: 12px; right: 12px; z-index: 7;
+  bottom: calc(12px + var(--bottom-nav-h));
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--line-strong); border-radius: 16px; box-shadow: 0 20px 50px #0008;
+  animation: install-prompt-in .3s ease-out;
+}
+@keyframes install-prompt-in { from { transform: translateY(12px); opacity: 0; } }
+.install-prompt-icon { width: 42px; height: 42px; flex: none; border-radius: 10px; }
+.install-prompt-body { flex: 1; min-width: 0; }
+.install-prompt-body strong { display: block; font-size: .95rem; }
+.install-prompt-body p { margin: 2px 0 0; }
+.install-prompt-close {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--surface-2);
+  color: var(--muted); font-size: .85rem; cursor: pointer; transition: color .15s, background .15s;
+}
+.install-prompt-close:hover { color: var(--text); background: var(--line-strong); }
 
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
