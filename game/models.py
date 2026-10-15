@@ -46,6 +46,8 @@ class Card(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="proposals"
     )
     proposed_at = models.DateTimeField(null=True, blank=True)
+    # Hand-tuned showcase card: gets its own foil, and import_komi leaves its rarity and stats alone.
+    signature = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

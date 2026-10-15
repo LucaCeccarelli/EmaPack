@@ -1,4 +1,4 @@
-{% load i18n %}<article class="card rarity-{{ card.rarity_slug }}" style="--c1: {{ card.primary_color|default:'#3a3f58' }}; --c2: {{ card.secondary_color|default:'#1b1e2e' }}">
+{% load i18n %}<article class="card rarity-{{ card.rarity_slug }}{% if card.signature %} signature{% endif %}" style="--c1: {{ card.primary_color|default:'#3a3f58' }}; --c2: {{ card.secondary_color|default:'#1b1e2e' }}">
   <div class="card-inner">
     <div class="card-art">{% if card.banner %}<img src="{{ card.banner.url }}" alt="" loading="lazy">{% endif %}</div>
     <div class="card-logo">{% if card.logo %}<img src="{{ card.logo.url }}" alt="" loading="lazy">{% else %}<span>{{ card.name|slice:":1"|upper }}</span>{% endif %}</div>

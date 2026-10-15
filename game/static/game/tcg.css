@@ -192,6 +192,64 @@ main {
   mix-blend-mode: color-dodge; opacity: calc(.45 + var(--hyp) * .55);
 }
 
+/* Signature card: a one-off showcase. Spinning prismatic frame, aurora art, gold foil name. */
+@property --spin { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+.card.signature { --prism: #ffd700, #ff3d77, #b35cff, #3aa0ff, #3ddc84, #ffd700; }
+.signature .card-inner {
+  border-color: transparent;
+  background:
+    linear-gradient(160deg, var(--c1), var(--c2)) padding-box,
+    conic-gradient(from var(--spin), var(--prism)) border-box;
+  box-shadow: 0 10px 30px #0009,
+    0 0 calc(var(--card-w, 250px) / 8) #ffd70099,
+    0 0 calc(var(--card-w, 250px) / 4) #ff3d7755;
+  animation: sig-spin 4s linear infinite, sig-pulse 2.4s ease-in-out infinite;
+}
+@keyframes sig-spin { to { --spin: 360deg; } }
+@keyframes sig-pulse { 50% { box-shadow: 0 10px 30px #0009, 0 0 calc(var(--card-w, 250px) / 5) #ffd700cc, 0 0 calc(var(--card-w, 250px) / 2.5) #b35cff77; } }
+.signature .card-art { position: relative; box-shadow: inset 0 0 0 2px #ffd700aa; }
+.signature .card-art::after { /* aurora drifting over the banner */
+  content: ''; position: absolute; inset: 0; mix-blend-mode: color-dodge; opacity: .55;
+  background: linear-gradient(120deg, transparent 20%, #ff3d7788, #ffd70088, #3aa0ff88, transparent 80%) 0 0 / 300% 100%;
+  animation: sig-aurora 6s ease-in-out infinite alternate;
+}
+@keyframes sig-aurora { to { background-position: 100% 0; } }
+.signature .card-logo {
+  border: 0; padding: 4%;
+  background: conic-gradient(from calc(var(--spin) * -2), var(--prism));
+  box-shadow: 0 0 0 2px #fff8, 0 0 18px #ffd700;
+}
+.signature .card-logo img { border-radius: 50%; }
+.signature .card-name {
+  background: linear-gradient(90deg, #fff6c8, #ffd700, #ff9ec4, #fff, #ffd700, #fff6c8) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 1px 2px #000c) drop-shadow(0 0 6px #ffd70088);
+  animation: sig-name 3s linear infinite;
+}
+@keyframes sig-name { to { background-position: 200% 0; } }
+.signature .card-stats { background: linear-gradient(90deg, #0007, #ffd70033, #0007); box-shadow: inset 0 0 0 1px #ffd70066; }
+.signature .card-stats dd { color: #ffe680; text-shadow: 0 0 8px #ffd700; }
+.signature .card-rarity {
+  background: conic-gradient(from var(--spin), var(--prism)); color: #fff;
+  text-shadow: 0 1px 2px #000a; box-shadow: 0 0 10px #ffd700;
+}
+.signature .card-rarity::before { content: '★ '; }
+.signature .card-shine {
+  background:
+    radial-gradient(circle, #fff 0 1px, transparent 1.6px) 0 0 / 11px 11px,
+    radial-gradient(circle, #ffe680 0 1px, transparent 1.6px) 5px 7px / 17px 17px,
+    linear-gradient(115deg, #ff008070, #ffd70080, #00ff9d70, #00c3ff70, #b000ff70, #ff008070) var(--mx) var(--my) / 400% 400%;
+  mix-blend-mode: color-dodge; opacity: calc(.5 + var(--hyp) * .5);
+  animation: sig-twinkle 1.6s ease-in-out infinite alternate;
+}
+@keyframes sig-twinkle { to { filter: brightness(1.6) hue-rotate(40deg); } }
+.signature .card-inner::after { /* periodic sheen sweeping across the whole card */
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; mix-blend-mode: overlay;
+  background: linear-gradient(105deg, transparent 40%, #fffd 50%, transparent 60%) -200% 0 / 250% 100% no-repeat;
+  animation: sig-sheen 3.5s ease-in-out infinite;
+}
+@keyframes sig-sheen { 60%, 100% { background-position: 200% 0; } }
+
 /* ---------- Collection & detail ---------- */
 .page-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-head h1 { margin: 0; font-size: clamp(1.5rem, 7vw, 2.2rem); font-weight: 900; }
@@ -364,4 +422,6 @@ main {
 
 @media (prefers-reduced-motion: reduce) {
   .card-inner { transition: none; }
+  .signature .card-inner, .signature .card-inner::after, .signature .card-art::after,
+  .signature .card-name, .signature .card-shine { animation: none; }
 }

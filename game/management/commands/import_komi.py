@@ -14,6 +14,8 @@ HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
 
 # Minimum share of cards with strictly fewer subscribers needed for each rarity, best first.
 # Rank-based because subscriber counts are extremely skewed (median 1, max 769).
+STAT_FIELDS = ["subscriber_count", "post_count", "event_count"]
+
 RARITY_THRESHOLDS = [
     (0.99, Rarity.LEGENDARY),
     (0.95, Rarity.EPIC),
@@ -71,8 +73,10 @@ def rarity_for(count, sorted_counts):
 
 
 def assign_rarities():
-    # Only imported Komi cards are ranked; proposed cards keep the rarity the admin gave them.
-    cards = list(Card.objects.filter(komi_id__isnull=False).only("id", "subscriber_count"))
+    # Only imported Komi cards are ranked; proposed and signature cards keep the rarity they were given.
+    cards = list(
+        Card.objects.filter(komi_id__isnull=False, signature=False).only("id", "subscriber_count")
+    )
     counts = sorted(card.subscriber_count for card in cards)
     for card in cards:
         card.rarity = rarity_for(card.subscriber_count, counts)
@@ -89,8 +93,13 @@ class Command(BaseCommand):
     def handle(self, dump, **options):
         data = json.loads(dump.read_text(encoding="utf-8"))
         records = data.get("clubs", []) + data.get("members", [])
+        signatures = {str(k) for k in Card.objects.filter(signature=True).values_list("komi_id", flat=True)}
         for record in records:
-            Card.objects.update_or_create(komi_id=record["id"], defaults=card_fields(record))
+            fields = card_fields(record)
+            if record["id"] in signatures:  # hand-tuned stats: keep them
+                for name in STAT_FIELDS:
+                    del fields[name]
+            Card.objects.update_or_create(komi_id=record["id"], defaults=fields)
         assign_rarities()
         tally = {r.label: Card.objects.filter(rarity=r).count() for r in Rarity}
         self.stdout.write(self.style.SUCCESS(f"Imported {len(records)} cards. Rarities: {tally}"))
