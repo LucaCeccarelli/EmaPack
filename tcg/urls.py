@@ -1,3 +1,5 @@
+import mimetypes
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
@@ -30,6 +32,10 @@ urlpatterns = [
 # (nginx/S3/...) in front of this app, so Django has to serve card images
 # itself in every environment. Not via the `static()` helper: it silently
 # returns no route when DEBUG=False.
+# Python < 3.13 doesn't know .webp, and the slim image has no /etc/mime.types:
+# without this, ~2k Komi images go out as application/octet-stream, which
+# browsers refuse to render (SecurityMiddleware sends nosniff).
+mimetypes.add_type("image/webp", ".webp")
 urlpatterns += [
     re_path(rf"^{settings.MEDIA_URL.lstrip('/')}(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
