@@ -6,7 +6,17 @@ body:has(.stage)::before { /* dimmer for legendary reveals, toggled via .stage.d
 }
 body:has(.stage.dim)::before { opacity: .75; }
 
-.stage { position: relative; display: grid; place-items: center; min-height: calc(100vh - 90px); }
+/* Keep the bottom tab bar out of the way (and out of accidental taps) while
+   a card reveal covers the screen — it would otherwise poke through the
+   legendary dimmer, which sits below the fixed nav's own stacking context. */
+@media (max-width: 600px) {
+  body:has(#reveal:not([hidden])) .nav { display: none; }
+}
+
+.stage {
+  position: relative; display: grid; place-items: center;
+  min-height: calc(100dvh - 90px - var(--bottom-nav-h) - env(safe-area-inset-top));
+}
 .stage > .pack-wrap, .stage > .summary { grid-area: 1 / 1; }
 
 /* ---------- The pack ---------- */
@@ -84,7 +94,10 @@ body:has(.stage.dim)::before { opacity: .75; }
 .flip.hinting .flip-back { animation: hint-pulse 1.3s ease-in-out infinite; }
 @keyframes hint-pulse { 50% { filter: drop-shadow(0 0 14px var(--rc)) drop-shadow(0 0 30px var(--rc)); } }
 .flip.revealed { cursor: grab; }
-.reveal-hint { position: fixed; bottom: 28px; left: 0; right: 0; margin: 0; text-align: center; color: #fffc; font-weight: 600; text-shadow: 0 1px 4px #000; pointer-events: none; z-index: 6; }
+.reveal-hint {
+  position: fixed; bottom: calc(28px + var(--bottom-nav-h)); left: 0; right: 0; margin: 0;
+  text-align: center; color: #fffc; font-weight: 600; text-shadow: 0 1px 4px #000; pointer-events: none; z-index: 6;
+}
 .flip-inner { position: relative; width: var(--card-w); aspect-ratio: 63 / 88; transform-style: preserve-3d; }
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; }
 .flip-front { transform: rotateY(180deg); }
@@ -102,7 +115,7 @@ body:has(.stage.dim)::before { opacity: .75; }
   animation: pop .45s cubic-bezier(.2, 1.8, .4, 1);
 }
 @keyframes pop { from { transform: scale(0) rotate(-12deg); } }
-.skip { position: fixed; right: 24px; bottom: 24px; z-index: 6; }
+.skip { position: fixed; right: max(24px, env(safe-area-inset-right)); bottom: calc(24px + var(--bottom-nav-h)); z-index: 6; }
 
 /* ---------- Summary ---------- */
 .summary { --card-w: min(180px, 42vw); text-align: center; }
