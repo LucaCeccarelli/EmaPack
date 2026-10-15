@@ -33,6 +33,12 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
 
+# Comma-separated full origins, e.g. CSRF_TRUSTED_ORIGINS=https://example.com — needed for
+# form POSTs (login, signup, ...) when served over HTTPS behind a reverse proxy.
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+
 
 # Application definition
 

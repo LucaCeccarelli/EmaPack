@@ -10,6 +10,9 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 COPY . .
+# Without the bind mount (prod stack), /app is root-owned: let the non-root
+# runtime UID write collectstatic output and player uploads.
+RUN mkdir -p staticfiles images && chown 1000:1000 staticfiles images
 EXPOSE 8000
 # Dev (DEBUG=True in .env): Django's dev server, autoreload, static files served
 # straight from game/static/ by django.contrib.staticfiles.
