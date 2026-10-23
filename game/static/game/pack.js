@@ -5,7 +5,7 @@
   const csrf = stage.querySelector('[name=csrfmiddlewaretoken]').value;
   const {
     msgReady, msgNextIn, msgSessionExpired, msgGenericError,
-    msgOpenFailed, msgTapToReveal, msgSwipeNext, msgNewBadge,
+    msgOpenFailed, msgTapToReveal, msgHoldToCharge, msgSwipeNext, msgNewBadge,
   } = stage.dataset;
   const COLOR = { 1: '#dfe5f5', 2: '#3ddc84', 3: '#3aa0ff', 4: '#b35cff', 5: '#ffb800' };
   const SOUND = { 3: 'rare', 4: 'epic', 5: 'legendary' };
@@ -172,6 +172,61 @@
   });
   skipBtn.addEventListener('click', () => { skip = true; tap(); });
 
+  // Press feedback on the face-down card waiting for its tap.
+  let current = null;
+  reveal.addEventListener('pointerdown', () => {
+    if (!current || !pendingTap) return;
+    current.classList.add('pressed');
+    FX.sound('tick');
+    FX.buzz(8);
+  });
+  const unpress = () => current?.classList.remove('pressed');
+  addEventListener('pointerup', unpress);
+  addEventListener('pointercancel', unpress);
+
+  // Rare+ cards: keep the finger down to build the charge yourself; releasing (or a full charge) flips it.
+  // Resolves true if charged by hand, false on a quick tap / Enter / Skip (flip() then runs the charge itself).
+  function holdToCharge(el, c) {
+    if (skip) return Promise.resolve(false);
+    return new Promise(res => {
+      const inner = el.querySelector('.flip-inner'), FULL = 600 + c.rarity * 200;
+      let t0 = 0, raf = 0, lastBuzz = 0;
+      const done = charged => {
+        cancelAnimationFrame(raf);
+        reveal.removeEventListener('pointerdown', down);
+        removeEventListener('pointerup', up);
+        removeEventListener('pointercancel', up);
+        inner.style.translate = '';
+        el.style.removeProperty('--charge');
+        pendingTap = null;
+        res(charged);
+      };
+      const loop = now => {
+        const p = Math.min((now - t0) / FULL, 1), amp = FX.reduced ? 0 : p * c.rarity * 2;
+        inner.style.translate = `${(Math.random() - 0.5) * 2 * amp}px ${(Math.random() - 0.5) * 2 * amp}px`;
+        el.style.setProperty('--charge', p);
+        if (now - lastBuzz > 160 - p * 100) { FX.buzz(6); lastBuzz = now; } // ticks speed up as it fills
+        if (c.rarity === 5 && p > 0.5) stage.classList.add('dim', 'rays');
+        if (p >= 1) return done(true);
+        raf = requestAnimationFrame(loop);
+      };
+      const down = () => {
+        if (t0) return;
+        t0 = performance.now();
+        $('revealHint').textContent = '';
+        el.classList.remove('hinting');
+        el.classList.add('charging');
+        FX.sound('charge');
+        raf = requestAnimationFrame(loop);
+      };
+      const up = () => { if (t0) done(performance.now() - t0 > 250); };
+      pendingTap = () => done(false);
+      reveal.addEventListener('pointerdown', down);
+      addEventListener('pointerup', up);
+      addEventListener('pointercancel', up);
+    });
+  }
+
   async function revealAll(cards, els) {
     reveal.hidden = false;
     skipBtn.hidden = false;
@@ -198,31 +253,54 @@
        { transform: `translateY(${i * -3}px) rotate(${(i - 2) * 1.5}deg)` }],
       { duration: dur(550), delay: dur(i * 40), easing: 'cubic-bezier(.3,1.3,.4,1)', fill: 'both' }).finished));
     const hintText = $('revealHint');
+    let held = false; // has the player charged a card by hand yet? (stop explaining it once they have)
     for (const [i, c] of cards.entries()) {
-      hintText.textContent = i === 0 ? msgTapToReveal : '';
-      if (c.rarity >= 3) els[i].classList.add('hinting'); // Hearthstone-style: the back glows its rarity color
-      await nextTap();
-      await flip(els[i], c);
+      let charged = false;
+      if (i > 0) { // the first card comes face up straight away
+        current = els[i];
+        if (c.rarity >= 3) {
+          els[i].classList.add('hinting'); // Hearthstone-style: the back glows its rarity color
+          hintText.textContent = held ? '' : msgHoldToCharge;
+          charged = await holdToCharge(els[i], c);
+          held ||= charged;
+        } else {
+          hintText.textContent = i === 1 ? msgTapToReveal : '';
+          await nextTap();
+        }
+        current = null;
+      }
+      hintText.textContent = '';
+      await flip(els[i], c, charged);
       hintText.textContent = i === 0 ? msgSwipeNext : '';
       const dir = await swipeOrTap(els[i]);
+      FX.sound('whoosh');
+      els[i + 1]?.animate([{ scale: 0.94 }, { scale: 1 }], { duration: dur(300), easing: 'cubic-bezier(.3,1.6,.5,1)' }); // next card steps up
       await flyAway(els[i], i, dir);
     }
     showSummary(cards);
   }
 
-  async function flip(el, c) {
+  async function flip(el, c, charged = false) {
     const inner = el.querySelector('.flip-inner'), card = el.querySelector('.card');
-    el.classList.remove('hinting');
+    el.classList.remove('hinting', 'pressed');
     if (c.rarity >= 3 && !skip) { // anticipation: the aura builds, better cards tremble harder
       el.classList.add('charging');
-      FX.sound('charge');
-      if (c.rarity === 5) { stage.classList.add('dim', 'rays'); await wait(700); }
-      await FX.shake(inner, c.rarity * 2, 300 + c.rarity * 150);
+      if (c.rarity === 5) stage.classList.add('dim', 'rays');
+      if (!charged) { // a quick tap: run the charge for them
+        FX.sound('charge');
+        if (c.rarity === 5) await wait(700);
+        await FX.shake(inner, c.rarity * 2, 300 + c.rarity * 150);
+      }
     }
     FX.sound('flip');
-    const ms = c.rarity === 5 ? 1400 : c.rarity >= 3 ? 800 : 450;
+    const ms = { 1: 500, 2: 600, 3: 800, 4: 1000, 5: 1400 }[c.rarity];
+    // lift off, overshoot the turn, then land with a small bounce
     await inner.animate(
-      [{ transform: 'rotateY(0)' }, { transform: 'rotateY(200deg) scale(1.1)', offset: 0.7 }, { transform: 'rotateY(180deg)' }],
+      [{ transform: 'rotateY(0)' },
+       { transform: 'rotateY(110deg) scale(1.12)', offset: 0.45 },
+       { transform: 'rotateY(192deg) scale(1.04)', offset: 0.75 },
+       { transform: 'rotateY(177deg) scale(.98)', offset: 0.9 },
+       { transform: 'rotateY(180deg)' }],
       { duration: dur(ms), easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' }).finished;
     el.classList.remove('charging');
     el.classList.add('revealed');
@@ -232,7 +310,8 @@
 
     const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
     const color = COLOR[c.rarity];
-    if (c.rarity >= 2) FX.burst(x, y, color, 25 * c.rarity, 3 + c.rarity * 2);
+    if (c.rarity === 2) { FX.burst(x, y, color, 16, 4); FX.sound('uncommon'); } // a small nod, saving the show for Rare+
+    if (c.rarity >= 3) FX.burst(x, y, color, 25 * c.rarity, 3 + c.rarity * 2);
     if (c.rarity >= 3) {
       FX.sound(SOUND[c.rarity]);
       FX.buzz(c.rarity === 5 ? [60, 40, 60, 40, 160] : c.rarity === 4 ? [50, 30, 90] : 40);

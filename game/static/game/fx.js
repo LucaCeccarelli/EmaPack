@@ -116,6 +116,9 @@ window.FX = (() => {
   const sounds = {
     tear: () => noise(0.4),
     flip: () => tone(420, 0.09, 'triangle', 0.08, 0, 900),
+    tick: () => tone(1400, 0.03, 'square', 0.025),
+    whoosh: () => noise(0.22, 0.06),
+    uncommon: () => chord([659, 988], 'sine', 0.06, 0.3),
     charge: () => tone(160, 0.9, 'sawtooth', 0.04, 0, 900),
     rare: () => chord([523, 659, 784], 'sine', 0.07, 0.5),
     epic: () => chord([523, 659, 784, 1047], 'triangle', 0.08, 0.7),
