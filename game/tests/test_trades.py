@@ -166,3 +166,10 @@ class TradeViewTests(TestCase):
     def test_accept_and_remove_reject_get(self):
         self.assertEqual(self.client.get(reverse("trade_accept", args=[1])).status_code, 405)
         self.assertEqual(self.client.get(reverse("trade_remove", args=[1])).status_code, 405)
+
+    def test_trade_offer_is_translated(self):
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.gary)
+        response = self.client.get(reverse("friends"), HTTP_ACCEPT_LANGUAGE="fr")
+        self.assertContains(response, "Offres d'échange")
+        self.assertContains(response, "<strong>ash</strong> donne : BDE (Commune) · vous donnez : rien")
