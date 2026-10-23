@@ -17,7 +17,7 @@ from django.views.decorators.http import require_POST
 from . import friends as friend_logic
 from . import trades as trade_logic
 from .management.commands.import_komi import HEX_COLOR
-from .models import Card, Friendship, Rarity, Status, User
+from .models import Card, Friendship, Rarity, Status, Trade, User
 from .packs import PackUnavailable, open_pack
 
 
@@ -300,19 +300,25 @@ def trade_new(request, username):
     friend = get_object_or_404(User, username__iexact=username)
     if not friend_logic.are_friends(request.user, friend):
         raise Http404
+    # ?counter=<id>: answering an offer this friend sent us. Gone (accepted, cancelled)? Then it's a plain offer.
+    counter_id = request.GET.get("counter") or request.POST.get("counter") or ""
+    counter = counter_id.isdigit() and Trade.objects.filter(pk=counter_id, from_user=friend, to_user=request.user).first()
     offered, requested = _ids(request.POST.getlist("offered")), _ids(request.POST.getlist("requested"))
     if request.method == "POST":
         try:
             trade_logic.propose_trade(request.user, friend.username, request.POST.getlist("offered"),
-                                      request.POST.getlist("requested"))
-            messages.success(request, _("Trade offer sent!"))
+                                      request.POST.getlist("requested"), replaces=counter and counter.pk)
+            messages.success(request, _("Counter-offer sent!") if counter else _("Trade offer sent!"))
             return redirect("friends")
         except trade_logic.TradeError as e:
             messages.error(request, str(e))  # re-render with the boxes still ticked
+    elif counter:  # start from their offer, flipped: what they asked for is what we'd give
+        offered = set(counter.requested.values_list("pk", flat=True))
+        requested = set(counter.offered.values_list("pk", flat=True))
     else:
         requested = _ids(request.GET.getlist("want"))  # "Propose a trade" from one of the friend's cards
     return render(request, "game/trade.html", {
-        "friend": friend, "offered": offered, "requested": requested,
+        "friend": friend, "offered": offered, "requested": requested, "counter": counter,
         # Same shape as the collection grid: per-owner copy count, rarest first.
         "my_cards": Card.objects.filter(pulls__user=request.user).annotate(copies=Count("pulls")).order_by("-rarity", "name"),
         "their_cards": Card.objects.filter(pulls__user=friend).annotate(copies=Count("pulls")).order_by("-rarity", "name"),

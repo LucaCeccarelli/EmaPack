@@ -1,9 +1,14 @@
 {% extends "base.html" %}{% load i18n %}
-{% block title %}{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %} · Pack Ema{% endblock %}
+{% block title %}{% if counter %}{% blocktrans with username=friend.username %}Counter-offer to {{ username }}{% endblocktrans %}{% else %}{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %}{% endif %} · Pack Ema{% endblock %}
 {% block content %}
 <a class="back" href="{% url 'friends' %}">← {% trans "Friends" %}</a>
 <header class="page-head">
+  {% if counter %}
+  <h1>{% blocktrans with username=friend.username %}Counter-offer to {{ username }}{% endblocktrans %}</h1>
+  <p class="muted">{% blocktrans with username=friend.username %}Starts from {{ username }}'s offer. Change the cards, then send: it replaces their offer.{% endblocktrans %}</p>
+  {% else %}
   <h1>{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %}</h1>
+  {% endif %}
 </header>
 <div class="trade">
 {# CSS-only tabs: the radios sit outside the form so they're never submitted. #}
@@ -17,6 +22,7 @@
 </div>
 <form method="post">
   {% csrf_token %}
+  {% if counter %}<input type="hidden" name="counter" value="{{ counter.pk }}">{% endif %}
   <fieldset class="panel trade-side trade-mine">
     <legend>{% trans "You give" %}</legend>
     {% if my_cards %}
@@ -50,7 +56,7 @@
     {% endif %}
   </fieldset>
   <div class="trade-submit">
-    <button class="btn">{% trans "Send offer" %}</button>
+    <button class="btn">{% if counter %}{% trans "Send counter-offer" %}{% else %}{% trans "Send offer" %}{% endif %}</button>
     <div>
       <p id="trade-summary" class="trade-summary" aria-live="polite" data-msg-side="{% trans '{side}: {cards}' %}" data-msg-nothing="{% trans 'nothing' %}"></p>
       <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>

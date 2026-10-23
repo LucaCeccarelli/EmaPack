@@ -20,8 +20,11 @@ def _owned(owner, ids):
     return cards if len(cards) == len(ids) else None
 
 
-def propose_trade(user, friend_username, offered_ids, requested_ids):
-    """`user` offers one copy of each `offered_ids` card for one copy of each of the friend's `requested_ids`."""
+def propose_trade(user, friend_username, offered_ids, requested_ids, replaces=None):
+    """`user` offers one copy of each `offered_ids` card for one copy of each of the friend's `requested_ids`.
+
+    `replaces`: id of an offer the friend sent `user`; this new one is a counter-offer and supersedes it.
+    """
     friend = User.objects.filter(username__iexact=friend_username).first()
     if not friend or not are_friends(user, friend):
         raise TradeError(_("You can only trade with your friends."))
@@ -33,9 +36,12 @@ def propose_trade(user, friend_username, offered_ids, requested_ids):
         raise TradeError(_("%(username)s doesn't own all of those cards.") % {"username": friend.username})
     if not offered and not requested:
         raise TradeError(_("Pick at least one card to give or to receive."))
-    trade = Trade.objects.create(from_user=user, to_user=friend)
-    trade.offered.set(offered)
-    trade.requested.set(requested)
+    with transaction.atomic():  # the counter-offer and the end of the original go together
+        if replaces:
+            Trade.objects.filter(pk=replaces, from_user=friend, to_user=user).delete()
+        trade = Trade.objects.create(from_user=user, to_user=friend)
+        trade.offered.set(offered)
+        trade.requested.set(requested)
     return trade
 
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 21:44+0000\n"
+"POT-Creation-Date: 2026-10-23 21:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,7 +150,7 @@ msgstr "Publications"
 msgid "Events"
 msgstr "Événements"
 
-#: game/templates/game/_trade_side.html:3 game/templates/game/trade.html:55
+#: game/templates/game/_trade_side.html:3 game/templates/game/trade.html:61
 msgid "nothing"
 msgstr "rien"
 
@@ -196,7 +196,7 @@ msgstr "sur %(total)s"
 msgid "No cards yet"
 msgstr "Aucune carte pour l'instant"
 
-#: game/templates/game/collection.html:16 game/templates/game/trade.html:49
+#: game/templates/game/collection.html:16 game/templates/game/trade.html:55
 #, python-format
 msgid "%(username)s hasn't discovered any cards yet."
 msgstr "%(username)s n'a encore découvert aucune carte."
@@ -286,7 +286,7 @@ msgstr "Demandes"
 msgid "Accept"
 msgstr "Accepter"
 
-#: game/templates/game/friends.html:48 game/templates/game/friends.html:71
+#: game/templates/game/friends.html:48 game/templates/game/friends.html:72
 msgid "Decline"
 msgstr "Refuser"
 
@@ -294,50 +294,54 @@ msgstr "Refuser"
 msgid "Trade offers"
 msgstr "Offres d'échange"
 
-#: game/templates/game/friends.html:63 game/templates/game/friends.html:89
-#: game/templates/game/trade.html:15 game/templates/game/trade.html:37
+#: game/templates/game/friends.html:63 game/templates/game/friends.html:90
+#: game/templates/game/trade.html:20 game/templates/game/trade.html:43
 #, python-format
 msgid "%(username)s gives"
 msgstr "%(username)s donne"
 
-#: game/templates/game/friends.html:66 game/templates/game/friends.html:86
-#: game/templates/game/trade.html:13 game/templates/game/trade.html:21
+#: game/templates/game/friends.html:66 game/templates/game/friends.html:87
+#: game/templates/game/trade.html:18 game/templates/game/trade.html:27
 msgid "You give"
 msgstr "Vous donnez"
 
-#: game/templates/game/friends.html:81
+#: game/templates/game/friends.html:71
+msgid "Counter-offer"
+msgstr "Contre-offre"
+
+#: game/templates/game/friends.html:82
 msgid "Sent trade offers"
 msgstr "Offres d'échange envoyées"
 
-#: game/templates/game/friends.html:93 game/templates/game/friends.html:110
+#: game/templates/game/friends.html:94 game/templates/game/friends.html:111
 msgid "Pending"
 msgstr "En attente"
 
-#: game/templates/game/friends.html:94 game/templates/game/friends.html:111
+#: game/templates/game/friends.html:95 game/templates/game/friends.html:112
 msgid "Cancel"
 msgstr "Annuler"
 
-#: game/templates/game/friends.html:104
+#: game/templates/game/friends.html:105
 msgid "Sent requests"
 msgstr "Demandes envoyées"
 
-#: game/templates/game/friends.html:120
+#: game/templates/game/friends.html:121
 msgid "Your friends"
 msgstr "Vos amis"
 
-#: game/templates/game/friends.html:127 game/templates/game/home.html:36
+#: game/templates/game/friends.html:128 game/templates/game/home.html:36
 msgid "View collection"
 msgstr "Voir la collection"
 
-#: game/templates/game/friends.html:128
+#: game/templates/game/friends.html:129
 msgid "Trade"
 msgstr "Échanger"
 
-#: game/templates/game/friends.html:129
+#: game/templates/game/friends.html:130
 msgid "Remove"
 msgstr "Retirer"
 
-#: game/templates/game/friends.html:135
+#: game/templates/game/friends.html:136
 msgid "No friends yet — add one above."
 msgstr "Pas encore d'amis — ajoutez-en un ci-dessus."
 
@@ -512,25 +516,41 @@ msgstr "L'administrateur peut l'ajuster avant d'approuver la carte."
 msgid "Your proposals"
 msgstr "Vos propositions"
 
-#: game/templates/game/trade.html:2 game/templates/game/trade.html:6
+#: game/templates/game/trade.html:2 game/templates/game/trade.html:7
+#, python-format
+msgid "Counter-offer to %(username)s"
+msgstr "Contre-offre à %(username)s"
+
+#: game/templates/game/trade.html:2 game/templates/game/trade.html:10
 #, python-format
 msgid "Trade with %(username)s"
 msgstr "Échange avec %(username)s"
 
-#: game/templates/game/trade.html:33
+#: game/templates/game/trade.html:8
+#, python-format
+msgid ""
+"Starts from %(username)s's offer. Change the cards, then send: it replaces "
+"their offer."
+msgstr "Part de l'offre de %(username)s. Modifiez les cartes puis envoyez : elle remplacera son offre."
+
+#: game/templates/game/trade.html:39
 msgid "You don't have any cards yet."
 msgstr "Vous n'avez encore aucune carte."
 
-#: game/templates/game/trade.html:53
+#: game/templates/game/trade.html:59
+msgid "Send counter-offer"
+msgstr "Envoyer la contre-offre"
+
+#: game/templates/game/trade.html:59
 msgid "Send offer"
 msgstr "Envoyer l'offre"
 
-#: game/templates/game/trade.html:55
+#: game/templates/game/trade.html:61
 #, python-brace-format
 msgid "{side}: {cards}"
 msgstr "{side} : {cards}"
 
-#: game/templates/game/trade.html:56
+#: game/templates/game/trade.html:62
 msgid ""
 "Tap cards to pick them. Leave a side empty to send a gift or ask for one."
 msgstr ""
@@ -573,32 +593,32 @@ msgstr "Chaque club et étudiant de l'école, un pack à la fois."
 msgid "Already playing?"
 msgstr "Déjà inscrit ?"
 
-#: game/trades.py:27
+#: game/trades.py:30
 msgid "You can only trade with your friends."
 msgstr "Vous ne pouvez échanger qu'avec vos amis."
 
-#: game/trades.py:30
+#: game/trades.py:33
 msgid "You can only offer cards you own."
 msgstr "Vous ne pouvez proposer que des cartes que vous possédez."
 
-#: game/trades.py:33
+#: game/trades.py:36
 #, python-format
 msgid "%(username)s doesn't own all of those cards."
 msgstr "%(username)s ne possède pas toutes ces cartes."
 
-#: game/trades.py:35
+#: game/trades.py:38
 msgid "Pick at least one card to give or to receive."
 msgstr "Choisissez au moins une carte à donner ou à recevoir."
 
-#: game/trades.py:52 game/trades.py:83
+#: game/trades.py:58 game/trades.py:89
 msgid "That trade offer no longer exists."
 msgstr "Cette offre d'échange n'existe plus."
 
-#: game/trades.py:66
+#: game/trades.py:72
 msgid "You're no longer friends, so this trade was cancelled."
 msgstr "Vous n'êtes plus amis, l'échange a donc été annulé."
 
-#: game/trades.py:68
+#: game/trades.py:74
 msgid "One of the cards is no longer available, so this trade was cancelled."
 msgstr "Une des cartes n'est plus disponible, l'échange a donc été annulé."
 
@@ -624,15 +644,19 @@ msgstr "Image trop grande (max %(max_mb)s Mo)."
 msgid "Friend request sent!"
 msgstr "Demande d'ami envoyée !"
 
-#: game/views.py:308
+#: game/views.py:311
+msgid "Counter-offer sent!"
+msgstr "Contre-offre envoyée !"
+
+#: game/views.py:311
 msgid "Trade offer sent!"
 msgstr "Offre d'échange envoyée !"
 
-#: game/views.py:327
+#: game/views.py:333
 msgid "Trade done! Check your collection."
 msgstr "Échange effectué ! Allez voir votre collection."
 
-#: game/views.py:356
+#: game/views.py:362
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"

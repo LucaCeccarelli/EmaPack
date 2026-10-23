@@ -68,6 +68,7 @@
       </div>
       <span class="friend-actions">
         <form method="post" action="{% url 'trade_accept' t.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
+        <a class="btn small ghost" href="{% url 'trade_new' t.from_user.username %}?counter={{ t.pk }}">{% trans "Counter-offer" %}</a>
         <form method="post" action="{% url 'trade_remove' t.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
       </span>
     </li>

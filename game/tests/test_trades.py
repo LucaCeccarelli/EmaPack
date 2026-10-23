@@ -68,6 +68,24 @@ class TradeLogicTests(TestCase):
                 propose_trade(self.ash, "gary", offered, requested)
         self.assertFalse(Trade.objects.exists())
 
+    def test_counter_offer_replaces_the_original(self):
+        original = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk, self.ski.pk])
+        counter = propose_trade(self.gary, "ash", [self.bds.pk], [self.bde.pk], replaces=original.pk)
+        self.assertEqual(list(Trade.objects.all()), [counter])
+
+    def test_counter_offer_cannot_replace_someone_else_s_offer(self):
+        misty = User.objects.create_user("misty", password="pw")
+        accept_request(misty, send_request(self.ash, "misty").pk)
+        theirs = propose_trade(self.ash, "misty", [self.bde.pk], [])
+        propose_trade(self.gary, "ash", [self.bds.pk], [], replaces=theirs.pk)
+        self.assertTrue(Trade.objects.filter(pk=theirs.pk).exists())
+
+    def test_invalid_counter_offer_keeps_the_original(self):
+        original = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk])
+        with self.assertRaises(TradeError):
+            propose_trade(self.gary, "ash", [], [], replaces=original.pk)
+        self.assertTrue(Trade.objects.filter(pk=original.pk).exists())
+
     def test_cannot_trade_with_a_stranger(self):
         remove_friendship(self.ash, self.friendship.pk)
         with self.assertRaises(TradeError):
@@ -242,3 +260,42 @@ class TradeViewTests(TestCase):
         self.assertContains(response, 'data-side="requested" data-label="gary gives"')
         self.assertContains(response, f'value="{self.bde.pk}" data-name="BDE"')
         self.assertContains(response, 'data-msg-side="{side}: {cards}" data-msg-nothing="nothing"')
+
+
+class CounterOfferViewTests(TestCase):
+    def setUp(self):
+        self.ash = User.objects.create_user("ash", password="pw")
+        self.gary = User.objects.create_user("gary", password="pw")
+        accept_request(self.gary, send_request(self.ash, "gary").pk)
+        self.bde, self.bds, self.cri = (make_card(n) for n in ("BDE", "BDS", "CRI"))
+        give(self.ash, self.bde)
+        give(self.gary, self.bds)
+        give(self.gary, self.cri)
+        self.offer = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk, self.cri.pk])
+        self.client.force_login(self.gary)
+        self.url = reverse("trade_new", args=["ash"])
+
+    def test_friends_page_links_to_the_counter_offer(self):
+        self.assertContains(self.client.get(reverse("friends")), f'href="{self.url}?counter={self.offer.pk}"')
+
+    def test_counter_page_starts_from_the_flipped_offer(self):
+        response = self.client.get(self.url, {"counter": self.offer.pk})
+        self.assertContains(response, "Counter-offer to ash")
+        self.assertContains(response, f'name="counter" value="{self.offer.pk}"')
+        self.assertContains(response, f'name="offered" value="{self.bds.pk}" data-name="BDS" checked')
+        self.assertContains(response, f'name="offered" value="{self.cri.pk}" data-name="CRI" checked')
+        self.assertContains(response, f'name="requested" value="{self.bde.pk}" data-name="BDE" checked')
+
+    def test_sending_the_counter_offer_replaces_the_original(self):
+        response = self.client.post(self.url, {"counter": self.offer.pk, "offered": [self.bds.pk], "requested": [self.bde.pk]}, follow=True)
+        self.assertContains(response, "Counter-offer sent!")
+        trade = Trade.objects.get()
+        self.assertEqual((trade.from_user, trade.to_user), (self.gary, self.ash))
+        self.assertEqual(list(trade.offered.all()), [self.bds])
+
+    def test_cannot_counter_an_offer_that_is_not_yours(self):
+        self.client.force_login(self.ash)  # ash sent it: from ash's side it's not an offer to answer
+        response = self.client.get(reverse("trade_new", args=["gary"]), {"counter": self.offer.pk})
+        self.assertNotContains(response, "Counter-offer to")
+        self.client.post(reverse("trade_new", args=["gary"]), {"counter": self.offer.pk, "offered": [self.bde.pk]})
+        self.assertEqual(Trade.objects.count(), 2)  # the original survives alongside the new offer
