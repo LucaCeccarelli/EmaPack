@@ -13,3 +13,6 @@ __pycache__/
 # SDD scratch
 .superpowers/
 .idea/
+# graphify local cache
+graphify-out/cache/
+graphify-out/manifest.json
