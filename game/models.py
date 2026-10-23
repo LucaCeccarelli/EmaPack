@@ -93,20 +93,30 @@ class Friendship(models.Model):
 
 
 class Trade(models.Model):
-    """A pending offer: `from_user` gives one copy of each `offered` card for one of `to_user`'s `requested`.
+    """A pending offer: `from_user` gives one copy of each `offered` card for one copy of each of
+    `to_user`'s `requested` cards. Either side may be empty (a gift, or a plain ask), not both.
 
-    Only pending offers are stored: accepting swaps the two Pulls and deletes the row, declining just deletes it.
+    Only pending offers are stored: accepting moves the Pulls and deletes the row, declining just deletes it.
     """
 
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_sent")
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_received")
-    offered = models.ManyToManyField(Card, related_name="+")
-    requested = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="+")
+    # Two M2Ms to Card: hidden reverse names must differ ("+" suffix hides them).
+    offered = models.ManyToManyField(Card, related_name="offered_in+")
+    requested = models.ManyToManyField(Card, related_name="requested_in+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.from_user} -> {self.to_user} for {self.requested}"
+        return f"{self.from_user} -> {self.to_user}"
+
+    @staticmethod
+    def _label(cards):
+        return ", ".join(f"{card.name} ({card.get_rarity_display()})" for card in cards.all())
 
     @property
     def offered_label(self):
-        return ", ".join(f"{card.name} ({card.get_rarity_display()})" for card in self.offered.all())
+        return self._label(self.offered)
+
+    @property
+    def requested_label(self):
+        return self._label(self.requested)

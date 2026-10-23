@@ -10,29 +10,39 @@ class TradeError(Exception):
     """Can't complete this trade action (message is shown to the user)."""
 
 
-def propose_trade(user, friend_username, requested_id, offered_ids):
-    """`user` offers one copy of each card in `offered_ids` for one of the friend's copies of `requested_id`."""
+def _owned(owner, ids):
+    """The cards `owner` owns among `ids`, or None if any id is invalid or not owned."""
+    # Ids come straight from the form: a tampered, non-numeric one would make the lookup raise.
+    if not all(str(i).isdigit() for i in ids):
+        return None
+    ids = {int(i) for i in ids}
+    cards = list(Card.objects.filter(pk__in=ids, pulls__user=owner).distinct())
+    return cards if len(cards) == len(ids) else None
+
+
+def propose_trade(user, friend_username, offered_ids, requested_ids):
+    """`user` offers one copy of each `offered_ids` card for one copy of each of the friend's `requested_ids`."""
     friend = User.objects.filter(username__iexact=friend_username).first()
     if not friend or not are_friends(user, friend):
         raise TradeError(_("You can only trade with your friends."))
-    requested = Card.objects.filter(pk=requested_id, pulls__user=friend).first()
-    if not requested:
-        raise TradeError(_("%(username)s doesn't own that card.") % {"username": friend.username})
-    # Ids come straight from the form: a tampered, non-numeric one would make the lookup raise.
-    offered_ids = {int(i) for i in offered_ids if str(i).isdigit()}
-    offered = list(Card.objects.filter(pk__in=offered_ids, pulls__user=user).distinct())
-    if not offered or len(offered) != len(offered_ids):
-        raise TradeError(_("Pick cards you own to offer."))
-    trade = Trade.objects.create(from_user=user, to_user=friend, requested=requested)
+    offered = _owned(user, offered_ids)
+    if offered is None:
+        raise TradeError(_("You can only offer cards you own."))
+    requested = _owned(friend, requested_ids)
+    if requested is None:
+        raise TradeError(_("%(username)s doesn't own all of those cards.") % {"username": friend.username})
+    if not offered and not requested:
+        raise TradeError(_("Pick at least one card to give or to receive."))
+    trade = Trade.objects.create(from_user=user, to_user=friend)
     trade.offered.set(offered)
+    trade.requested.set(requested)
     return trade
 
 
 def accept_trade(user, trade_id):
-    """Move one Pull of each offered card to the recipient and one of `requested` back, then delete the offer.
-
-    Only the recipient can accept. A stale offer (unfriended, or a card no longer owned) is deleted and reported instead;
-    the error is raised after the atomic block so that delete isn't rolled back.
+    """Move one Pull of each offered card to the recipient and one of each requested card back, then
+    delete the offer. Only the recipient can accept. A stale offer (unfriended, or a card no longer owned)
+    is deleted and reported instead; the error is raised after the atomic block so that delete isn't rolled back.
     """
     error = None
     with transaction.atomic():
@@ -40,30 +50,26 @@ def accept_trade(user, trade_id):
         trade = Trade.objects.select_for_update().filter(pk=trade_id, to_user=user).first()
         if not trade:
             raise TradeError(_("That trade offer no longer exists."))
-        offered_ids = set(trade.offered.values_list("pk", flat=True))
-        # Lock every copy of both sides in pk order: a copy can't be swapped away twice,
+        offered = set(trade.offered.values_list("pk", flat=True))
+        requested = set(trade.requested.values_list("pk", flat=True))
+        # Lock every copy of both sides in pk order: a copy can't be traded away twice,
         # and two trades accepted at once lock in the same order (no deadlock).
         pulls = (
             Pull.objects.select_for_update()
-            .filter(Q(user=trade.from_user, card__in=offered_ids) | Q(user=user, card=trade.requested))
+            .filter(Q(user=trade.from_user, card__in=offered) | Q(user=user, card__in=requested))
             .order_by("pk")
         )
-        given = {}  # card id -> one of from_user's copies
-        received = None
+        moving = {}  # (owner id, card id) -> the one copy that changes hands
         for pull in pulls:
-            if pull.user_id == trade.from_user_id:
-                given.setdefault(pull.card_id, pull)
-            elif received is None:
-                received = pull
+            moving.setdefault((pull.user_id, pull.card_id), pull)
         if not are_friends(trade.from_user, user):
             error = _("You're no longer friends, so this trade was cancelled.")
-        elif given.keys() != offered_ids or not received:
+        elif len(moving) != len(offered) + len(requested):
             error = _("One of the cards is no longer available, so this trade was cancelled.")
         else:
-            for pull in given.values():
-                pull.user = user
-            received.user = trade.from_user
-            Pull.objects.bulk_update([*given.values(), received], ["user"])
+            for pull in moving.values():
+                pull.user_id = user.id if pull.user_id == trade.from_user_id else trade.from_user_id
+            Pull.objects.bulk_update(moving.values(), ["user"])
         trade.delete()
     if error:
         raise TradeError(error)
