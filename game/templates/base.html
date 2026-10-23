@@ -27,7 +27,7 @@
       <nav class="nav">
         <a href="{% url 'home' %}" {% if here == 'home' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">📦</span><span class="nav-label">{% trans "Packs" %}</span></a>
         <a href="{% url 'collection' %}" {% if here == 'collection' or here == 'card_detail' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">🗂️</span><span class="nav-label">{% trans "Collection" %}</span></a>
-        <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">👥</span><span class="nav-label">{% trans "Friends" %}</span></a>
+        <a href="{% url 'friends' %}" {% if here == 'friends' or here == 'friend_collection' or here == 'friend_card_detail' or here == 'trade_new' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">👥</span><span class="nav-label">{% trans "Friends" %}</span></a>
         <a href="{% url 'leaderboard' %}" {% if here == 'leaderboard' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">🏆</span><span class="nav-label">{% trans "Leaderboard" %}</span></a>
         <a href="{% url 'propose_card' %}" {% if here == 'propose_card' %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">✏️</span><span class="nav-label">{% trans "Propose" %}</span></a>
       </nav>

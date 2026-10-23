@@ -112,3 +112,57 @@ class TradeLogicTests(TestCase):
             remove_trade(stranger, trade.pk)
         remove_trade(self.gary, trade.pk)
         self.assertFalse(Trade.objects.exists())
+
+
+class TradeViewTests(TestCase):
+    def setUp(self):
+        self.ash = User.objects.create_user("ash", password="pw")
+        self.gary = User.objects.create_user("gary", password="pw")
+        accept_request(self.gary, send_request(self.ash, "gary").pk)
+        self.bde, self.bds, self.cri = (make_card(n) for n in ("BDE", "BDS", "CRI"))
+        give(self.ash, self.bde)
+        give(self.ash, self.cri)
+        give(self.gary, self.bds)
+        self.client.force_login(self.ash)
+        self.url = reverse("trade_new", args=["gary"])
+
+    def test_friend_card_page_links_to_the_trade_page(self):
+        response = self.client.get(reverse("friend_card_detail", args=["gary", self.bds.pk]))
+        self.assertContains(response, f'href="{self.url}?want={self.bds.pk}"')
+
+    def test_trade_page_lists_both_sides_and_prechecks_wanted_card(self):
+        response = self.client.get(self.url, {"want": self.bds.pk})
+        self.assertContains(response, f'name="offered" value="{self.bde.pk}"> BDE')
+        self.assertContains(response, f'name="requested" value="{self.bds.pk}" checked> BDS')
+
+    def test_trade_page_404s_for_a_stranger(self):
+        User.objects.create_user("brock", password="pw")
+        self.assertEqual(self.client.get(reverse("trade_new", args=["brock"])).status_code, 404)
+
+    def test_full_trade_through_the_ui(self):
+        response = self.client.post(self.url, {"offered": [self.bde.pk, self.cri.pk], "requested": [self.bds.pk]})
+        self.assertRedirects(response, reverse("friends"))
+        self.assertContains(self.client.get(reverse("friends")), "Sent trade offers")
+
+        self.client.force_login(self.gary)
+        response = self.client.get(reverse("friends"))
+        self.assertContains(response, "<strong>ash</strong> gives BDE (Common), CRI (Common) · you give BDS (Common)")
+        self.client.post(reverse("trade_accept", args=[Trade.objects.get().pk]))
+        self.assertEqual(owned(self.ash), ["BDS"])
+        self.assertEqual(owned(self.gary), ["BDE", "CRI"])
+
+    def test_gift_shows_nothing_on_the_empty_side(self):
+        self.client.post(self.url, {"offered": [self.bde.pk]})
+        self.client.force_login(self.gary)
+        self.assertContains(self.client.get(reverse("friends")), "you give nothing")
+
+    def test_invalid_offer_rerenders_with_boxes_still_ticked(self):
+        response = self.client.post(self.url, {"offered": [self.bde.pk, "x"]})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "You can only offer cards you own")
+        self.assertContains(response, f'value="{self.bde.pk}" checked>')
+        self.assertFalse(Trade.objects.exists())
+
+    def test_accept_and_remove_reject_get(self):
+        self.assertEqual(self.client.get(reverse("trade_accept", args=[1])).status_code, 405)
+        self.assertEqual(self.client.get(reverse("trade_remove", args=[1])).status_code, 405)

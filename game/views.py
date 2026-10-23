@@ -213,10 +213,9 @@ def card_detail(request, pk, username=None):
             raise Http404
     card = get_object_or_404(Card.objects.filter(pulls__user=owner).distinct(), pk=pk)
     copies = owner.pulls.filter(card=card).count()
-    context = {"card": card, "copies": copies, "owner": owner if username is not None else None}
-    if username is not None:  # a friend's card: offer one of yours for it
-        context["my_cards"] = Card.objects.filter(pulls__user=request.user).distinct().order_by("name")
-    return render(request, "game/card_detail.html", context)
+    return render(request, "game/card_detail.html", {
+        "card": card, "copies": copies, "owner": owner if username is not None else None,
+    })
 
 
 @login_required
@@ -237,8 +236,8 @@ def friends(request):
         "outgoing": Friendship.objects.filter(
             from_user=request.user, status=Friendship.Status.PENDING
         ).select_related("to_user"),
-        "trades_in": request.user.trades_received.select_related("from_user", "requested").prefetch_related("offered"),
-        "trades_out": request.user.trades_sent.select_related("to_user", "requested").prefetch_related("offered"),
+        "trades_in": request.user.trades_received.select_related("from_user").prefetch_related("offered", "requested"),
+        "trades_out": request.user.trades_sent.select_related("to_user").prefetch_related("offered", "requested"),
     })
 
 
@@ -291,15 +290,32 @@ def friend_collection(request, username):
     return _render_collection(request, cards, friend, owner=friend)
 
 
+def _ids(values):
+    return {int(v) for v in values if v.isdigit()}
+
+
 @login_required
-@require_POST
-def trade_propose(request, username, pk):
-    try:
-        trade_logic.propose_trade(request.user, username, pk, request.POST.getlist("offered"))
-        messages.success(request, _("Trade offer sent!"))
-    except trade_logic.TradeError as e:
-        messages.error(request, str(e))
-    return redirect("friends")
+def trade_new(request, username):
+    """Pick any number of your cards and of the friend's, then send the offer."""
+    friend = get_object_or_404(User, username__iexact=username)
+    if not friend_logic.are_friends(request.user, friend):
+        raise Http404
+    offered, requested = _ids(request.POST.getlist("offered")), _ids(request.POST.getlist("requested"))
+    if request.method == "POST":
+        try:
+            trade_logic.propose_trade(request.user, friend.username, request.POST.getlist("offered"),
+                                      request.POST.getlist("requested"))
+            messages.success(request, _("Trade offer sent!"))
+            return redirect("friends")
+        except trade_logic.TradeError as e:
+            messages.error(request, str(e))  # re-render with the boxes still ticked
+    else:
+        requested = _ids(request.GET.getlist("want"))  # "Propose a trade" from one of the friend's cards
+    return render(request, "game/trade.html", {
+        "friend": friend, "offered": offered, "requested": requested,
+        "my_cards": Card.objects.filter(pulls__user=request.user).distinct().order_by("name"),
+        "their_cards": Card.objects.filter(pulls__user=friend).distinct().order_by("name"),
+    })
 
 
 @login_required
