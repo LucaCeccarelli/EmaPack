@@ -173,3 +173,51 @@ class TradeViewTests(TestCase):
         response = self.client.get(reverse("friends"), HTTP_ACCEPT_LANGUAGE="fr")
         self.assertContains(response, "Offres d'échange")
         self.assertContains(response, "<strong>ash</strong> donne : BDE (Commune) · vous donnez : rien")
+
+    def test_trade_page_requires_login(self):
+        self.client.logout()
+        self.assertRedirects(self.client.get(self.url), f"{reverse('login')}?next={self.url}")
+
+    def test_friends_page_has_a_trade_button_per_friend(self):
+        self.assertContains(self.client.get(reverse("friends")), f'href="{self.url}"')
+
+    def test_empty_offer_is_refused(self):
+        response = self.client.post(self.url, {})
+        self.assertContains(response, "Pick at least one card")
+        self.assertFalse(Trade.objects.exists())
+
+    def test_recipient_declines_through_the_ui(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk])
+        self.client.force_login(self.gary)
+        response = self.client.post(reverse("trade_remove", args=[trade.pk]))
+        self.assertRedirects(response, reverse("friends"))
+        self.assertFalse(Trade.objects.exists())
+        self.assertEqual(owned(self.gary), ["BDS"])
+
+    def test_sender_cancels_through_the_ui(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.post(reverse("trade_remove", args=[trade.pk]))
+        self.assertFalse(Trade.objects.exists())
+        self.assertNotContains(self.client.get(reverse("friends")), "Sent trade offers")
+
+    def test_sender_cannot_accept_their_own_offer_through_the_ui(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk])
+        response = self.client.post(reverse("trade_accept", args=[trade.pk]), follow=True)
+        self.assertContains(response, "no longer exists")
+        self.assertEqual(owned(self.ash), ["BDE", "CRI"])
+
+    def test_accepting_a_stale_offer_flashes_and_removes_it(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk])
+        self.ash.pulls.filter(card=self.bde).delete()
+        self.client.force_login(self.gary)
+        response = self.client.post(reverse("trade_accept", args=[trade.pk]), follow=True)
+        self.assertContains(response, "no longer available")
+        self.assertNotContains(response, "Trade offers")
+
+    def test_accepting_twice_only_trades_once(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [self.bds.pk])
+        self.client.force_login(self.gary)
+        self.client.post(reverse("trade_accept", args=[trade.pk]))
+        response = self.client.post(reverse("trade_accept", args=[trade.pk]), follow=True)
+        self.assertContains(response, "no longer exists")
+        self.assertEqual(owned(self.gary), ["BDE"])
