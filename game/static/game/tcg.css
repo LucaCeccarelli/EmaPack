@@ -335,8 +335,11 @@ main {
 
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
-.add-friend label, .trade-form label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
+.add-friend label, .trade-form legend { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
 .trade-form { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.trade-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.trade-picks { max-height: 240px; overflow-y: auto; margin-bottom: 12px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 12px; }
+.trade-picks label { display: block; padding: 4px 0; cursor: pointer; overflow-wrap: anywhere; }
 .add-friend-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .add-friend-row input, .add-friend-row select {
   flex: 1 1 160px; min-width: 0; padding: 11px 14px; border-radius: 12px; font: inherit;

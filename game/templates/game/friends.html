@@ -59,7 +59,7 @@
   <ul>
     {% for t in trades_in %}
     <li>
-      <span>{% blocktrans with username=t.from_user.username offered=t.offered.name offered_rarity=t.offered.get_rarity_display requested=t.requested.name requested_rarity=t.requested.get_rarity_display %}<strong>{{ username }}</strong> gives {{ offered }} ({{ offered_rarity }}) for your {{ requested }} ({{ requested_rarity }}){% endblocktrans %}</span>
+      <span>{% blocktrans with username=t.from_user.username offered=t.offered_label requested=t.requested.name requested_rarity=t.requested.get_rarity_display %}<strong>{{ username }}</strong> gives {{ offered }} for your {{ requested }} ({{ requested_rarity }}){% endblocktrans %}</span>
       <span class="friend-actions">
         <form method="post" action="{% url 'trade_accept' t.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
         <form method="post" action="{% url 'trade_remove' t.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
@@ -76,7 +76,7 @@
   <ul>
     {% for t in trades_out %}
     <li>
-      <span>{% blocktrans with username=t.to_user.username offered=t.offered.name requested=t.requested.name %}Your {{ offered }} for <strong>{{ username }}</strong>'s {{ requested }}{% endblocktrans %}</span>
+      <span>{% blocktrans with username=t.to_user.username offered=t.offered_label requested=t.requested.name %}Your {{ offered }} for <strong>{{ username }}</strong>'s {{ requested }}{% endblocktrans %}</span>
       <span class="friend-actions">
         <span class="chip">{% trans "Pending" %}</span>
         <form method="post" action="{% url 'trade_remove' t.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Cancel" %}</button></form>

@@ -10,25 +10,28 @@ class TradeError(Exception):
     """Can't complete this trade action (message is shown to the user)."""
 
 
-def propose_trade(user, friend_username, requested_id, offered_id):
-    """`user` offers one copy of card `offered_id` for one of the friend's copies of `requested_id`."""
+def propose_trade(user, friend_username, requested_id, offered_ids):
+    """`user` offers one copy of each card in `offered_ids` for one of the friend's copies of `requested_id`."""
     friend = User.objects.filter(username__iexact=friend_username).first()
     if not friend or not are_friends(user, friend):
         raise TradeError(_("You can only trade with your friends."))
     requested = Card.objects.filter(pk=requested_id, pulls__user=friend).first()
     if not requested:
         raise TradeError(_("%(username)s doesn't own that card.") % {"username": friend.username})
-    # Comes straight from a <select>: a tampered, non-numeric id would make the lookup raise.
-    offered = str(offered_id).isdigit() and Card.objects.filter(pk=offered_id, pulls__user=user).first()
-    if not offered:
-        raise TradeError(_("Pick a card you own to offer."))
-    return Trade.objects.create(from_user=user, to_user=friend, offered=offered, requested=requested)
+    # Ids come straight from the form: a tampered, non-numeric one would make the lookup raise.
+    offered_ids = {int(i) for i in offered_ids if str(i).isdigit()}
+    offered = list(Card.objects.filter(pk__in=offered_ids, pulls__user=user).distinct())
+    if not offered or len(offered) != len(offered_ids):
+        raise TradeError(_("Pick cards you own to offer."))
+    trade = Trade.objects.create(from_user=user, to_user=friend, requested=requested)
+    trade.offered.set(offered)
+    return trade
 
 
 def accept_trade(user, trade_id):
-    """Swap one Pull each way and delete the offer. Only the recipient can accept.
+    """Move one Pull of each offered card to the recipient and one of `requested` back, then delete the offer.
 
-    A stale offer (unfriended, or a card no longer owned) is deleted and reported instead;
+    Only the recipient can accept. A stale offer (unfriended, or a card no longer owned) is deleted and reported instead;
     the error is raised after the atomic block so that delete isn't rolled back.
     """
     error = None
@@ -37,22 +40,30 @@ def accept_trade(user, trade_id):
         trade = Trade.objects.select_for_update().filter(pk=trade_id, to_user=user).first()
         if not trade:
             raise TradeError(_("That trade offer no longer exists."))
+        offered_ids = set(trade.offered.values_list("pk", flat=True))
         # Lock every copy of both sides in pk order: a copy can't be swapped away twice,
         # and two trades accepted at once lock in the same order (no deadlock).
-        pulls = list(
+        pulls = (
             Pull.objects.select_for_update()
-            .filter(Q(user=trade.from_user, card=trade.offered) | Q(user=user, card=trade.requested))
+            .filter(Q(user=trade.from_user, card__in=offered_ids) | Q(user=user, card=trade.requested))
             .order_by("pk")
         )
-        given = next((p for p in pulls if p.user_id == trade.from_user_id and p.card_id == trade.offered_id), None)
-        received = next((p for p in pulls if p.user_id == user.id and p.card_id == trade.requested_id), None)
+        given = {}  # card id -> one of from_user's copies
+        received = None
+        for pull in pulls:
+            if pull.user_id == trade.from_user_id:
+                given.setdefault(pull.card_id, pull)
+            elif received is None:
+                received = pull
         if not are_friends(trade.from_user, user):
             error = _("You're no longer friends, so this trade was cancelled.")
-        elif not given or not received:
+        elif given.keys() != offered_ids or not received:
             error = _("One of the cards is no longer available, so this trade was cancelled.")
         else:
-            given.user, received.user = user, trade.from_user
-            Pull.objects.bulk_update([given, received], ["user"])
+            for pull in given.values():
+                pull.user = user
+            received.user = trade.from_user
+            Pull.objects.bulk_update([*given.values(), received], ["user"])
         trade.delete()
     if error:
         raise TradeError(error)

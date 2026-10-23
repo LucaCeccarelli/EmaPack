@@ -237,8 +237,8 @@ def friends(request):
         "outgoing": Friendship.objects.filter(
             from_user=request.user, status=Friendship.Status.PENDING
         ).select_related("to_user"),
-        "trades_in": request.user.trades_received.select_related("from_user", "offered", "requested"),
-        "trades_out": request.user.trades_sent.select_related("to_user", "offered", "requested"),
+        "trades_in": request.user.trades_received.select_related("from_user", "requested").prefetch_related("offered"),
+        "trades_out": request.user.trades_sent.select_related("to_user", "requested").prefetch_related("offered"),
     })
 
 
@@ -295,7 +295,7 @@ def friend_collection(request, username):
 @require_POST
 def trade_propose(request, username, pk):
     try:
-        trade_logic.propose_trade(request.user, username, pk, request.POST.get("offered"))
+        trade_logic.propose_trade(request.user, username, pk, request.POST.getlist("offered"))
         messages.success(request, _("Trade offer sent!"))
     except trade_logic.TradeError as e:
         messages.error(request, str(e))

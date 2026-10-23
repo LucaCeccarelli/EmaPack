@@ -93,16 +93,20 @@ class Friendship(models.Model):
 
 
 class Trade(models.Model):
-    """A pending offer: `from_user` gives one copy of `offered` for one of `to_user`'s `requested`.
+    """A pending offer: `from_user` gives one copy of each `offered` card for one of `to_user`'s `requested`.
 
     Only pending offers are stored: accepting swaps the two Pulls and deletes the row, declining just deletes it.
     """
 
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_sent")
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_received")
-    offered = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="+")
+    offered = models.ManyToManyField(Card, related_name="+")
     requested = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.from_user} gives {self.offered} to {self.to_user} for {self.requested}"
+        return f"{self.from_user} -> {self.to_user} for {self.requested}"
+
+    @property
+    def offered_label(self):
+        return ", ".join(f"{card.name} ({card.get_rarity_display()})" for card in self.offered.all())

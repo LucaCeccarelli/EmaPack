@@ -24,17 +24,17 @@
     {% if owner %}
     <form class="trade-form" method="post" action="{% url 'trade_propose' owner.username card.pk %}">
       {% csrf_token %}
-      <label for="offered">{% blocktrans with username=owner.username %}Offer {{ username }} one of your cards for this one{% endblocktrans %}</label>
+      <fieldset>
+      <legend>{% blocktrans with username=owner.username %}Offer {{ username }} some of your cards for this one{% endblocktrans %}</legend>
       {% if my_cards %}
-      <div class="add-friend-row">
-        <select name="offered" id="offered" required>
-          {% for mine in my_cards %}<option value="{{ mine.pk }}">{{ mine.name }} ({{ mine.get_rarity_display }})</option>{% endfor %}
-        </select>
-        <button class="btn">{% trans "Propose trade" %}</button>
+      <div class="trade-picks">
+        {% for mine in my_cards %}<label><input type="checkbox" name="offered" value="{{ mine.pk }}"> {{ mine.name }} <span class="muted">({{ mine.get_rarity_display }})</span></label>{% endfor %}
       </div>
+      <button class="btn">{% trans "Propose trade" %}</button>
       {% else %}
       <p class="muted">{% trans "You don't have any cards to offer yet." %}</p>
       {% endif %}
+      </fieldset>
     </form>
     {% endif %}
   </section>
