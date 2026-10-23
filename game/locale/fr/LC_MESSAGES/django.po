@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 21:06+0000\n"
+"POT-Creation-Date: 2026-10-23 21:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -173,16 +173,16 @@ msgstr "Abonnés"
 msgid "This page has no presentation yet."
 msgstr "Cette page n'a pas encore de présentation."
 
-#: game/templates/game/card_detail.html:27
+#: game/templates/game/card_detail.html:28
 #, python-format
-msgid "Offer %(username)s one of your cards for this one"
-msgstr "Proposez à %(username)s une de vos cartes en échange de celle-ci"
+msgid "Offer %(username)s some of your cards for this one"
+msgstr "Proposez à %(username)s certaines de vos cartes en échange de celle-ci"
 
 #: game/templates/game/card_detail.html:33
 msgid "Propose trade"
 msgstr "Proposer l'échange"
 
-#: game/templates/game/card_detail.html:36
+#: game/templates/game/card_detail.html:35
 msgid "You don't have any cards to offer yet."
 msgstr "Vous n'avez encore aucune carte à proposer."
 
@@ -302,9 +302,11 @@ msgstr "Offres d'échange"
 #: game/templates/game/friends.html:62
 #, python-format
 msgid ""
-"<strong>%(username)s</strong> gives %(offered)s (%(offered_rarity)s) for "
-"your %(requested)s (%(requested_rarity)s)"
-msgstr "<strong>%(username)s</strong> donne %(offered)s (%(offered_rarity)s) contre votre %(requested)s (%(requested_rarity)s)"
+"<strong>%(username)s</strong> gives %(offered)s for your %(requested)s "
+"(%(requested_rarity)s)"
+msgstr ""
+"<strong>%(username)s</strong> donne %(offered)s contre votre %(requested)s "
+"(%(requested_rarity)s)"
 
 #: game/templates/game/friends.html:75
 msgid "Sent trade offers"
@@ -313,7 +315,8 @@ msgstr "Offres d'échange envoyées"
 #: game/templates/game/friends.html:79
 #, python-format
 msgid "Your %(offered)s for <strong>%(username)s</strong>'s %(requested)s"
-msgstr "Votre %(offered)s contre %(requested)s de <strong>%(username)s</strong>"
+msgstr ""
+"Votre %(offered)s contre %(requested)s de <strong>%(username)s</strong>"
 
 #: game/templates/game/friends.html:81 game/templates/game/friends.html:98
 msgid "Pending"
@@ -559,19 +562,19 @@ msgstr "Vous ne pouvez échanger qu'avec vos amis."
 msgid "%(username)s doesn't own that card."
 msgstr "%(username)s ne possède pas cette carte."
 
-#: game/trades.py:24
-msgid "Pick a card you own to offer."
-msgstr "Choisissez une carte que vous possédez à proposer."
+#: game/trades.py:25
+msgid "Pick cards you own to offer."
+msgstr "Choisissez des cartes que vous possédez à proposer."
 
-#: game/trades.py:39 game/trades.py:66
+#: game/trades.py:42 game/trades.py:77
 msgid "That trade offer no longer exists."
 msgstr "Cette offre d'échange n'existe plus."
 
-#: game/trades.py:50
+#: game/trades.py:59
 msgid "You're no longer friends, so this trade was cancelled."
 msgstr "Vous n'êtes plus amis, l'échange a donc été annulé."
 
-#: game/trades.py:52
+#: game/trades.py:61
 msgid "One of the cards is no longer available, so this trade was cancelled."
 msgstr "Une des cartes n'est plus disponible, l'échange a donc été annulé."
 
