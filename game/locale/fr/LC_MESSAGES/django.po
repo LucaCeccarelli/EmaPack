@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 07:46+0000\n"
+"POT-Creation-Date: 2026-10-23 21:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -134,7 +134,9 @@ msgstr "Appuyez sur Partager, puis « Sur l’écran d’accueil »."
 
 #: game/templates/base.html:58
 msgid "Open the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’."
-msgstr "Ouvrez le menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil »."
+msgstr ""
+"Ouvrez le menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran "
+"d’accueil »."
 
 #: game/templates/game/_card.html:8
 msgid "Subs"
@@ -296,7 +298,7 @@ msgstr "Annuler"
 msgid "Your friends"
 msgstr "Vos amis"
 
-#: game/templates/game/friends.html:81 game/templates/game/home.html:36
+#: game/templates/game/friends.html:81 game/templates/game/home.html:37
 msgid "View collection"
 msgstr "Voir la collection"
 
@@ -334,35 +336,39 @@ msgid "Tap to reveal"
 msgstr "Touchez pour révéler"
 
 #: game/templates/game/home.html:13
+msgid "Hold to charge it up"
+msgstr "Maintenez pour la charger"
+
+#: game/templates/game/home.html:14
 msgid "Swipe it away, or tap for the next card"
 msgstr "Glissez pour l'écarter, ou touchez pour la carte suivante"
 
-#: game/templates/game/home.html:14
+#: game/templates/game/home.html:15
 msgid "NEW!"
 msgstr "NOUVEAU !"
 
-#: game/templates/game/home.html:17
+#: game/templates/game/home.html:18
 msgid "Open a pack: drag across the top edge, or press Enter"
 msgstr ""
 "Ouvrir un pack : glissez le long du bord supérieur, ou appuyez sur Entrée"
 
-#: game/templates/game/home.html:21
+#: game/templates/game/home.html:22
 msgid "Trading Card Game · IMT Alès"
 msgstr "Jeu de cartes à collectionner · IMT Alès"
 
-#: game/templates/game/home.html:28
+#: game/templates/game/home.html:29
 msgid "Swipe across the top to tear it open"
 msgstr "Glissez le long du haut pour l'ouvrir"
 
-#: game/templates/game/home.html:33
+#: game/templates/game/home.html:34
 msgid "Your pulls"
 msgstr "Vos cartes obtenues"
 
-#: game/templates/game/home.html:37
+#: game/templates/game/home.html:38
 msgid "Back"
 msgstr "Retour"
 
-#: game/templates/game/home.html:42
+#: game/templates/game/home.html:43
 msgid "Skip"
 msgstr "Passer"
 
