@@ -299,3 +299,52 @@ class CounterOfferViewTests(TestCase):
         self.assertNotContains(response, "Counter-offer to")
         self.client.post(reverse("trade_new", args=["gary"]), {"counter": self.offer.pk, "offered": [self.bde.pk]})
         self.assertEqual(Trade.objects.count(), 2)  # the original survives alongside the new offer
+
+
+class NavBadgeTests(TestCase):
+    """The Friends link shows how many trade offers wait for an answer."""
+
+    def setUp(self):
+        self.ash = User.objects.create_user("ash", password="pw")
+        self.gary = User.objects.create_user("gary", password="pw")
+        accept_request(self.gary, send_request(self.ash, "gary").pk)
+        self.bde = make_card("BDE")
+        give(self.ash, self.bde)
+
+    def test_no_badge_without_offers(self):
+        self.client.force_login(self.gary)
+        self.assertNotContains(self.client.get(reverse("home")), "nav-badge")
+
+    def test_recipient_sees_the_count_on_every_page(self):
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.gary)
+        for name in ("home", "collection", "friends"):
+            response = self.client.get(reverse(name))
+            self.assertContains(response, '<span class="nav-badge"')
+            self.assertContains(response, "2 trade offers waiting")
+
+    def test_singular_label_for_one_offer(self):
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.gary)
+        self.assertContains(self.client.get(reverse("home")), "1 trade offer waiting")
+
+    def test_sender_has_no_badge_for_their_own_offer(self):
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.ash)
+        self.assertNotContains(self.client.get(reverse("home")), "nav-badge")
+
+    def test_badge_goes_away_once_answered(self):
+        trade = propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.gary)
+        self.client.post(reverse("trade_remove", args=[trade.pk]))
+        self.assertNotContains(self.client.get(reverse("home")), "nav-badge")
+
+    def test_logged_out_pages_still_render(self):
+        self.assertEqual(self.client.get(reverse("login")).status_code, 200)
+
+    def test_badge_label_is_translated(self):
+        propose_trade(self.ash, "gary", [self.bde.pk], [])
+        self.client.force_login(self.gary)
+        self.client.post(reverse("set_language"), {"language": "fr", "next": "/"})
+        self.assertContains(self.client.get(reverse("home")), "1 offre d'échange en attente")

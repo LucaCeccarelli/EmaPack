@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 22:33+0000\n"
+"POT-Creation-Date: 2026-10-23 22:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,6 +93,14 @@ msgstr "Collection"
 #: game/templates/game/friends.html:25 game/templates/game/trade.html:4
 msgid "Friends"
 msgstr "Amis"
+
+#: game/templates/base.html:30
+#, python-format
+msgid "%(n)s trade offer waiting"
+msgid_plural "%(n)s trade offers waiting"
+msgstr[0] "%(n)s offre d'échange en attente"
+msgstr[1] "%(n)s offres d'échange en attente"
+msgstr[2] "%(n)s offres d'échange en attente"
 
 #: game/templates/base.html:31 game/templates/game/leaderboard.html:2
 #: game/templates/game/leaderboard.html:5
