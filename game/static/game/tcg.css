@@ -43,7 +43,10 @@ body {
   background-attachment: fixed;
   font: 16px/1.5 Outfit, system-ui, sans-serif;
   overflow-x: hidden;
+  /* app-like: no text selection or iOS long-press callout (cards are held to charge) */
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
+input, textarea, select, [contenteditable] { -webkit-user-select: text; user-select: text; }
 h1, h2 { line-height: 1.15; letter-spacing: -.01em; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
@@ -103,6 +106,19 @@ main {
   }
   .nav-icon { display: block; font-size: 1.25rem; line-height: 1; }
   .nav-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+}
+
+/* Phones in landscape: wider than 600px so the nav stays in the header, but the
+   labels wrap it onto two rows and eat the scarce height. Icons only, one row. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .topbar { flex-wrap: nowrap; padding-top: calc(6px + env(safe-area-inset-top)); padding-bottom: 6px; }
+  .topbar-right { flex-wrap: nowrap; }
+  main { padding-top: 12px; padding-bottom: calc(16px + var(--bottom-nav-h)); }
+  .brand { font-size: 0; gap: 0; }
+  .brand-mark { font-size: .9rem; }
+  .nav a { padding: 8px 12px; }
+  .nav-icon { display: block; font-size: 1.2rem; line-height: 1; }
+  .nav-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } /* screen readers only */
 }
 
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
