@@ -1,0 +1,4 @@
+{% load i18n %}<div class="trade-offer-side">
+  <span class="muted small">{{ label }}</span>
+  <div class="trade-mini">{% for card in cards %}{% include "game/_card.html" %}{% empty %}<span class="muted">{% trans "nothing" %}</span>{% endfor %}</div>
+</div>

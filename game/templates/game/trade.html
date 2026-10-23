@@ -7,29 +7,41 @@
 </header>
 <form method="post">
   {% csrf_token %}
-  <div class="trade-sides">
-    <fieldset class="panel">
-      <legend>{% trans "You give" %}</legend>
-      {% if my_cards %}
-      <div class="trade-picks">
-        {% for card in my_cards %}<label><input type="checkbox" name="offered" value="{{ card.pk }}"{% if card.pk in offered %} checked{% endif %}> {{ card.name }} <span class="muted">({{ card.get_rarity_display }})</span></label>{% endfor %}
-      </div>
-      {% else %}
-      <p class="muted">{% trans "You don't have any cards yet." %}</p>
-      {% endif %}
-    </fieldset>
-    <fieldset class="panel">
-      <legend>{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</legend>
-      {% if their_cards %}
-      <div class="trade-picks">
-        {% for card in their_cards %}<label><input type="checkbox" name="requested" value="{{ card.pk }}"{% if card.pk in requested %} checked{% endif %}> {{ card.name }} <span class="muted">({{ card.get_rarity_display }})</span></label>{% endfor %}
-      </div>
-      {% else %}
-      <p class="muted">{% blocktrans with username=friend.username %}{{ username }} hasn't discovered any cards yet.{% endblocktrans %}</p>
-      {% endif %}
-    </fieldset>
+  <fieldset class="panel trade-side">
+    <legend>{% trans "You give" %}</legend>
+    {% if my_cards %}
+    <div class="grid">
+      {% for card in my_cards %}
+      <label class="grid-item pick">
+        <input type="checkbox" name="offered" value="{{ card.pk }}"{% if card.pk in offered %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        {% include "game/_card.html" %}
+        {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{% trans "You don't have any cards yet." %}</p>
+    {% endif %}
+  </fieldset>
+  <fieldset class="panel trade-side">
+    <legend>{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</legend>
+    {% if their_cards %}
+    <div class="grid">
+      {% for card in their_cards %}
+      <label class="grid-item pick">
+        <input type="checkbox" name="requested" value="{{ card.pk }}"{% if card.pk in requested %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        {% include "game/_card.html" %}
+        {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{% blocktrans with username=friend.username %}{{ username }} hasn't discovered any cards yet.{% endblocktrans %}</p>
+    {% endif %}
+  </fieldset>
+  <div class="trade-submit">
+    <button class="btn">{% trans "Send offer" %}</button>
+    <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>
   </div>
-  <p class="muted">{% trans "Leave a side empty to send a gift or ask for one." %}</p>
-  <button class="btn">{% trans "Send offer" %}</button>
 </form>
 {% endblock %}

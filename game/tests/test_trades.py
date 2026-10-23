@@ -132,8 +132,9 @@ class TradeViewTests(TestCase):
 
     def test_trade_page_lists_both_sides_and_prechecks_wanted_card(self):
         response = self.client.get(self.url, {"want": self.bds.pk})
-        self.assertContains(response, f'name="offered" value="{self.bde.pk}"> BDE')
-        self.assertContains(response, f'name="requested" value="{self.bds.pk}" checked> BDS')
+        self.assertContains(response, f'name="offered" value="{self.bde.pk}" aria-label="BDE, Common"')
+        self.assertContains(response, f'name="requested" value="{self.bds.pk}" checked aria-label="BDS, Common"')
+        self.assertContains(response, 'class="card rarity-common"', count=3)  # rendered like the collection
 
     def test_trade_page_404s_for_a_stranger(self):
         User.objects.create_user("brock", password="pw")
@@ -146,7 +147,8 @@ class TradeViewTests(TestCase):
 
         self.client.force_login(self.gary)
         response = self.client.get(reverse("friends"))
-        self.assertContains(response, "<strong>ash</strong> gives BDE (Common), CRI (Common) · you give BDS (Common)")
+        self.assertContains(response, "ash gives")
+        self.assertContains(response, 'class="card rarity-common"', count=3)  # BDE + CRI for BDS, as mini cards
         self.client.post(reverse("trade_accept", args=[Trade.objects.get().pk]))
         self.assertEqual(owned(self.ash), ["BDS"])
         self.assertEqual(owned(self.gary), ["BDE", "CRI"])
@@ -154,13 +156,13 @@ class TradeViewTests(TestCase):
     def test_gift_shows_nothing_on_the_empty_side(self):
         self.client.post(self.url, {"offered": [self.bde.pk]})
         self.client.force_login(self.gary)
-        self.assertContains(self.client.get(reverse("friends")), "you give nothing")
+        self.assertContains(self.client.get(reverse("friends")), '<span class="muted">nothing</span>')
 
     def test_invalid_offer_rerenders_with_boxes_still_ticked(self):
         response = self.client.post(self.url, {"offered": [self.bde.pk, "x"]})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "You can only offer cards you own")
-        self.assertContains(response, f'value="{self.bde.pk}" checked>')
+        self.assertContains(response, f'value="{self.bde.pk}" checked')
         self.assertFalse(Trade.objects.exists())
 
     def test_accept_and_remove_reject_get(self):
@@ -172,7 +174,9 @@ class TradeViewTests(TestCase):
         self.client.force_login(self.gary)
         response = self.client.get(reverse("friends"), HTTP_ACCEPT_LANGUAGE="fr")
         self.assertContains(response, "Offres d'échange")
-        self.assertContains(response, "<strong>ash</strong> donne : BDE (Commune) · vous donnez : rien")
+        self.assertContains(response, "ash donne")
+        self.assertContains(response, "Vous donnez")
+        self.assertContains(response, "rien")
 
     def test_trade_page_requires_login(self):
         self.client.logout()

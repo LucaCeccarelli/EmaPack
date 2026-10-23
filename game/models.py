@@ -108,15 +108,3 @@ class Trade(models.Model):
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}"
-
-    @staticmethod
-    def _label(cards):
-        return ", ".join(f"{card.name} ({card.get_rarity_display()})" for card in cards.all())
-
-    @property
-    def offered_label(self):
-        return self._label(self.offered)
-
-    @property
-    def requested_label(self):
-        return self._label(self.requested)

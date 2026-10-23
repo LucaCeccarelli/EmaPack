@@ -313,8 +313,9 @@ def trade_new(request, username):
         requested = _ids(request.GET.getlist("want"))  # "Propose a trade" from one of the friend's cards
     return render(request, "game/trade.html", {
         "friend": friend, "offered": offered, "requested": requested,
-        "my_cards": Card.objects.filter(pulls__user=request.user).distinct().order_by("name"),
-        "their_cards": Card.objects.filter(pulls__user=friend).distinct().order_by("name"),
+        # Same shape as the collection grid: per-owner copy count, rarest first.
+        "my_cards": Card.objects.filter(pulls__user=request.user).annotate(copies=Count("pulls")).order_by("-rarity", "name"),
+        "their_cards": Card.objects.filter(pulls__user=friend).annotate(copies=Count("pulls")).order_by("-rarity", "name"),
     })
 
 
