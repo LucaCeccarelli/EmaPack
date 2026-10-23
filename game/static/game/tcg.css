@@ -366,6 +366,9 @@ main {
   border: 1px solid var(--line-strong);
 }
 @media (max-width: 600px) { .trade-submit { bottom: 84px; } } /* clear the fixed bottom tab bar */
+.trade-submit > div { flex: 1 1 240px; min-width: 0; }
+.trade-summary { margin: 0 0 2px; font-weight: 600; overflow-wrap: anywhere; }
+.tab-count { color: var(--accent-2); }
 .trade-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
 .trade-offer-side { display: grid; gap: 6px; }
 .trade-mini { --card-w: 96px; display: flex; flex-wrap: wrap; gap: 8px; }

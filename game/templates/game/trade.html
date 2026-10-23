@@ -10,9 +10,10 @@
 {# Coming from a friend's card (?want=), open their tab so the pre-ticked card shows. #}
 <div class="tabs">
   <input type="radio" name="tab" id="tab-mine" class="tab-radio"{% if offered or not requested %} checked{% endif %}>
-  <label for="tab-mine" class="tab">{% trans "You give" %}</label>
+  <label for="tab-mine" class="tab" data-side="offered" data-label="{% trans 'You give' %}">{% trans "You give" %} <span class="tab-count"></span></label>
   <input type="radio" name="tab" id="tab-theirs" class="tab-radio"{% if requested and not offered %} checked{% endif %}>
-  <label for="tab-theirs" class="tab">{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</label>
+  {% blocktrans with username=friend.username asvar they_give %}{{ username }} gives{% endblocktrans %}
+  <label for="tab-theirs" class="tab" data-side="requested" data-label="{{ they_give }}">{{ they_give }} <span class="tab-count"></span></label>
 </div>
 <form method="post">
   {% csrf_token %}
@@ -22,7 +23,7 @@
     <div class="grid">
       {% for card in my_cards %}
       <label class="grid-item pick">
-        <input type="checkbox" name="offered" value="{{ card.pk }}"{% if card.pk in offered %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        <input type="checkbox" name="offered" value="{{ card.pk }}" data-name="{{ card.name }}"{% if card.pk in offered %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
         {% include "game/_card.html" %}
         {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
       </label>
@@ -38,7 +39,7 @@
     <div class="grid">
       {% for card in their_cards %}
       <label class="grid-item pick">
-        <input type="checkbox" name="requested" value="{{ card.pk }}"{% if card.pk in requested %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        <input type="checkbox" name="requested" value="{{ card.pk }}" data-name="{{ card.name }}"{% if card.pk in requested %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
         {% include "game/_card.html" %}
         {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
       </label>
@@ -50,8 +51,32 @@
   </fieldset>
   <div class="trade-submit">
     <button class="btn">{% trans "Send offer" %}</button>
-    <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>
+    <div>
+      <p id="trade-summary" class="trade-summary" aria-live="polite" data-msg-side="{% trans '{side}: {cards}' %}" data-msg-nothing="{% trans 'nothing' %}"></p>
+      <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>
+    </div>
   </div>
 </form>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Tab counters + "You give: A, B · ash gives: C" summary, rebuilt on every tick.
+(() => {
+  const form = document.querySelector('.trade form');
+  const summary = document.getElementById('trade-summary');
+  const tabs = [...document.querySelectorAll('.tab[data-side]')];
+  const update = () => {
+    summary.textContent = tabs.map(tab => {
+      const names = [...form.querySelectorAll(`input[name="${tab.dataset.side}"]:checked`)].map(input => input.dataset.name);
+      tab.querySelector('.tab-count').textContent = names.length ? `(${names.length})` : '';
+      return summary.dataset.msgSide
+        .replace('{side}', tab.dataset.label)
+        .replace('{cards}', names.join(', ') || summary.dataset.msgNothing);
+    }).join(' · ');
+  };
+  form.addEventListener('change', update);
+  update();  // boxes can come back ticked (?want=, or a re-render after an error)
+})();
+</script>
 {% endblock %}

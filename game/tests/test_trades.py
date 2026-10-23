@@ -132,8 +132,8 @@ class TradeViewTests(TestCase):
 
     def test_trade_page_lists_both_sides_and_prechecks_wanted_card(self):
         response = self.client.get(self.url, {"want": self.bds.pk})
-        self.assertContains(response, f'name="offered" value="{self.bde.pk}" aria-label="BDE, Common"')
-        self.assertContains(response, f'name="requested" value="{self.bds.pk}" checked aria-label="BDS, Common"')
+        self.assertContains(response, f'name="offered" value="{self.bde.pk}" data-name="BDE" aria-label="BDE, Common"')
+        self.assertContains(response, f'name="requested" value="{self.bds.pk}" data-name="BDS" checked aria-label="BDS, Common"')
         self.assertContains(response, 'class="card rarity-common"', count=3)  # rendered like the collection
 
     def test_trade_page_404s_for_a_stranger(self):
@@ -162,7 +162,7 @@ class TradeViewTests(TestCase):
         response = self.client.post(self.url, {"offered": [self.bde.pk, "x"]})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "You can only offer cards you own")
-        self.assertContains(response, f'value="{self.bde.pk}" checked')
+        self.assertContains(response, f'value="{self.bde.pk}" data-name="BDE" checked')
         self.assertFalse(Trade.objects.exists())
 
     def test_accept_and_remove_reject_get(self):
@@ -235,3 +235,10 @@ class TradeViewTests(TestCase):
         response = self.client.get(self.url, {"want": self.bds.pk})
         self.assertContains(response, 'id="tab-mine" class="tab-radio">')
         self.assertContains(response, 'id="tab-theirs" class="tab-radio" checked')
+
+    def test_page_exposes_what_the_counter_script_needs(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, 'data-side="offered" data-label="You give"')
+        self.assertContains(response, 'data-side="requested" data-label="gary gives"')
+        self.assertContains(response, f'value="{self.bde.pk}" data-name="BDE"')
+        self.assertContains(response, 'data-msg-side="{side}: {cards}" data-msg-nothing="nothing"')

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 21:38+0000\n"
+"POT-Creation-Date: 2026-10-23 21:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,7 +150,7 @@ msgstr "Publications"
 msgid "Events"
 msgstr "Événements"
 
-#: game/templates/game/_trade_side.html:3
+#: game/templates/game/_trade_side.html:3 game/templates/game/trade.html:55
 msgid "nothing"
 msgstr "rien"
 
@@ -196,7 +196,7 @@ msgstr "sur %(total)s"
 msgid "No cards yet"
 msgstr "Aucune carte pour l'instant"
 
-#: game/templates/game/collection.html:16 game/templates/game/trade.html:39
+#: game/templates/game/collection.html:16 game/templates/game/trade.html:49
 #, python-format
 msgid "%(username)s hasn't discovered any cards yet."
 msgstr "%(username)s n'a encore découvert aucune carte."
@@ -295,13 +295,13 @@ msgid "Trade offers"
 msgstr "Offres d'échange"
 
 #: game/templates/game/friends.html:63 game/templates/game/friends.html:89
-#: game/templates/game/trade.html:27
+#: game/templates/game/trade.html:15 game/templates/game/trade.html:37
 #, python-format
 msgid "%(username)s gives"
 msgstr "%(username)s donne"
 
 #: game/templates/game/friends.html:66 game/templates/game/friends.html:86
-#: game/templates/game/trade.html:11
+#: game/templates/game/trade.html:13 game/templates/game/trade.html:21
 msgid "You give"
 msgstr "Vous donnez"
 
@@ -517,15 +517,20 @@ msgstr "Vos propositions"
 msgid "Trade with %(username)s"
 msgstr "Échange avec %(username)s"
 
-#: game/templates/game/trade.html:23
+#: game/templates/game/trade.html:33
 msgid "You don't have any cards yet."
 msgstr "Vous n'avez encore aucune carte."
 
-#: game/templates/game/trade.html:43
+#: game/templates/game/trade.html:53
 msgid "Send offer"
 msgstr "Envoyer l'offre"
 
-#: game/templates/game/trade.html:44
+#: game/templates/game/trade.html:55
+#, python-brace-format
+msgid "{side}: {cards}"
+msgstr "{side} : {cards}"
+
+#: game/templates/game/trade.html:56
 msgid ""
 "Tap cards to pick them. Leave a side empty to send a gift or ask for one."
 msgstr ""
