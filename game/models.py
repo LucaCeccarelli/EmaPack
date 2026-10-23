@@ -90,3 +90,21 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user} ({self.status})"
+
+
+class Trade(models.Model):
+    """A pending offer: `from_user` gives one copy of each `offered` card for one copy of each of
+    `to_user`'s `requested` cards. Either side may be empty (a gift, or a plain ask), not both.
+
+    Only pending offers are stored: accepting moves the Pulls and deletes the row, declining just deletes it.
+    """
+
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_sent")
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trades_received")
+    # Two M2Ms to Card: hidden reverse names must differ ("+" suffix hides them).
+    offered = models.ManyToManyField(Card, related_name="offered_in+")
+    requested = models.ManyToManyField(Card, related_name="requested_in+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_user} -> {self.to_user}"

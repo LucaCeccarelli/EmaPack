@@ -53,6 +53,53 @@
 </section>
 {% endif %}
 
+{% if trades_in %}
+<section class="panel friend-list">
+  <h2>{% trans "Trade offers" %}</h2>
+  <ul>
+    {% for t in trades_in %}
+    <li>
+      <div class="trade-offer">
+        {% blocktrans with username=t.from_user.username asvar gives_label %}{{ username }} gives{% endblocktrans %}
+        {% include "game/_trade_side.html" with label=gives_label cards=t.offered.all %}
+        <span class="trade-arrow" aria-hidden="true">⇄</span>
+        {% trans "You give" as you_give %}
+        {% include "game/_trade_side.html" with label=you_give cards=t.requested.all %}
+      </div>
+      <span class="friend-actions">
+        <form method="post" action="{% url 'trade_accept' t.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
+        <a class="btn small ghost" href="{% url 'trade_new' t.from_user.username %}?counter={{ t.pk }}">{% trans "Counter-offer" %}</a>
+        <form method="post" action="{% url 'trade_remove' t.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if trades_out %}
+<section class="panel friend-list">
+  <h2>{% trans "Sent trade offers" %}</h2>
+  <ul>
+    {% for t in trades_out %}
+    <li>
+      <div class="trade-offer">
+        {% trans "You give" as you_give %}
+        {% include "game/_trade_side.html" with label=you_give cards=t.offered.all %}
+        <span class="trade-arrow" aria-hidden="true">⇄</span>
+        {% blocktrans with username=t.to_user.username asvar gives_label %}{{ username }} gives{% endblocktrans %}
+        {% include "game/_trade_side.html" with label=gives_label cards=t.requested.all %}
+      </div>
+      <span class="friend-actions">
+        <span class="chip">{% trans "Pending" %}</span>
+        <form method="post" action="{% url 'trade_remove' t.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Cancel" %}</button></form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {% if outgoing %}
 <section class="panel friend-list">
   <h2>{% trans "Sent requests" %}</h2>
@@ -79,6 +126,7 @@
       <strong>{{ user.username }}</strong>
       <span class="friend-actions">
         <a class="btn small ghost" href="{% url 'friend_collection' user.username %}">{% trans "View collection" %}</a>
+        <a class="btn small" href="{% url 'trade_new' user.username %}">{% trans "Trade" %}</a>
         <form method="post" action="{% url 'friend_remove' user.friendship_id %}">{% csrf_token %}<button class="btn small ghost">{% trans "Remove" %}</button></form>
       </span>
     </li>

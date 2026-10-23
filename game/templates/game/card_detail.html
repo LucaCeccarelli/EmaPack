@@ -21,6 +21,9 @@
     <div class="prose">
       {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">{% trans "This page has no presentation yet." %}</p>{% endif %}
     </div>
+    {% if owner %}
+    <p class="trade-link"><a class="btn" href="{% url 'trade_new' owner.username %}?want={{ card.pk }}">{% trans "Propose a trade" %}</a></p>
+    {% endif %}
   </section>
 </div>
 {% endblock %}

@@ -86,6 +86,11 @@ main {
 .nav a.active { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .nav a, .nav-logout { white-space: nowrap; }
 .nav-icon { display: none; }
+.nav a { position: relative; }
+.nav-badge {
+  margin-left: 6px; min-width: 1.5em; padding: 0 6px; border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: .75rem; font-weight: 800; line-height: 1.5; text-align: center;
+}
 
 /* Below 600px the top nav becomes a fixed bottom tab bar (a thumb-friendly,
    app-like pattern) instead of being squeezed into the header, where 5
@@ -106,6 +111,7 @@ main {
   }
   .nav-icon { display: block; font-size: 1.25rem; line-height: 1; }
   .nav-label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .nav-badge { position: absolute; top: 0; left: calc(50% + 6px); margin: 0; min-width: 1.4em; font-size: .6rem; }
 }
 
 /* Phones in landscape: wider than 600px so the nav stays in the header, but the
@@ -119,6 +125,7 @@ main {
   .nav a { padding: 8px 12px; }
   .nav-icon { display: block; font-size: 1.2rem; line-height: 1; }
   .nav-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } /* screen readers only */
+  .nav-badge { position: absolute; top: 2px; right: 2px; margin: 0; min-width: 1.4em; font-size: .6rem; }
 }
 
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -352,12 +359,49 @@ main {
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
 .add-friend label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
+.trade-link { margin: 20px 0 0; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab-radio { position: absolute; opacity: 0; pointer-events: none; }
+.tab {
+  padding: 8px 18px; border-radius: 999px; color: var(--muted); font-weight: 700; cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.tab:hover { color: var(--text); background: var(--surface-2); }
+.tab-radio:checked + .tab { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.tab-radio:focus-visible + .tab { outline: 3px solid var(--focus); outline-offset: 2px; }
+.trade:has(#tab-mine:checked) .trade-theirs, .trade:has(#tab-theirs:checked) .trade-mine { display: none; }
+.trade-side { padding: 20px 24px; margin: 0 0 24px; min-width: 0; }
+.trade-side legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } /* the tab already says it */
+.trade-side .grid { --card-w: 160px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); clear: both; }
+@media (max-width: 480px) { .trade-side .grid { --card-w: 140px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+/* A whole card is the checkbox: the real input stays focusable but invisible. */
+.pick { cursor: pointer; }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick:has(input:checked) { outline: 3px solid var(--accent-2); outline-offset: 6px; transform: translateY(-4px); }
+.pick:has(input:checked)::before {
+  content: "✓"; position: absolute; z-index: 2; left: -8px; top: -8px; width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: 50%; background: var(--accent-2); color: var(--bg); font-weight: 900; box-shadow: 0 4px 12px #0008;
+}
+.pick:has(input:focus-visible) { outline: 3px dashed var(--focus); outline-offset: 6px; }
+.trade-submit {
+  position: sticky; bottom: 16px; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  padding: 12px 20px; border-radius: 16px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px);
+  border: 1px solid var(--line-strong);
+}
+@media (max-width: 600px) { .trade-submit { bottom: 84px; } } /* clear the fixed bottom tab bar */
+.trade-submit > div { flex: 1 1 240px; min-width: 0; }
+.trade-summary { margin: 0 0 2px; font-weight: 600; overflow-wrap: anywhere; }
+.tab-count { color: var(--accent-2); }
+.trade-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.trade-offer-side { display: grid; gap: 6px; }
+.trade-mini { --card-w: 96px; display: flex; flex-wrap: wrap; gap: 8px; }
+.trade-arrow { font-size: 1.5rem; color: var(--muted); }
 .add-friend-row { display: flex; flex-wrap: wrap; gap: 10px; }
-.add-friend-row input {
+.add-friend-row input, .add-friend-row select {
   flex: 1 1 160px; min-width: 0; padding: 11px 14px; border-radius: 12px; font: inherit;
   border: 1px solid var(--line-strong); background: var(--bg); color: var(--text);
 }
-.add-friend-row input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+.add-friend-row input:focus, .add-friend-row select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
 .friend-list { padding: 20px 24px; margin-bottom: 24px; }
 .friend-list h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .friend-list ul, .friend-list ol { margin: 0; padding: 0; list-style: none; }

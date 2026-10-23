@@ -1,0 +1,88 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% if counter %}{% blocktrans with username=friend.username %}Counter-offer to {{ username }}{% endblocktrans %}{% else %}{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %}{% endif %} · Pack Ema{% endblock %}
+{% block content %}
+<a class="back" href="{% url 'friends' %}">← {% trans "Friends" %}</a>
+<header class="page-head">
+  {% if counter %}
+  <h1>{% blocktrans with username=friend.username %}Counter-offer to {{ username }}{% endblocktrans %}</h1>
+  <p class="muted">{% blocktrans with username=friend.username %}Starts from {{ username }}'s offer. Change the cards, then send: it replaces their offer.{% endblocktrans %}</p>
+  {% else %}
+  <h1>{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %}</h1>
+  {% endif %}
+</header>
+<div class="trade">
+{# CSS-only tabs: the radios sit outside the form so they're never submitted. #}
+{# Coming from a friend's card (?want=), open their tab so the pre-ticked card shows. #}
+<div class="tabs">
+  <input type="radio" name="tab" id="tab-mine" class="tab-radio"{% if offered or not requested %} checked{% endif %}>
+  <label for="tab-mine" class="tab" data-side="offered" data-label="{% trans 'You give' %}">{% trans "You give" %} <span class="tab-count"></span></label>
+  <input type="radio" name="tab" id="tab-theirs" class="tab-radio"{% if requested and not offered %} checked{% endif %}>
+  {% blocktrans with username=friend.username asvar they_give %}{{ username }} gives{% endblocktrans %}
+  <label for="tab-theirs" class="tab" data-side="requested" data-label="{{ they_give }}">{{ they_give }} <span class="tab-count"></span></label>
+</div>
+<form method="post">
+  {% csrf_token %}
+  {% if counter %}<input type="hidden" name="counter" value="{{ counter.pk }}">{% endif %}
+  <fieldset class="panel trade-side trade-mine">
+    <legend>{% trans "You give" %}</legend>
+    {% if my_cards %}
+    <div class="grid">
+      {% for card in my_cards %}
+      <label class="grid-item pick">
+        <input type="checkbox" name="offered" value="{{ card.pk }}" data-name="{{ card.name }}"{% if card.pk in offered %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        {% include "game/_card.html" %}
+        {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{% trans "You don't have any cards yet." %}</p>
+    {% endif %}
+  </fieldset>
+  <fieldset class="panel trade-side trade-theirs">
+    <legend>{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</legend>
+    {% if their_cards %}
+    <div class="grid">
+      {% for card in their_cards %}
+      <label class="grid-item pick">
+        <input type="checkbox" name="requested" value="{{ card.pk }}" data-name="{{ card.name }}"{% if card.pk in requested %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        {% include "game/_card.html" %}
+        {% if card.copies > 1 %}<span class="copies">×{{ card.copies }}</span>{% endif %}
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{% blocktrans with username=friend.username %}{{ username }} hasn't discovered any cards yet.{% endblocktrans %}</p>
+    {% endif %}
+  </fieldset>
+  <div class="trade-submit">
+    <button class="btn">{% if counter %}{% trans "Send counter-offer" %}{% else %}{% trans "Send offer" %}{% endif %}</button>
+    <div>
+      <p id="trade-summary" class="trade-summary" aria-live="polite" data-msg-side="{% trans '{side}: {cards}' %}" data-msg-nothing="{% trans 'nothing' %}"></p>
+      <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>
+    </div>
+  </div>
+</form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Tab counters + "You give: A, B · ash gives: C" summary, rebuilt on every tick.
+(() => {
+  const form = document.querySelector('.trade form');
+  const summary = document.getElementById('trade-summary');
+  const tabs = [...document.querySelectorAll('.tab[data-side]')];
+  const update = () => {
+    summary.textContent = tabs.map(tab => {
+      const names = [...form.querySelectorAll(`input[name="${tab.dataset.side}"]:checked`)].map(input => input.dataset.name);
+      tab.querySelector('.tab-count').textContent = names.length ? `(${names.length})` : '';
+      return summary.dataset.msgSide
+        .replace('{side}', tab.dataset.label)
+        .replace('{cards}', names.join(', ') || summary.dataset.msgNothing);
+    }).join(' · ');
+  };
+  form.addEventListener('change', update);
+  update();  // boxes can come back ticked (?want=, or a re-render after an error)
+})();
+</script>
+{% endblock %}
