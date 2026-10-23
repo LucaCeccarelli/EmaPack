@@ -337,8 +337,18 @@ main {
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
 .add-friend label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
 .trade-link { margin: 20px 0 0; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab-radio { position: absolute; opacity: 0; pointer-events: none; }
+.tab {
+  padding: 8px 18px; border-radius: 999px; color: var(--muted); font-weight: 700; cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.tab:hover { color: var(--text); background: var(--surface-2); }
+.tab-radio:checked + .tab { color: var(--text); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.tab-radio:focus-visible + .tab { outline: 3px solid var(--focus); outline-offset: 2px; }
+.trade:has(#tab-mine:checked) .trade-theirs, .trade:has(#tab-theirs:checked) .trade-mine { display: none; }
 .trade-side { padding: 20px 24px; margin: 0 0 24px; min-width: 0; }
-.trade-side legend { float: left; width: 100%; margin-bottom: 16px; font-weight: 800; font-size: 1.2rem; }
+.trade-side legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } /* the tab already says it */
 .trade-side .grid { --card-w: 160px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); clear: both; }
 @media (max-width: 480px) { .trade-side .grid { --card-w: 140px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 /* A whole card is the checkbox: the real input stays focusable but invisible. */

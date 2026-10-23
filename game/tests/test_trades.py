@@ -225,3 +225,13 @@ class TradeViewTests(TestCase):
         response = self.client.post(reverse("trade_accept", args=[trade.pk]), follow=True)
         self.assertContains(response, "no longer exists")
         self.assertEqual(owned(self.gary), ["BDE"])
+
+    def test_tabs_open_on_my_cards_by_default(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, 'id="tab-mine" class="tab-radio" checked')
+        self.assertContains(response, 'id="tab-theirs" class="tab-radio">')
+
+    def test_tabs_open_on_the_friend_s_cards_when_coming_from_one(self):
+        response = self.client.get(self.url, {"want": self.bds.pk})
+        self.assertContains(response, 'id="tab-mine" class="tab-radio">')
+        self.assertContains(response, 'id="tab-theirs" class="tab-radio" checked')

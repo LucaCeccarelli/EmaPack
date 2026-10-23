@@ -5,9 +5,18 @@
 <header class="page-head">
   <h1>{% blocktrans with username=friend.username %}Trade with {{ username }}{% endblocktrans %}</h1>
 </header>
+<div class="trade">
+{# CSS-only tabs: the radios sit outside the form so they're never submitted. #}
+{# Coming from a friend's card (?want=), open their tab so the pre-ticked card shows. #}
+<div class="tabs">
+  <input type="radio" name="tab" id="tab-mine" class="tab-radio"{% if offered or not requested %} checked{% endif %}>
+  <label for="tab-mine" class="tab">{% trans "You give" %}</label>
+  <input type="radio" name="tab" id="tab-theirs" class="tab-radio"{% if requested and not offered %} checked{% endif %}>
+  <label for="tab-theirs" class="tab">{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</label>
+</div>
 <form method="post">
   {% csrf_token %}
-  <fieldset class="panel trade-side">
+  <fieldset class="panel trade-side trade-mine">
     <legend>{% trans "You give" %}</legend>
     {% if my_cards %}
     <div class="grid">
@@ -23,7 +32,7 @@
     <p class="muted">{% trans "You don't have any cards yet." %}</p>
     {% endif %}
   </fieldset>
-  <fieldset class="panel trade-side">
+  <fieldset class="panel trade-side trade-theirs">
     <legend>{% blocktrans with username=friend.username %}{{ username }} gives{% endblocktrans %}</legend>
     {% if their_cards %}
     <div class="grid">
@@ -44,4 +53,5 @@
     <span class="muted small">{% trans "Tap cards to pick them. Leave a side empty to send a gift or ask for one." %}</span>
   </div>
 </form>
+</div>
 {% endblock %}
