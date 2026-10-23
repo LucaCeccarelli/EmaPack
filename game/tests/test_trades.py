@@ -89,3 +89,45 @@ class TradeLogicTests(TestCase):
             remove_trade(stranger, trade.pk)
         remove_trade(self.gary, trade.pk)
         self.assertFalse(Trade.objects.exists())
+
+
+class TradeViewTests(TestCase):
+    def setUp(self):
+        self.ash = User.objects.create_user("ash", password="pw")
+        self.gary = User.objects.create_user("gary", password="pw")
+        accept_request(self.gary, send_request(self.ash, "gary").pk)
+        self.bde, self.bds = make_card("BDE"), make_card("BDS")
+        give(self.ash, self.bde)
+        give(self.gary, self.bds)
+        self.client.force_login(self.ash)
+
+    def test_friend_card_page_offers_my_cards(self):
+        response = self.client.get(reverse("friend_card_detail", args=["gary", self.bds.pk]))
+        self.assertContains(response, f'action="{reverse("trade_propose", args=["gary", self.bds.pk])}"')
+        self.assertContains(response, f'<option value="{self.bde.pk}">BDE')
+
+    def test_own_card_page_has_no_trade_form(self):
+        response = self.client.get(reverse("card_detail", args=[self.bde.pk]))
+        self.assertNotContains(response, "trade-form")
+
+    def test_full_trade_through_the_ui(self):
+        response = self.client.post(reverse("trade_propose", args=["gary", self.bds.pk]), {"offered": self.bde.pk})
+        self.assertRedirects(response, reverse("friends"))
+        self.assertContains(self.client.get(reverse("friends")), "Sent trade offers")
+
+        self.client.force_login(self.gary)
+        self.assertContains(self.client.get(reverse("friends")), "Trade offers")
+        trade = Trade.objects.get()
+        self.client.post(reverse("trade_accept", args=[trade.pk]))
+        self.assertEqual(owned(self.ash), ["BDS"])
+        self.assertEqual(owned(self.gary), ["BDE"])
+
+    def test_tampered_offer_is_flashed_not_crashing(self):
+        response = self.client.post(reverse("trade_propose", args=["gary", self.bds.pk]), {"offered": "x"}, follow=True)
+        self.assertContains(response, "Pick a card you own")
+        self.assertFalse(Trade.objects.exists())
+
+    def test_trade_endpoints_reject_get(self):
+        self.assertEqual(self.client.get(reverse("trade_propose", args=["gary", self.bds.pk])).status_code, 405)
+        self.assertEqual(self.client.get(reverse("trade_accept", args=[1])).status_code, 405)
+        self.assertEqual(self.client.get(reverse("trade_remove", args=[1])).status_code, 405)

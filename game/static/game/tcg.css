@@ -335,13 +335,14 @@ main {
 
 /* ---------- Friends ---------- */
 .add-friend { padding: 20px 24px; margin-bottom: 24px; }
-.add-friend label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
+.add-friend label, .trade-form label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .9rem; }
+.trade-form { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
 .add-friend-row { display: flex; flex-wrap: wrap; gap: 10px; }
-.add-friend-row input {
+.add-friend-row input, .add-friend-row select {
   flex: 1 1 160px; min-width: 0; padding: 11px 14px; border-radius: 12px; font: inherit;
   border: 1px solid var(--line-strong); background: var(--bg); color: var(--text);
 }
-.add-friend-row input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+.add-friend-row input:focus, .add-friend-row select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
 .friend-list { padding: 20px 24px; margin-bottom: 24px; }
 .friend-list h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .friend-list ul, .friend-list ol { margin: 0; padding: 0; list-style: none; }

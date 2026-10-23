@@ -18,7 +18,8 @@ def propose_trade(user, friend_username, requested_id, offered_id):
     requested = Card.objects.filter(pk=requested_id, pulls__user=friend).first()
     if not requested:
         raise TradeError(_("%(username)s doesn't own that card.") % {"username": friend.username})
-    offered = Card.objects.filter(pk=offered_id, pulls__user=user).first()
+    # Comes straight from a <select>: a tampered, non-numeric id would make the lookup raise.
+    offered = str(offered_id).isdigit() and Card.objects.filter(pk=offered_id, pulls__user=user).first()
     if not offered:
         raise TradeError(_("Pick a card you own to offer."))
     return Trade.objects.create(from_user=user, to_user=friend, offered=offered, requested=requested)

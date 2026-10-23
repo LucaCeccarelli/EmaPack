@@ -21,6 +21,22 @@
     <div class="prose">
       {% if card.description %}{{ card.description|linebreaks }}{% else %}<p class="muted">{% trans "This page has no presentation yet." %}</p>{% endif %}
     </div>
+    {% if owner %}
+    <form class="trade-form" method="post" action="{% url 'trade_propose' owner.username card.pk %}">
+      {% csrf_token %}
+      <label for="offered">{% blocktrans with username=owner.username %}Offer {{ username }} one of your cards for this one{% endblocktrans %}</label>
+      {% if my_cards %}
+      <div class="add-friend-row">
+        <select name="offered" id="offered" required>
+          {% for mine in my_cards %}<option value="{{ mine.pk }}">{{ mine.name }} ({{ mine.get_rarity_display }})</option>{% endfor %}
+        </select>
+        <button class="btn">{% trans "Propose trade" %}</button>
+      </div>
+      {% else %}
+      <p class="muted">{% trans "You don't have any cards to offer yet." %}</p>
+      {% endif %}
+    </form>
+    {% endif %}
   </section>
 </div>
 {% endblock %}

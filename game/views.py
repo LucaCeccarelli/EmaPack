@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from . import friends as friend_logic
+from . import trades as trade_logic
 from .management.commands.import_komi import HEX_COLOR
 from .models import Card, Friendship, Rarity, Status, User
 from .packs import PackUnavailable, open_pack
@@ -212,9 +213,10 @@ def card_detail(request, pk, username=None):
             raise Http404
     card = get_object_or_404(Card.objects.filter(pulls__user=owner).distinct(), pk=pk)
     copies = owner.pulls.filter(card=card).count()
-    return render(request, "game/card_detail.html", {
-        "card": card, "copies": copies, "owner": owner if username is not None else None,
-    })
+    context = {"card": card, "copies": copies, "owner": owner if username is not None else None}
+    if username is not None:  # a friend's card: offer one of yours for it
+        context["my_cards"] = Card.objects.filter(pulls__user=request.user).distinct().order_by("name")
+    return render(request, "game/card_detail.html", context)
 
 
 @login_required
@@ -235,6 +237,8 @@ def friends(request):
         "outgoing": Friendship.objects.filter(
             from_user=request.user, status=Friendship.Status.PENDING
         ).select_related("to_user"),
+        "trades_in": request.user.trades_received.select_related("from_user", "offered", "requested"),
+        "trades_out": request.user.trades_sent.select_related("to_user", "offered", "requested"),
     })
 
 
@@ -285,6 +289,38 @@ def friend_collection(request, username):
         .order_by("-rarity", "name")
     )
     return _render_collection(request, cards, friend, owner=friend)
+
+
+@login_required
+@require_POST
+def trade_propose(request, username, pk):
+    try:
+        trade_logic.propose_trade(request.user, username, pk, request.POST.get("offered"))
+        messages.success(request, _("Trade offer sent!"))
+    except trade_logic.TradeError as e:
+        messages.error(request, str(e))
+    return redirect("friends")
+
+
+@login_required
+@require_POST
+def trade_accept(request, pk):
+    try:
+        trade_logic.accept_trade(request.user, pk)
+        messages.success(request, _("Trade done! Check your collection."))
+    except trade_logic.TradeError as e:
+        messages.error(request, str(e))
+    return redirect("friends")
+
+
+@login_required
+@require_POST
+def trade_remove(request, pk):
+    try:
+        trade_logic.remove_trade(request.user, pk)
+    except trade_logic.TradeError as e:
+        messages.error(request, str(e))
+    return redirect("friends")
 
 
 @login_required
