@@ -5,8 +5,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from game.battles import (
-    CHALLENGE_TTL, PICK_TIME, STATS, BattleError, accept_challenge, challenge, deck_problem,
-    remove_challenge, save_deck,
+    CHALLENGE_TTL, PICK_TIME, REVEAL_TIME, ROUNDS, STATS, BattleError, accept_challenge, advance, challenge,
+    deck_problem, play_card, record, remaining_cards, remove_challenge, save_deck, scores,
 )
 from game.models import Battle, Card, Friendship, Pull, Rarity, User
 
@@ -187,3 +187,143 @@ class ChallengeTests(TestCase):
         b = accept_challenge(self.gary, challenge(self.ash, "gary", now=T0).pk, now=T0)
         with self.assertRaises(BattleError):
             remove_challenge(self.ash, b.pk)
+
+
+S5 = timedelta(seconds=5)
+
+
+class PlayTests(TestCase):
+    def setUp(self):
+        self.ash, self.gary, self.misty = (User.objects.create_user(n, password="pw") for n in ("ash", "gary", "misty"))
+        Friendship.objects.create(from_user=self.ash, to_user=self.gary, status=Friendship.Status.ACCEPTED)
+        # strong beats weak on every stat; tie_a/tie_b are equal on every stat
+        self.strong = self.deck(self.ash, 100)
+        self.weak = self.deck(self.gary, 1)
+
+    def deck(self, user, v):
+        cards = [make_card(f"{user.username}{i}", subs=v, posts=v, events=v) for i in range(5)]
+        for c in cards:
+            give(user, c)
+        save_deck(user, [str(c.pk) for c in cards])
+        return cards
+
+    def start(self, now=T0):
+        return accept_challenge(self.gary, challenge(self.ash, "gary", now=now).pk, now=now)
+
+    def play_round(self, b, ash_card, gary_card, now=T0):
+        play_card(self.ash, b.pk, str(ash_card.pk), now=now)
+        play_card(self.gary, b.pk, str(gary_card.pk), now=now)
+        b.refresh_from_db()
+
+    def test_higher_value_wins_round_and_next_round_starts(self):
+        b = self.start()
+        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        play_card(self.gary, b.pk, str(self.weak[0].pk), now=T0 + S5)
+        self.assertEqual(scores(b), (1, 0))
+        self.assertEqual(b.rounds.get(number=2).deadline, T0 + S5 + REVEAL_TIME + PICK_TIME)
+
+    def test_equal_values_draw_the_round(self):
+        self.weak = self.deck(self.gary, 100)
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        self.assertEqual(scores(b), (0, 0))
+        self.assertEqual(b.rounds.count(), 2)
+
+    def test_battle_stops_when_trailing_player_cannot_draw(self):
+        b = self.start()
+        for i in range(3):
+            self.play_round(b, self.strong[i], self.weak[i])
+        self.assertEqual((b.status, b.winner), (Battle.Status.FINISHED, self.ash))
+        self.assertEqual(b.rounds.count(), 3)
+
+    def test_battle_continues_while_draw_still_possible(self):
+        b = self.start()
+        for i in range(2):
+            self.play_round(b, self.strong[i], self.weak[i])
+        self.assertEqual(b.status, Battle.Status.ACTIVE)
+
+    def test_all_rounds_drawn_is_a_drawn_battle(self):
+        self.weak = self.deck(self.gary, 100)
+        b = self.start()
+        for i in range(ROUNDS):
+            self.play_round(b, self.strong[i], self.weak[i])
+        self.assertEqual((b.status, b.winner, b.rounds.count()), (Battle.Status.FINISHED, None, ROUNDS))
+
+    def test_cannot_play_twice_in_a_round(self):
+        b = self.start()
+        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        with self.assertRaises(BattleError):
+            play_card(self.ash, b.pk, str(self.strong[1].pk), now=T0)
+        self.assertEqual(b.rounds.get(number=1).challenger_card, self.strong[0])
+
+    def test_cannot_replay_a_card(self):
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        with self.assertRaises(BattleError):
+            play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        self.assertIsNone(b.rounds.get(number=2).challenger_card)
+
+    def test_cannot_play_card_outside_deck_or_tampered(self):
+        b = self.start()
+        for bad in (str(self.weak[0].pk), "abc", ""):
+            with self.assertRaises(BattleError):
+                play_card(self.ash, b.pk, bad, now=T0)
+        self.assertIsNone(b.rounds.get(number=1).challenger_card)
+
+    def test_outsider_cannot_play(self):
+        b = self.start()
+        with self.assertRaises(BattleError):
+            play_card(self.misty, b.pk, str(self.strong[0].pk), now=T0)
+
+    def test_timeout_auto_plays_missing_side(self):
+        b = self.start()
+        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        advance(b, T0 + PICK_TIME + S5 / 5)
+        r1 = b.rounds.get(number=1)
+        self.assertIn(str(r1.opponent_card_id), b.opponent_deck)
+        self.assertEqual(r1.challenger_card, self.strong[0])
+        self.assertEqual(b.rounds.get(number=2).deadline, T0 + PICK_TIME + REVEAL_TIME + PICK_TIME)
+
+    def test_late_pick_is_rejected(self):
+        b = self.start()
+        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        late = T0 + PICK_TIME + S5 / 5
+        advance(b, late)
+        auto = b.rounds.get(number=1).opponent_card_id
+        with self.assertRaises(BattleError):
+            play_card(self.gary, b.pk, str(auto), now=late)
+
+    def test_advance_catches_up_every_overdue_round(self):
+        b = self.start()
+        advance(b, T0 + timedelta(minutes=10))
+        self.assertEqual(b.status, Battle.Status.FINISHED)
+        rounds = list(b.rounds.all())
+        self.assertGreaterEqual(len(rounds), 3)
+        for side in ("challenger", "opponent"):
+            ids = [getattr(r, f"{side}_card_id") for r in rounds]
+            self.assertNotIn(None, ids)
+            self.assertEqual(len(set(ids)), len(ids))
+        self.assertEqual(remaining_cards(b, "challenger"), [c for c in b.challenger_deck if int(c) not in
+                         [r.challenger_card_id for r in rounds]])
+
+    def test_abandoned_battle_finishes_on_next_challenge(self):
+        b = self.start()
+        challenge(self.ash, "gary", now=T0 + timedelta(minutes=10))
+        b.refresh_from_db()
+        self.assertEqual(b.status, Battle.Status.FINISHED)
+
+    def test_record(self):
+        for winner_strong in (True, False, None):
+            if winner_strong is None:
+                self.weak = self.deck(self.gary, 100)
+                self.strong = self.deck(self.ash, 100)
+            elif not winner_strong:
+                self.strong, self.weak = self.deck(self.ash, 1), self.deck(self.gary, 100)
+            b = self.start()
+            for i in range(ROUNDS):
+                if b.status != Battle.Status.ACTIVE:
+                    break
+                self.play_round(b, self.strong[i], self.weak[i])
+        self.assertEqual(record(self.ash), {"wins": 1, "losses": 1, "draws": 1})
+        self.assertEqual(record(self.gary), {"wins": 1, "losses": 1, "draws": 1})
+        self.assertEqual(record(self.misty), {"wins": 0, "losses": 0, "draws": 0})

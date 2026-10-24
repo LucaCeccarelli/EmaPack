@@ -2,7 +2,7 @@ import random
 from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -53,8 +53,87 @@ def save_deck(user, card_ids):
     user.deck.set(cards)
 
 
+def scores(battle):
+    """(challenger, opponent) points over resolved rounds; a drawn round scores nothing."""
+    ch = op = 0
+    for r in battle.rounds.filter(challenger_card__isnull=False, opponent_card__isnull=False):
+        a = battle.challenger_deck[str(r.challenger_card_id)][r.stat]
+        b = battle.opponent_deck[str(r.opponent_card_id)][r.stat]
+        ch += a > b
+        op += b > a
+    return ch, op
+
+
+def remaining_cards(battle, side):
+    """Card ids (strings) in `side`'s snapshot that it hasn't played yet."""
+    deck = battle.challenger_deck if side == "challenger" else battle.opponent_deck
+    played = {str(pk) for pk in battle.rounds.values_list(f"{side}_card_id", flat=True) if pk}
+    return [cid for cid in deck if cid not in played]
+
+
+def _resolve(battle, rnd, t):
+    """Both cards of `rnd` are in: start the next round, or finish if the result is settled."""
+    ch, op = scores(battle)
+    left = ROUNDS - rnd.number
+    if abs(ch - op) > left or left == 0:
+        battle.status = Battle.Status.FINISHED
+        battle.winner = battle.challenger if ch > op else battle.opponent if op > ch else None
+        battle.save()
+    else:
+        BattleRound.objects.create(
+            battle=battle, number=rnd.number + 1, stat=random.choice(STATS), deadline=t + REVEAL_TIME + PICK_TIME,
+        )
+
+
 def advance(battle, now=None):
-    """Play out whatever the clock has settled (timed-out picks, finished reveals). Task 3 fills this in."""
+    """Play out whatever the clock has settled: overdue rounds get random cards for whoever hasn't picked.
+    Takes the battle's row lock itself and leaves `battle` fresh.
+    """
+    now = now or timezone.now()
+    with transaction.atomic():
+        locked = Battle.objects.select_for_update().get(pk=battle.pk)
+        while locked.status == Battle.Status.ACTIVE:
+            rnd = locked.rounds.last()
+            if rnd.deadline > now:
+                break
+            if rnd.challenger_card_id is None:
+                rnd.challenger_card_id = int(random.choice(remaining_cards(locked, "challenger")))
+            if rnd.opponent_card_id is None:
+                rnd.opponent_card_id = int(random.choice(remaining_cards(locked, "opponent")))
+            rnd.save()
+            _resolve(locked, rnd, rnd.deadline)
+    battle.refresh_from_db()
+
+
+def play_card(user, battle_id, card_id, now=None):
+    """Pick a card for the current round; resolves the round once both sides have picked."""
+    now = now or timezone.now()
+    with transaction.atomic():
+        battle = Battle.objects.select_for_update().filter(_mine(user), pk=battle_id).first()
+        if not battle:
+            raise BattleError(_("This battle is over."))
+        advance(battle, now)  # a late pick finds its round already played
+        if battle.status != Battle.Status.ACTIVE:
+            raise BattleError(_("This battle is over."))
+        side = "challenger" if battle.challenger_id == user.pk else "opponent"
+        rnd = battle.rounds.last()
+        if getattr(rnd, f"{side}_card_id") is not None:
+            raise BattleError(_("You already played this round."))
+        if str(card_id) not in remaining_cards(battle, side):
+            raise BattleError(_("Pick a card from your deck that you haven't played yet."))
+        setattr(rnd, f"{side}_card_id", int(card_id))
+        rnd.save()
+        if rnd.challenger_card_id is not None and rnd.opponent_card_id is not None:
+            _resolve(battle, rnd, now)
+    return battle
+
+
+def record(user):
+    return Battle.objects.filter(_mine(user), status=Battle.Status.FINISHED).aggregate(
+        wins=Count("pk", filter=Q(winner=user)),
+        losses=Count("pk", filter=~Q(winner=user) & Q(winner__isnull=False)),
+        draws=Count("pk", filter=Q(winner__isnull=True)),
+    )
 
 
 def _live(now):
