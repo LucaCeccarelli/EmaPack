@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 11:01+0000\n"
+"POT-Creation-Date: 2026-10-24 11:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,58 +17,58 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
 
-#: game/battles.py:30
+#: game/battles.py:31
 #, python-format
 msgid "A deck needs exactly %(size)s different cards."
 msgstr "Un deck doit contenir exactement %(size)s cartes différentes."
 
-#: game/battles.py:33
+#: game/battles.py:34
 #, python-format
 msgid "At most %(count)s %(rarity)s card(s) per deck."
 msgstr "Au maximum %(count)s carte(s) %(rarity)s par deck."
 
-#: game/battles.py:43 game/battles.py:50
+#: game/battles.py:44 game/battles.py:51
 msgid "You can only use cards you own."
 msgstr "Vous ne pouvez utiliser que des cartes que vous possédez."
 
-#: game/battles.py:115 game/battles.py:118
+#: game/battles.py:116 game/battles.py:119
 msgid "This battle is over."
 msgstr "Ce combat est terminé."
 
-#: game/battles.py:122
+#: game/battles.py:123
 msgid "That round is already over."
-msgstr "Ce round est déjà terminé."
+msgstr "Cette manche est déjà terminé."
 
-#: game/battles.py:124
+#: game/battles.py:125
 msgid "You already played this round."
-msgstr "Vous avez déjà joué ce round."
+msgstr "Vous avez déjà joué cette manche."
 
-#: game/battles.py:126
+#: game/battles.py:127
 msgid "Pick a card from your deck that you haven't played yet."
 msgstr "Choisissez une carte de votre deck que vous n'avez pas encore jouée."
 
-#: game/battles.py:156
+#: game/battles.py:157
 msgid "You can't challenge yourself."
 msgstr "Vous ne pouvez pas vous défier vous-même."
 
-#: game/battles.py:158 game/battles.py:198
+#: game/battles.py:159 game/battles.py:203
 msgid "You can only battle your friends."
 msgstr "Vous ne pouvez affronter que vos amis."
 
-#: game/battles.py:170
+#: game/battles.py:171
 msgid "You're already in a battle."
 msgstr "Vous êtes déjà dans un combat."
 
-#: game/battles.py:172
+#: game/battles.py:173
 #, python-format
 msgid "%(username)s is already in a battle."
 msgstr "%(username)s est déjà dans un combat."
 
-#: game/battles.py:196 game/battles.py:225 game/battles.py:245
+#: game/battles.py:201 game/battles.py:230 game/battles.py:250
 msgid "That challenge no longer exists."
 msgstr "Ce défi n'existe plus."
 
-#: game/battles.py:200
+#: game/battles.py:205
 #, python-format
 msgid "%(username)s's deck is no longer valid, so the challenge was cancelled."
 msgstr "Le deck de %(username)s n'est plus valide, le défi a donc été annulé."
@@ -168,6 +168,10 @@ msgstr "Amis"
 msgid "Battles"
 msgstr "Combats"
 
+#: game/templates/base.html:31
+msgid "Incoming challenge"
+msgstr "Défi reçu"
+
 #: game/templates/base.html:32 game/templates/game/leaderboard.html:2
 #: game/templates/game/leaderboard.html:5
 msgid "Leaderboard"
@@ -232,7 +236,6 @@ msgstr "rien"
 
 #: game/templates/game/battle.html:2 game/templates/game/battle.html:20
 #, python-format
-#| msgid "Trade with %(username)s"
 msgid "Battle vs %(username)s"
 msgstr "Combat contre %(username)s"
 
@@ -282,7 +285,6 @@ msgid "Draw"
 msgstr "Égalité"
 
 #: game/templates/game/battle.html:15
-#| msgid "Current battle"
 msgid "You won the battle!"
 msgstr "Vous avez gagné le combat !"
 
@@ -299,7 +301,6 @@ msgid "Record"
 msgstr "Bilan"
 
 #: game/templates/game/battle.html:16
-#| msgid "Battles"
 msgid "Back to battles"
 msgstr "Retour aux combats"
 
@@ -881,7 +882,7 @@ msgstr "Deck enregistré !"
 msgid "Challenge sent!"
 msgstr "Défi envoyé !"
 
-#: game/views.py:470
+#: game/views.py:474
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"

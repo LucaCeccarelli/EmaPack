@@ -414,6 +414,11 @@ class StateTests(PlayTests):
         for c in self.weak[3:]:  # never played: still secret
             self.assertNotIn(c.name, json.dumps(s))
 
+    def test_round_reports_seconds_left(self):
+        b = self.start()
+        self.assertEqual(battle_state(self.ash, b, now=T0)["round"]["seconds_left"], 30)
+        self.assertEqual(battle_state(self.ash, b, now=T0 + timedelta(seconds=10, milliseconds=500))["round"]["seconds_left"], 20)
+
     def test_pending_state(self):
         b = challenge(self.ash, "gary", now=T0)
         s = battle_state(self.gary, b, now=T0)
@@ -527,6 +532,21 @@ class LiveBattleViewTests(ViewBase):
         accept_challenge(self.gary, self.b.pk)
         self.state_url = reverse("battle_state", args=[self.b.pk])
         self.play_url = reverse("battle_play", args=[self.b.pk])
+
+    def test_expired_pending_challenge_is_gone(self):
+        self.client.force_login(self.ash)
+        other = Battle.objects.create(challenger=self.ash, opponent=self.misty,
+                                      created_at=timezone.now() - CHALLENGE_TTL - timedelta(seconds=1))
+        for name in ("battle_state", "battle"):
+            self.assertEqual(self.client.get(reverse(name, args=[other.pk])).status_code, 404)
+
+    def test_nav_badge_for_incoming_challenge(self):
+        self.b.delete()
+        challenge(self.ash, "gary")
+        self.client.force_login(self.gary)
+        self.assertContains(self.client.get(reverse("battles")), "nav-badge")
+        self.client.force_login(self.ash)
+        self.assertNotContains(self.client.get(reverse("battles")), "nav-badge")
 
     def test_state_endpoint_is_participant_only(self):
         self.assertEqual(self.client.get(self.state_url).status_code, 200)

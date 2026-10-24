@@ -417,7 +417,10 @@ def battle_remove(request, pk):
 
 
 def _my_battle(request, pk):
-    return get_object_or_404(Battle.objects.filter(Q(challenger=request.user) | Q(opponent=request.user)), pk=pk)
+    # An expired pending challenge is gone for both sides (404 sends the battle page back to the hub).
+    expired = Q(status=Battle.Status.PENDING, created_at__lte=timezone.now() - battle_logic.CHALLENGE_TTL)
+    mine = Battle.objects.filter(Q(challenger=request.user) | Q(opponent=request.user)).exclude(expired)
+    return get_object_or_404(mine, pk=pk)
 
 
 def _battle_json(request, battle, status=200, **extra):
@@ -433,6 +436,7 @@ def battle(request, pk):
     return render(request, "game/battle.html", {
         "battle": battle, "other": battle.opponent if battle.challenger_id == request.user.pk else battle.challenger,
         "stats": battle_logic.STATS, "rounds": battle_logic.ROUNDS,
+        "pick_seconds": int(battle_logic.PICK_TIME.total_seconds()),
     })
 
 

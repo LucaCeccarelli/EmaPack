@@ -2,7 +2,7 @@
 {% block title %}{% blocktrans with username=other.username %}Battle vs {{ username }}{% endblocktrans %} · Pack Ema{% endblock %}
 {% block content %}
 <div class="battle" id="battle" data-state-url="{% url 'battle_state' battle.pk %}" data-play-url="{% url 'battle_play' battle.pk %}"
-     data-battles-url="{% url 'battles' %}"
+     data-battles-url="{% url 'battles' %}" data-pick-seconds="{{ pick_seconds }}"
      {% for stat in stats %}data-stat-{{ stat }}="{% if stat == 'subscriber_count' %}{% trans 'Subs' %}{% elif stat == 'post_count' %}{% trans 'Posts' %}{% else %}{% trans 'Events' %}{% endif %}"
      {% endfor %}data-msg-round="{% trans 'Round {n}' %}"
      data-msg-time="{% trans '{s}s left' %}"

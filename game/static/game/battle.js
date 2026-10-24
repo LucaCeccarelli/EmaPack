@@ -6,7 +6,8 @@
   const fmt = (msg, vars) => msg.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
   const stat = key => root.getAttribute(`data-stat-${key}`);
   const POLL_MS = 1500;
-  let state = null, shown = '', seenRounds = null, timer = null;
+  let state = null, shown = '', seenRounds = null, timer = null, poller = null, leftAt = 0, busy = false;
+  const PICK = Number(d.pickSeconds);
 
   function showError(text) { $('error').textContent = text || ''; $('error').hidden = !text; }
 
@@ -37,6 +38,7 @@
 
   function apply(s) {
     state = s;
+    leftAt = performance.now(); // seconds_left is server-computed; count down from when it arrived
     if (pending) { if (s.status !== 'pending') location.reload(); return; }
     const r = s.round;
     $('score').textContent = `${d.msgYou} ${s.score.you} – ${s.score.opponent} ${s.opponent}`;
@@ -68,6 +70,7 @@
         <a class="btn small" href="${d.battlesUrl}">${d.msgBack}${rec ? ` · ${d.msgRecord}: ${rec.wins}-${rec.losses}-${rec.draws}` : ''}</a>`;
       $('timer').textContent = '';
       clearInterval(timer); timer = null;
+      clearInterval(poller); poller = null;
       return;
     }
     tick();
@@ -75,24 +78,29 @@
 
   function tick() {
     if (!state || !state.round) return;
-    const left = Math.max(0, Math.ceil((new Date(state.round.deadline) - Date.now()) / 1000));
-    $('timer').textContent = fmt(d.msgTime, { s: left });
+    const left = Math.max(0, Math.ceil(state.round.seconds_left - (performance.now() - leftAt) / 1000));
+    // Between rounds the new round already exists but its timer hasn't started: show the reveal, hold the hand.
+    const waiting = left > PICK;
+    $('timer').textContent = waiting ? '' : fmt(d.msgTime, { s: left });
+    document.querySelectorAll('.hand-card').forEach(b => { b.disabled = waiting || state.round.you_picked || busy; });
   }
 
   $('hand')?.addEventListener('click', async e => {
     const btn = e.target.closest('.hand-card');
     if (!btn || btn.disabled || !state.round) return;
     const round = state.round.number; // the round the player was looking at, so a late click can't land in the next one
+    busy = true;
     document.querySelectorAll('.hand-card').forEach(b => { b.disabled = true; });
     const body = new URLSearchParams({ card: btn.dataset.id, round });
     try {
       const res = await fetch(d.playUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf }, body });
       const data = await load(res);
-      if (res.ok) { showError(''); apply(data); } else { showError(data.error || d.msgError); if (data.state) apply(data.state); }
-    } catch (err) { if (err.message !== 'gone') showError(d.msgError); }
+      busy = false;
+      if (res.ok) { showError(''); apply(data); } else { showError(data.error || d.msgError); shown = ''; if (data.state) apply(data.state); else apply(state); }
+    } catch (err) { busy = false; shown = ''; apply(state); if (err.message !== 'gone') showError(d.msgError); }
   });
 
   poll();
-  setInterval(poll, POLL_MS);
+  poller = setInterval(poll, POLL_MS);
   timer = setInterval(tick, 250);
 })();

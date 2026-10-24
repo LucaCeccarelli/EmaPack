@@ -1,3 +1,4 @@
+import math
 import random
 from datetime import timedelta
 
@@ -186,7 +187,11 @@ def accept_challenge(user, battle_id, now=None):
     """
     now = now or timezone.now()
     error = None
+    # Plain read to learn who is involved: users are always locked before the battle (see challenge()).
+    ids = Battle.objects.filter(pk=battle_id, opponent=user).values_list("challenger_id", flat=True).first()
     with transaction.atomic():
+        if ids is not None:
+            list(User.objects.select_for_update().filter(pk__in=[ids, user.pk]).order_by("pk"))
         battle = (
             Battle.objects.select_for_update().select_related("challenger")
             .filter(pk=battle_id, opponent=user, status=Battle.Status.PENDING, created_at__gt=now - CHALLENGE_TTL)
@@ -271,6 +276,7 @@ def battle_state(user, battle, request=None, now=None):
         "score": {"you": mine, "opponent": theirs},
         "round": live and {
             "number": live.number, "stat": live.stat, "deadline": live.deadline.isoformat(),
+            "seconds_left": max(0, math.ceil((live.deadline - (now or timezone.now())).total_seconds())),
             "you_picked": my_pick is not None, "opponent_picked": getattr(live, f"{them}_card_id") is not None,
         } or None,
         "hand": [{"id": pk, "html": html(pk)} for pk in hand_ids if pk != my_pick],
