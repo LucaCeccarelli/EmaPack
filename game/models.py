@@ -1,11 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
     # None = never opened a pack, so one is available right away.
     next_pack_at = models.DateTimeField(null=True, blank=True)
+    deck = models.ManyToManyField("Card", blank=True, related_name="+")  # battle deck (5 owned cards)
 
 
 class Rarity(models.IntegerChoices):
@@ -108,3 +110,38 @@ class Trade(models.Model):
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}"
+
+
+class Battle(models.Model):
+    """A best-of-5 stat duel between two friends. Decks are frozen (with their stats) once it's accepted."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACTIVE = "active", "Active"
+        FINISHED = "finished", "Finished"
+
+    challenger = models.ForeignKey(User, on_delete=models.CASCADE, related_name="battles_sent")
+    opponent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="battles_received")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    # {"<card id>": {"subscriber_count": n, "post_count": n, "event_count": n}}
+    challenger_deck = models.JSONField(default=dict)
+    opponent_deck = models.JSONField(default=dict)
+    # A finished battle with no winner is a draw.
+    winner = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="+")
+
+    def __str__(self):
+        return f"{self.challenger} vs {self.opponent} ({self.status})"
+
+
+class BattleRound(models.Model):
+    battle = models.ForeignKey(Battle, on_delete=models.CASCADE, related_name="rounds")
+    number = models.PositiveSmallIntegerField()  # 1..5
+    stat = models.CharField(max_length=20)
+    deadline = models.DateTimeField()
+    challenger_card = models.ForeignKey(Card, null=True, on_delete=models.CASCADE, related_name="+")
+    opponent_card = models.ForeignKey(Card, null=True, on_delete=models.CASCADE, related_name="+")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["battle", "number"], name="unique_battle_round")]
+        ordering = ["number"]

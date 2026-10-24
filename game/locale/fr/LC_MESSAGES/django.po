@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-23 21:48+0000\n"
+"POT-Creation-Date: 2026-10-24 10:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
+
+#: game/battles.py:24
+#, python-format
+msgid "A deck needs exactly %(size)s different cards."
+msgstr "Un deck doit contenir exactement %(size)s cartes différentes."
+
+#: game/battles.py:27
+#, python-format
+msgid "At most %(count)s %(rarity)s card(s) per deck."
+msgstr "Au maximum %(count)s carte(s) %(rarity)s par deck."
+
+#: game/battles.py:37 game/battles.py:44
+msgid "You can only use cards you own."
+msgstr "Vous ne pouvez utiliser que des cartes que vous possédez."
 
 #: game/friends.py:40
 #, python-format
@@ -40,35 +54,35 @@ msgstr "Vous avez déjà envoyé une demande à %(username)s."
 msgid "That request no longer exists."
 msgstr "Cette demande n'existe plus."
 
-#: game/models.py:12
+#: game/models.py:14
 msgid "Common"
 msgstr "Commune"
 
-#: game/models.py:13
+#: game/models.py:15
 msgid "Uncommon"
 msgstr "Peu commune"
 
-#: game/models.py:14
+#: game/models.py:16
 msgid "Rare"
 msgstr "Rare"
 
-#: game/models.py:15
+#: game/models.py:17
 msgid "Epic"
 msgstr "Épique"
 
-#: game/models.py:16
+#: game/models.py:18
 msgid "Legendary"
 msgstr "Légendaire"
 
-#: game/models.py:20
+#: game/models.py:22
 msgid "Pending review"
 msgstr "En attente de validation"
 
-#: game/models.py:21
+#: game/models.py:23
 msgid "Approved"
 msgstr "Approuvée"
 
-#: game/models.py:22
+#: game/models.py:24
 msgid "Rejected"
 msgstr "Refusée"
 
@@ -531,7 +545,9 @@ msgstr "Échange avec %(username)s"
 msgid ""
 "Starts from %(username)s's offer. Change the cards, then send: it replaces "
 "their offer."
-msgstr "Part de l'offre de %(username)s. Modifiez les cartes puis envoyez : elle remplacera son offre."
+msgstr ""
+"Part de l'offre de %(username)s. Modifiez les cartes puis envoyez : elle "
+"remplacera son offre."
 
 #: game/templates/game/trade.html:39
 msgid "You don't have any cards yet."
