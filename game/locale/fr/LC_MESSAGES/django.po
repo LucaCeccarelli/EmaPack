@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 10:13+0000\n"
+"POT-Creation-Date: 2026-10-24 10:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,45 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
 
-#: game/battles.py:24
+#: game/battles.py:29
 #, python-format
 msgid "A deck needs exactly %(size)s different cards."
 msgstr "Un deck doit contenir exactement %(size)s cartes différentes."
 
-#: game/battles.py:27
+#: game/battles.py:32
 #, python-format
 msgid "At most %(count)s %(rarity)s card(s) per deck."
 msgstr "Au maximum %(count)s carte(s) %(rarity)s par deck."
 
-#: game/battles.py:37 game/battles.py:44
+#: game/battles.py:42 game/battles.py:49
 msgid "You can only use cards you own."
 msgstr "Vous ne pouvez utiliser que des cartes que vous possédez."
+
+#: game/battles.py:74
+msgid "You can't challenge yourself."
+msgstr "Vous ne pouvez pas vous défier vous-même."
+
+#: game/battles.py:76 game/battles.py:116
+msgid "You can only battle your friends."
+msgstr "Vous ne pouvez affronter que vos amis."
+
+#: game/battles.py:88
+msgid "You're already in a battle."
+msgstr "Vous êtes déjà dans un combat."
+
+#: game/battles.py:90
+#, python-format
+msgid "%(username)s is already in a battle."
+msgstr "%(username)s est déjà dans un combat."
+
+#: game/battles.py:114 game/battles.py:143
+msgid "That challenge no longer exists."
+msgstr "Ce défi n'existe plus."
+
+#: game/battles.py:118
+#, python-format
+msgid "%(username)s's deck is no longer valid, so the challenge was cancelled."
+msgstr "Le deck de %(username)s n'est plus valide, le défi a donc été annulé."
 
 #: game/friends.py:40
 #, python-format

@@ -1,10 +1,14 @@
 import uuid
+from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
 
-from game.battles import BattleError, deck_problem, save_deck
-from game.models import Card, Pull, Rarity, User
+from game.battles import (
+    CHALLENGE_TTL, PICK_TIME, STATS, BattleError, accept_challenge, challenge, deck_problem,
+    remove_challenge, save_deck,
+)
+from game.models import Battle, Card, Friendship, Pull, Rarity, User
 
 
 def make_card(name, rarity=Rarity.COMMON, subs=0, posts=0, events=0):
@@ -80,3 +84,106 @@ class DeckTests(TestCase):
         save_deck(self.ash, self.ids([leg] + self.cards[:4]))
         Card.objects.filter(pk=self.cards[0].pk).update(rarity=Rarity.LEGENDARY)
         self.assertIsNotNone(deck_problem(self.ash))
+
+
+T0 = timezone.now()
+
+
+class ChallengeTests(TestCase):
+    def setUp(self):
+        self.ash, self.gary, self.misty = (User.objects.create_user(n, password="pw") for n in ("ash", "gary", "misty"))
+        self.decks = {}
+        for u in (self.ash, self.gary, self.misty):
+            cards = [make_card(f"{u.username}{i}", subs=i, posts=i + 1, events=i + 2) for i in range(5)]
+            for c in cards:
+                give(u, c)
+            save_deck(u, [str(c.pk) for c in cards])
+            self.decks[u] = cards
+        for a, b in ((self.ash, self.gary), (self.misty, self.gary)):
+            Friendship.objects.create(from_user=a, to_user=b, status=Friendship.Status.ACCEPTED)
+
+    def test_challenge_creates_pending_battle(self):
+        b = challenge(self.ash, "gary", now=T0)
+        self.assertEqual((b.challenger, b.opponent, b.status), (self.ash, self.gary, Battle.Status.PENDING))
+
+    def test_only_friends(self):
+        User.objects.create_user("stranger", password="pw")
+        with self.assertRaises(BattleError):
+            challenge(self.ash, "stranger", now=T0)
+
+    def test_needs_valid_deck(self):
+        self.ash.deck.clear()
+        with self.assertRaises(BattleError):
+            challenge(self.ash, "gary", now=T0)
+
+    def test_cannot_challenge_yourself(self):
+        with self.assertRaises(BattleError):
+            challenge(self.ash, "ash", now=T0)
+
+    def test_busy_when_target_has_incoming(self):
+        challenge(self.ash, "gary", now=T0)
+        with self.assertRaises(BattleError):
+            challenge(self.misty, "gary", now=T0)
+
+    def test_busy_when_challenger_has_incoming(self):
+        challenge(self.ash, "gary", now=T0)
+        with self.assertRaises(BattleError):
+            challenge(self.gary, "misty", now=T0)
+
+    def test_expired_challenge_frees_players(self):
+        challenge(self.ash, "gary", now=T0)
+        b = challenge(self.misty, "gary", now=T0 + CHALLENGE_TTL + timedelta(seconds=1))
+        self.assertEqual(b.challenger, self.misty)
+
+    def test_accept_snapshots_decks_and_starts_round_one(self):
+        b = accept_challenge(self.gary, challenge(self.ash, "gary", now=T0).pk, now=T0)
+        self.assertEqual(b.status, Battle.Status.ACTIVE)
+        ash_deck = self.decks[self.ash]
+        self.assertEqual(set(b.challenger_deck), {str(c.pk) for c in ash_deck})
+        c = ash_deck[2]
+        self.assertEqual(b.challenger_deck[str(c.pk)]["post_count"], c.post_count)
+        self.assertEqual(set(b.opponent_deck), {str(c.pk) for c in self.decks[self.gary]})
+        r = b.rounds.get()
+        self.assertEqual((r.number, r.deadline), (1, T0 + PICK_TIME))
+        self.assertIn(r.stat, STATS)
+
+    def test_snapshot_ignores_later_deck_edits(self):
+        b = accept_challenge(self.gary, challenge(self.ash, "gary", now=T0).pk, now=T0)
+        extra = [make_card(f"x{i}") for i in range(5)]
+        for c in extra:
+            give(self.ash, c)
+        save_deck(self.ash, [str(c.pk) for c in extra])
+        b.refresh_from_db()
+        self.assertEqual(set(b.challenger_deck), {str(c.pk) for c in self.decks[self.ash]})
+
+    def test_only_opponent_can_accept(self):
+        b = challenge(self.ash, "gary", now=T0)
+        with self.assertRaises(BattleError):
+            accept_challenge(self.ash, b.pk, now=T0)
+
+    def test_expired_challenge_cannot_be_accepted(self):
+        b = challenge(self.ash, "gary", now=T0)
+        with self.assertRaises(BattleError):
+            accept_challenge(self.gary, b.pk, now=T0 + CHALLENGE_TTL + timedelta(seconds=1))
+
+    def test_accept_with_stale_challenger_deck_deletes_challenge(self):
+        b = challenge(self.ash, "gary", now=T0)
+        self.ash.pulls.filter(card=self.decks[self.ash][0]).delete()
+        with self.assertRaises(BattleError):
+            accept_challenge(self.gary, b.pk, now=T0)
+        self.assertFalse(Battle.objects.filter(pk=b.pk).exists())
+
+    def test_decline_and_cancel(self):
+        b = challenge(self.ash, "gary", now=T0)
+        with self.assertRaises(BattleError):
+            remove_challenge(self.misty, b.pk)
+        remove_challenge(self.gary, b.pk)
+        self.assertFalse(Battle.objects.exists())
+        b = challenge(self.ash, "gary", now=T0)
+        remove_challenge(self.ash, b.pk)
+        self.assertFalse(Battle.objects.exists())
+
+    def test_cannot_remove_active_battle(self):
+        b = accept_challenge(self.gary, challenge(self.ash, "gary", now=T0).pk, now=T0)
+        with self.assertRaises(BattleError):
+            remove_challenge(self.ash, b.pk)

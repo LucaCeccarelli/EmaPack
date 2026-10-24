@@ -1,8 +1,13 @@
+import random
 from datetime import timedelta
 
+from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .models import Rarity
+from .friends import are_friends
+from .models import Battle, BattleRound, Rarity, User
 from .trades import _owned
 
 DECK_SIZE = 5
@@ -46,3 +51,101 @@ def save_deck(user, card_ids):
     if problem:
         raise BattleError(problem)
     user.deck.set(cards)
+
+
+def advance(battle, now=None):
+    """Play out whatever the clock has settled (timed-out picks, finished reveals). Task 3 fills this in."""
+
+
+def _live(now):
+    """Battles that still occupy their players: active, or pending and not yet expired."""
+    return Q(status=Battle.Status.ACTIVE) | Q(status=Battle.Status.PENDING, created_at__gt=now - CHALLENGE_TTL)
+
+
+def _mine(user):
+    return Q(challenger=user) | Q(opponent=user)
+
+
+def challenge(user, friend_username, now=None):
+    """Challenge a friend. Each player can be in at most one pending-or-active battle."""
+    now = now or timezone.now()
+    friend = User.objects.filter(username=friend_username).first()
+    if friend == user:
+        raise BattleError(_("You can't challenge yourself."))
+    if not friend or not are_friends(user, friend):
+        raise BattleError(_("You can only battle your friends."))
+    problem = deck_problem(user)
+    if problem:
+        raise BattleError(problem)
+    with transaction.atomic():
+        # Locking both players (in pk order) serializes crossing challenges.
+        list(User.objects.select_for_update().filter(pk__in=[user.pk, friend.pk]).order_by("pk"))
+        # A battle both players abandoned finishes here, so it doesn't keep them busy forever.
+        for b in Battle.objects.filter(Q(challenger__in=[user, friend]) | Q(opponent__in=[user, friend]),
+                                       status=Battle.Status.ACTIVE):
+            advance(b, now)
+        if Battle.objects.filter(_mine(user)).filter(_live(now)).exists():
+            raise BattleError(_("You're already in a battle."))
+        if Battle.objects.filter(_mine(friend)).filter(_live(now)).exists():
+            raise BattleError(_("%(username)s is already in a battle.") % {"username": friend.username})
+        return Battle.objects.create(challenger=user, opponent=friend, created_at=now)
+
+
+def _snapshot(user):
+    return {
+        str(c.pk): {stat: getattr(c, stat) for stat in STATS}
+        for c in user.deck.all()
+    }
+
+
+def accept_challenge(user, battle_id, now=None):
+    """Freeze both decks and start round 1. A stale challenge (unfriended, or the challenger's deck no
+    longer valid) is deleted and reported; the error is raised after the atomic block so that delete sticks.
+    """
+    now = now or timezone.now()
+    error = None
+    with transaction.atomic():
+        battle = (
+            Battle.objects.select_for_update().select_related("challenger")
+            .filter(pk=battle_id, opponent=user, status=Battle.Status.PENDING, created_at__gt=now - CHALLENGE_TTL)
+            .first()
+        )
+        if not battle:
+            raise BattleError(_("That challenge no longer exists."))
+        if not are_friends(battle.challenger, user):
+            error = _("You can only battle your friends.")
+        elif deck_problem(battle.challenger):
+            error = _("%(username)s's deck is no longer valid, so the challenge was cancelled.") % {
+                "username": battle.challenger.username,
+            }
+        if error:
+            battle.delete()
+        else:
+            problem = deck_problem(user)
+            if problem:
+                raise BattleError(problem)
+            battle.challenger_deck = _snapshot(battle.challenger)
+            battle.opponent_deck = _snapshot(user)
+            battle.status = Battle.Status.ACTIVE
+            battle.save()
+            BattleRound.objects.create(
+                battle=battle, number=1, stat=random.choice(STATS), deadline=now + PICK_TIME,
+            )
+    if error:
+        raise BattleError(error)
+    return battle
+
+
+def remove_challenge(user, battle_id):
+    """Decline a challenge you received or cancel one you sent (pending only)."""
+    deleted, _counts = Battle.objects.filter(pk=battle_id, status=Battle.Status.PENDING).filter(_mine(user)).delete()
+    if not deleted:
+        raise BattleError(_("That challenge no longer exists."))
+
+
+def current_battle(user, now=None):
+    """The user's live pending-or-active battle, if any (after settling whatever the clock decided)."""
+    now = now or timezone.now()
+    for b in Battle.objects.filter(_mine(user), status=Battle.Status.ACTIVE):
+        advance(b, now)
+    return Battle.objects.filter(_mine(user)).filter(_live(now)).first()
