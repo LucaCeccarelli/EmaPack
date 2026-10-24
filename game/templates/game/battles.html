@@ -14,7 +14,7 @@
 </section>
 
 <section class="panel friend-list">
-  <h2>{% trans "Current battle" %}</h2>
+  <h2>{% if incoming %}{% trans "Incoming challenge" %}{% else %}{% trans "Current battle" %}{% endif %}</h2>
   {% if battle %}
   <ul><li>
     {% if battle.status == "active" %}

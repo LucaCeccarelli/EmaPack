@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 13:56+0000\n"
+"POT-Creation-Date: 2026-10-24 14:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -176,7 +176,7 @@ msgstr[2] "%(n)s offres d'échange en attente"
 msgid "Battles"
 msgstr "Combats"
 
-#: game/templates/base.html:31
+#: game/templates/base.html:31 game/templates/game/battles.html:17
 msgid "Incoming challenge"
 msgstr "Défi reçu"
 
