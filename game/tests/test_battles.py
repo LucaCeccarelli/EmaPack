@@ -432,7 +432,7 @@ class StateTests(PlayTests):
             battle_state(self.misty, b, now=T0)
 
 
-class BattleViewTests(TestCase):
+class ViewBase(TestCase):
     def setUp(self):
         self.ash, self.gary = (User.objects.create_user(n, password="pw") for n in ("ash", "gary"))
         Friendship.objects.create(from_user=self.ash, to_user=self.gary, status=Friendship.Status.ACCEPTED)
@@ -450,6 +450,9 @@ class BattleViewTests(TestCase):
         for u in users:
             save_deck(u, self.ids(u))
 
+
+
+class BattleViewTests(ViewBase):
     def test_deck_page_saves_and_redirects(self):
         res = self.client.post(reverse("deck"), {"cards": self.ids(self.ash)})
         self.assertRedirects(res, reverse("battles"))
@@ -465,7 +468,8 @@ class BattleViewTests(TestCase):
     def test_challenge_button_creates_battle(self):
         self.ready(self.ash)
         res = self.client.post(reverse("battle_challenge", args=["gary"]))
-        self.assertRedirects(res, reverse("battles"))
+        b = Battle.objects.get(challenger=self.ash, opponent=self.gary)
+        self.assertRedirects(res, reverse("battle", args=[b.pk]))
         self.assertTrue(Battle.objects.filter(challenger=self.ash, opponent=self.gary).exists())
 
     def test_challenge_errors_are_flashed(self):
@@ -487,11 +491,11 @@ class BattleViewTests(TestCase):
         self.ready(self.ash, self.gary)
         b = challenge(self.gary, "ash")
         res = self.client.post(reverse("battle_accept", args=[b.pk]))
-        self.assertRedirects(res, reverse("battles"))
+        self.assertRedirects(res, reverse("battle", args=[b.pk]))
         b.refresh_from_db()
         self.assertEqual(b.status, Battle.Status.ACTIVE)
         self.assertNotContains(self.client.get(reverse("battles")), 'http-equiv="refresh"')
-        self.assertContains(self.client.get(reverse("battles")), "Resume")
+        self.assertContains(self.client.get(reverse("battles")), reverse("battle", args=[b.pk]))
         Battle.objects.all().delete()
         b = challenge(self.gary, "ash")
         self.client.post(reverse("battle_remove", args=[b.pk]))
@@ -510,3 +514,60 @@ class BattleViewTests(TestCase):
             res = self.client.get(reverse(name, args=args))
             self.assertEqual(res.status_code, 302, name)
             self.assertIn("/login/", res["Location"])
+
+
+class LiveBattleViewTests(ViewBase):
+    """Page + JSON endpoints; ash is challenger (logged in), gary opponent, misty an outsider."""
+
+    def setUp(self):
+        super().setUp()
+        self.misty = User.objects.create_user("misty", password="pw")
+        self.ready(self.ash, self.gary)
+        self.b = challenge(self.ash, "gary")
+        accept_challenge(self.gary, self.b.pk)
+        self.state_url = reverse("battle_state", args=[self.b.pk])
+        self.play_url = reverse("battle_play", args=[self.b.pk])
+
+    def test_state_endpoint_is_participant_only(self):
+        self.assertEqual(self.client.get(self.state_url).status_code, 200)
+        self.client.force_login(self.misty)
+        for url in (self.state_url, reverse("battle", args=[self.b.pk])):
+            self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.post(self.play_url, {"card": 1, "round": 1}).status_code, 404)
+
+    def test_state_endpoint_hides_opponent_cards(self):
+        data = self.client.get(self.state_url).json()
+        self.assertEqual(data["status"], "active")
+        self.assertEqual(len(data["hand"]), 5)
+        for c in self.cards[self.gary]:
+            self.assertNotIn(c.name, json.dumps(data))
+
+    def test_play_endpoint_returns_state(self):
+        res = self.client.post(self.play_url, {"card": self.ids(self.ash)[0], "round": 1})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["round"]["you_picked"])
+        self.assertEqual(len(data["hand"]), 4)
+
+    def test_play_endpoint_409_on_error(self):
+        res = self.client.post(self.play_url, {"card": "nope", "round": 1})
+        self.assertEqual(res.status_code, 409)
+        self.assertIn("error", res.json())
+        self.assertEqual(res.json()["state"]["status"], "active")
+        res = self.client.post(self.play_url, {"card": self.ids(self.ash)[0], "round": 7})
+        self.assertEqual(res.status_code, 409)
+        self.assertContains(res, "already over", status_code=409)
+
+    def test_battle_page_renders_for_both_players(self):
+        for u in (self.ash, self.gary):
+            self.client.force_login(u)
+            res = self.client.get(reverse("battle", args=[self.b.pk]))
+            self.assertContains(res, self.state_url)
+            self.assertContains(res, self.play_url)
+            self.assertContains(res, "battle.js")
+
+    def test_pending_page_has_accept_for_opponent(self):
+        Battle.objects.all().delete()
+        b = challenge(self.gary, "ash")
+        res = self.client.get(reverse("battle", args=[b.pk]))
+        self.assertContains(res, reverse("battle_accept", args=[b.pk]))

@@ -19,7 +19,7 @@
   <ul><li>
     {% if battle.status == "active" %}
     <strong>{% if battle.challenger_id == user.pk %}{{ battle.opponent.username }}{% else %}{{ battle.challenger.username }}{% endif %}</strong>
-    <span class="friend-actions"><a class="btn small" href="{% url 'battles' %}">{% trans "Resume" %}</a></span>
+    <span class="friend-actions"><a class="btn small" href="{% url 'battle' battle.pk %}">{% trans "Resume" %}</a></span>
     {% elif incoming %}
     <strong>{% blocktrans with username=battle.challenger.username %}{{ username }} challenges you{% endblocktrans %}</strong>
     <span class="friend-actions">

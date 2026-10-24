@@ -462,3 +462,26 @@ main {
   .signature .card-inner, .signature .card-inner::after, .signature .card-art::after,
   .signature .card-name, .signature .card-shine { animation: none; }
 }
+
+/* ---------- Battles ---------- */
+.battle-board, .battle-pending { padding: 20px 24px; margin-bottom: 24px; text-align: center; }
+.battle-board p { margin: 4px 0; }
+.battle-score { font-size: 1.6rem; font-weight: 700; }
+.battle-stat { color: var(--accent-2); font-weight: 700; }
+.battle-timer { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.battle-result { font-size: 1.4rem; font-weight: 700; margin-top: 12px; }
+.battle-error { color: var(--danger); text-align: center; }
+.battle-hand, .reveal-pair { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+.hand-card { width: 220px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.hand-card:disabled { opacity: .5; cursor: default; }
+.hand-card:not(:disabled):hover { transform: translateY(-4px); }
+.hand-card:focus-visible { outline: 3px dashed var(--focus); outline-offset: 6px; }
+.reveal { margin-bottom: 24px; text-align: center; }
+.reveal-side { width: 220px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.reveal-value { font-size: 1.4rem; }
+.reveal.latest { padding: 12px; border: 2px solid var(--line-strong); border-radius: var(--radius); animation: reveal-in .5s ease-out; }
+.reveal.result-win.latest { border-color: var(--uncommon); }
+.reveal.result-loss.latest { border-color: var(--danger); }
+.battle-history-title { text-align: center; font-size: 1.1rem; }
+@keyframes reveal-in { from { transform: scale(.94); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .reveal.latest { animation: none; } }

@@ -1,0 +1,55 @@
+{% extends "base.html" %}{% load static i18n %}
+{% block title %}{% blocktrans with username=other.username %}Battle vs {{ username }}{% endblocktrans %} · Pack Ema{% endblock %}
+{% block content %}
+<div class="battle" id="battle" data-state-url="{% url 'battle_state' battle.pk %}" data-play-url="{% url 'battle_play' battle.pk %}"
+     data-battles-url="{% url 'battles' %}"
+     {% for stat in stats %}data-stat-{{ stat }}="{% if stat == 'subscriber_count' %}{% trans 'Subs' %}{% elif stat == 'post_count' %}{% trans 'Posts' %}{% else %}{% trans 'Events' %}{% endif %}"
+     {% endfor %}data-msg-round="{% trans 'Round {n}' %}"
+     data-msg-time="{% trans '{s}s left' %}"
+     data-msg-pick="{% trans 'Pick a card to play' %}"
+     data-msg-you-picked="{% trans 'Card played. Waiting for {name}…' %}"
+     data-msg-they-picked="{% trans '{name} has picked' %}"
+     data-msg-cards-left="{% trans '{name} has {n} card(s) left' %}"
+     data-msg-you="{% trans 'You' %}"
+     data-msg-win="{% trans 'Win' %}" data-msg-loss="{% trans 'Loss' %}" data-msg-draw="{% trans 'Draw' %}"
+     data-msg-won="{% trans 'You won the battle!' %}" data-msg-lost="{% trans 'You lost the battle.' %}" data-msg-tied="{% trans 'The battle ended in a draw.' %}"
+     data-msg-record="{% trans 'Record' %}" data-msg-back="{% trans 'Back to battles' %}"
+     data-msg-history="{% trans 'Rounds played' %}"
+     data-msg-error="{% trans 'Connection problem, retrying…' %}">
+  <header class="page-head">
+    <h1>{% blocktrans with username=other.username %}Battle vs {{ username }}{% endblocktrans %}</h1>
+  </header>
+  {% csrf_token %}
+  {% if battle.status == "pending" %}
+  <section class="panel battle-pending">
+    {% if battle.opponent_id == user.pk %}
+    <p><strong>{% blocktrans with username=other.username %}{{ username }} challenges you{% endblocktrans %}</strong></p>
+    <div class="friend-actions">
+      <form method="post" action="{% url 'battle_accept' battle.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
+      <form method="post" action="{% url 'battle_remove' battle.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
+    </div>
+    {% else %}
+    <p><strong>{% blocktrans with username=other.username %}Waiting for {{ username }}{% endblocktrans %}</strong></p>
+    <div class="friend-actions">
+      <form method="post" action="{% url 'battle_remove' battle.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Cancel" %}</button></form>
+    </div>
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="panel battle-board">
+    <p class="battle-score" id="score" aria-live="polite"></p>
+    <p class="battle-stat" id="stat"></p>
+    <p class="battle-timer" id="timer"></p>
+    <p class="muted" id="status"></p>
+    <p class="muted" id="left"></p>
+    <p class="battle-result" id="result" hidden></p>
+  </section>
+  <div class="battle-reveal" id="reveal"></div>
+  <div class="battle-hand" id="hand"></div>
+  <h2 class="battle-history-title" id="historyTitle" hidden>{% trans "Rounds played" %}</h2>
+  <div class="battle-history" id="history"></div>
+  {% endif %}
+  <p class="battle-error" id="error" role="alert" hidden></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'game/battle.js' %}"></script>{% endblock %}

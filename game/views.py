@@ -387,12 +387,12 @@ def deck(request):
 @require_POST
 def battle_challenge(request, username):
     try:
-        battle_logic.challenge(request.user, username)
+        battle = battle_logic.challenge(request.user, username)
     except battle_logic.BattleError as e:
         messages.error(request, str(e))
         return redirect("friends")
     messages.success(request, _("Challenge sent!"))
-    return redirect("battles")  # Task 6: "battle"
+    return redirect("battle", battle.pk)
 
 
 @login_required
@@ -402,7 +402,8 @@ def battle_accept(request, pk):
         battle_logic.accept_challenge(request.user, pk)
     except battle_logic.BattleError as e:
         messages.error(request, str(e))
-    return redirect("battles")  # Task 6: "battle" on success
+        return redirect("battles")
+    return redirect("battle", pk)
 
 
 @login_required
@@ -413,6 +414,44 @@ def battle_remove(request, pk):
     except battle_logic.BattleError as e:
         messages.error(request, str(e))
     return redirect("battles")
+
+
+def _my_battle(request, pk):
+    return get_object_or_404(Battle.objects.filter(Q(challenger=request.user) | Q(opponent=request.user)), pk=pk)
+
+
+def _battle_json(request, battle, status=200, **extra):
+    state = battle_logic.battle_state(request.user, battle, request)
+    if state["result"]:
+        state["record"] = battle_logic.record(request.user)
+    return JsonResponse({**extra, "state": state} if extra else state, status=status)
+
+
+@login_required
+def battle(request, pk):
+    battle = _my_battle(request, pk)
+    return render(request, "game/battle.html", {
+        "battle": battle, "other": battle.opponent if battle.challenger_id == request.user.pk else battle.challenger,
+        "stats": battle_logic.STATS, "rounds": battle_logic.ROUNDS,
+    })
+
+
+@login_required
+def battle_state(request, pk):
+    return _battle_json(request, _my_battle(request, pk))
+
+
+@login_required
+@require_POST
+def battle_play(request, pk):
+    battle = _my_battle(request, pk)
+    try:
+        battle_logic.play_card(request.user, pk, request.POST.get("card", ""), request.POST.get("round", ""))
+    except battle_logic.BattleError as e:
+        battle.refresh_from_db()
+        return _battle_json(request, battle, status=409, error=str(e))
+    battle.refresh_from_db()
+    return _battle_json(request, battle)
 
 
 @login_required

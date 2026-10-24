@@ -97,6 +97,19 @@ card markup. `PackUnavailable` (cooldown not elapsed, or no approved cards exist
 the real `next_pack_at` re-fetched from the DB, so the client can resync its timer even if it was out of
 sync.
 
+## Battles (`game/battles.py`)
+
+Live best-of-5 stat duels between friends (no stakes, `Pull`s are never touched). Decks of 5 cards are saved
+per user (rarity caps in `RARITY_CAP`) and frozen as stat snapshots on the `Battle` when it's accepted.
+
+- `battles.py` owns every mutation, always under row locks (`select_for_update` on the `Battle`; `challenge()`
+  locks both `User` rows in pk order). Views only call it.
+- There is no worker or websocket: `advance()` settles whatever the clock decided (overdue rounds get random
+  cards) and is called lazily by `battle_state`, `play_card`, `challenge` and the hub. `battle.js` polls
+  `battles/<pk>/state/` every 1.5 s; `play` takes `card` and `round` (a late click gets a 409, not the next round).
+- `battle_state()` must never contain the opponent's unplayed cards or an unrevealed pick: only resolved rounds
+  expose both sides. Keep it that way when touching the JSON.
+
 ## Auth & user model
 
 `game.User` (`AUTH_USER_MODEL`) extends `AbstractUser` with just `next_pack_at` (nullable — `None` means

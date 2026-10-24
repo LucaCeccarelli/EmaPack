@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 10:52+0000\n"
+"POT-Creation-Date: 2026-10-24 11:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -134,11 +134,9 @@ msgid "Pending"
 msgstr "En attente"
 
 #: game/models.py:120
-#: game/models.py:120
 msgid "Active"
 msgstr "Actif"
 
-#: game/models.py:121
 #: game/models.py:121
 msgid "Finished"
 msgstr "Terminé"
@@ -165,8 +163,6 @@ msgstr "Collection"
 msgid "Friends"
 msgstr "Amis"
 
-#: game/templates/base.html:31 game/templates/game/battles.html:2
-#: game/templates/game/battles.html:6 game/templates/game/deck.html:4
 #: game/templates/base.html:31 game/templates/game/battles.html:2
 #: game/templates/game/battles.html:6 game/templates/game/deck.html:4
 msgid "Battles"
@@ -216,15 +212,17 @@ msgstr ""
 "Ouvrez le menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran "
 "d’accueil »."
 
-#: game/templates/game/_card.html:8
+#: game/templates/game/_card.html:8 game/templates/game/battle.html:6
 msgid "Subs"
 msgstr "Abonnés"
 
-#: game/templates/game/_card.html:9 game/templates/game/card_detail.html:18
+#: game/templates/game/_card.html:9 game/templates/game/battle.html:6
+#: game/templates/game/card_detail.html:18
 msgid "Posts"
 msgstr "Publications"
 
-#: game/templates/game/_card.html:10 game/templates/game/card_detail.html:19
+#: game/templates/game/_card.html:10 game/templates/game/battle.html:6
+#: game/templates/game/card_detail.html:19
 msgid "Events"
 msgstr "Événements"
 
@@ -232,66 +230,132 @@ msgstr "Événements"
 msgid "nothing"
 msgstr "rien"
 
-#: game/templates/game/battles.html:7
-#: game/templates/game/battles.html:7
+#: game/templates/game/battle.html:2 game/templates/game/battle.html:20
+#, python-format
+#| msgid "Trade with %(username)s"
+msgid "Battle vs %(username)s"
+msgstr "Combat contre %(username)s"
+
+#: game/templates/game/battle.html:7
+#, python-brace-format
+msgid "Round {n}"
+msgstr "Manche {n}"
+
+#: game/templates/game/battle.html:8
+#, python-brace-format
+msgid "{s}s left"
+msgstr "{s} s restantes"
+
+#: game/templates/game/battle.html:9
+msgid "Pick a card to play"
+msgstr "Choisissez une carte à jouer"
+
+#: game/templates/game/battle.html:10
+#, python-brace-format
+msgid "Card played. Waiting for {name}…"
+msgstr "Carte jouée. En attente de {name}…"
+
+#: game/templates/game/battle.html:11
+#, python-brace-format
+msgid "{name} has picked"
+msgstr "{name} a choisi"
+
+#: game/templates/game/battle.html:12
+#, python-brace-format
+msgid "{name} has {n} card(s) left"
+msgstr "{name} a encore {n} carte(s)"
+
+#: game/templates/game/battle.html:13
+msgid "You"
+msgstr "Vous"
+
+#: game/templates/game/battle.html:14
+msgid "Win"
+msgstr "Victoire"
+
+#: game/templates/game/battle.html:14
+msgid "Loss"
+msgstr "Défaite"
+
+#: game/templates/game/battle.html:14
+msgid "Draw"
+msgstr "Égalité"
+
+#: game/templates/game/battle.html:15
+#| msgid "Current battle"
+msgid "You won the battle!"
+msgstr "Vous avez gagné le combat !"
+
+#: game/templates/game/battle.html:15
+msgid "You lost the battle."
+msgstr "Vous avez perdu le combat."
+
+#: game/templates/game/battle.html:15
+msgid "The battle ended in a draw."
+msgstr "Le combat se termine sur une égalité."
+
+#: game/templates/game/battle.html:16 game/templates/game/battles.html:7
 msgid "Record"
 msgstr "Bilan"
 
-#: game/templates/game/battles.html:11
+#: game/templates/game/battle.html:16
+#| msgid "Battles"
+msgid "Back to battles"
+msgstr "Retour aux combats"
+
+#: game/templates/game/battle.html:17 game/templates/game/battle.html:49
+msgid "Rounds played"
+msgstr "Manches jouées"
+
+#: game/templates/game/battle.html:18
+msgid "Connection problem, retrying…"
+msgstr "Problème de connexion, nouvel essai…"
+
+#: game/templates/game/battle.html:26 game/templates/game/battles.html:24
+#, python-format
+msgid "%(username)s challenges you"
+msgstr "%(username)s vous défie"
+
+#: game/templates/game/battle.html:28 game/templates/game/battles.html:26
+#: game/templates/game/friends.html:47 game/templates/game/friends.html:70
+msgid "Accept"
+msgstr "Accepter"
+
+#: game/templates/game/battle.html:29 game/templates/game/battles.html:27
+#: game/templates/game/friends.html:48 game/templates/game/friends.html:72
+msgid "Decline"
+msgstr "Refuser"
+
+#: game/templates/game/battle.html:32 game/templates/game/battles.html:30
+#, python-format
+msgid "Waiting for %(username)s"
+msgstr "En attente de %(username)s"
+
+#: game/templates/game/battle.html:34 game/templates/game/battles.html:32
+#: game/templates/game/friends.html:95 game/templates/game/friends.html:112
+msgid "Cancel"
+msgstr "Annuler"
+
 #: game/templates/game/battles.html:11
 msgid "Your deck"
 msgstr "Votre deck"
 
 #: game/templates/game/battles.html:12
-#: game/templates/game/battles.html:12
 msgid "Deck ready"
 msgstr "Deck prêt"
 
-#: game/templates/game/battles.html:13
 #: game/templates/game/battles.html:13
 msgid "Edit deck"
 msgstr "Modifier le deck"
 
 #: game/templates/game/battles.html:17
-#: game/templates/game/battles.html:17
 msgid "Current battle"
 msgstr "Combat en cours"
 
 #: game/templates/game/battles.html:22
-#: game/templates/game/battles.html:22
 msgid "Resume"
 msgstr "Reprendre"
 
-#: game/templates/game/battles.html:24
-#, python-format
-#: game/templates/game/battles.html:24
-#, python-format
-msgid "%(username)s challenges you"
-msgstr "%(username)s vous défie"
-
-#: game/templates/game/battles.html:26 game/templates/game/friends.html:47
-#: game/templates/game/friends.html:70
-msgid "Accept"
-msgstr "Accepter"
-
-#: game/templates/game/battles.html:27 game/templates/game/friends.html:48
-#: game/templates/game/friends.html:72
-msgid "Decline"
-msgstr "Refuser"
-
-#: game/templates/game/battles.html:30
-#, python-format
-#: game/templates/game/battles.html:30
-#, python-format
-msgid "Waiting for %(username)s"
-msgstr "En attente de %(username)s"
-
-#: game/templates/game/battles.html:32 game/templates/game/friends.html:95
-#: game/templates/game/friends.html:112
-msgid "Cancel"
-msgstr "Annuler"
-
-#: game/templates/game/battles.html:37
 #: game/templates/game/battles.html:37
 msgid "No battle right now. Challenge a friend from the Friends page."
 msgstr "Aucun combat en cours. Défiez un ami depuis la page Amis."
@@ -409,24 +473,22 @@ msgid "Next"
 msgstr "Suivant"
 
 #: game/templates/game/deck.html:2 game/templates/game/deck.html:6
-#: game/templates/game/deck.html:2 game/templates/game/deck.html:6
 msgid "Battle deck"
 msgstr "Deck de combat"
 
 #: game/templates/game/deck.html:7
 #, python-format
-#: game/templates/game/deck.html:7
-#, python-format
 msgid ""
 "Pick %(deck_size)s cards: at most %(legendary_cap)s Legendary and "
 "%(epic_cap)s Epic."
-msgstr "Choisissez %(deck_size)s cartes : au plus %(legendary_cap)s Légendaire et %(epic_cap)s Épique."
+msgstr ""
+"Choisissez %(deck_size)s cartes : au plus %(legendary_cap)s Légendaire et "
+"%(epic_cap)s Épique."
 
 #: game/templates/game/deck.html:22 game/templates/game/trade.html:39
 msgid "You don't have any cards yet."
 msgstr "Vous n'avez encore aucune carte."
 
-#: game/templates/game/deck.html:25
 #: game/templates/game/deck.html:25
 msgid "Save deck"
 msgstr "Enregistrer le deck"
@@ -479,7 +541,6 @@ msgid "Your friends"
 msgstr "Vos amis"
 
 #: game/templates/game/friends.html:127
-#: game/templates/game/friends.html:127
 msgid "Battle record (wins-losses-draws)"
 msgstr "Bilan des combats (victoires-défaites-nuls)"
 
@@ -491,7 +552,6 @@ msgstr "Voir la collection"
 msgid "Trade"
 msgstr "Échanger"
 
-#: game/templates/game/friends.html:131
 #: game/templates/game/friends.html:131
 msgid "Challenge"
 msgstr "Défier"
@@ -814,16 +874,14 @@ msgid "Trade done! Check your collection."
 msgstr "Échange effectué ! Allez voir votre collection."
 
 #: game/views.py:375
-#: game/views.py:375
 msgid "Deck saved!"
 msgstr "Deck enregistré !"
 
 #: game/views.py:394
-#: game/views.py:394
 msgid "Challenge sent!"
 msgstr "Défi envoyé !"
 
-#: game/views.py:431
+#: game/views.py:470
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"
