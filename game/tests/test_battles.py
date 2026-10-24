@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import timedelta
 
@@ -6,7 +7,7 @@ from django.utils import timezone
 
 from game.battles import (
     CHALLENGE_TTL, PICK_TIME, REVEAL_TIME, ROUNDS, STATS, BattleError, accept_challenge, advance, challenge,
-    deck_problem, play_card, record, remaining_cards, remove_challenge, save_deck, scores,
+    battle_state, deck_problem, play_card, record, remaining_cards, remove_challenge, save_deck, scores,
 )
 from game.models import Battle, Card, Friendship, Pull, Rarity, User
 
@@ -339,3 +340,87 @@ class PlayTests(TestCase):
         self.assertEqual(record(self.ash), {"wins": 1, "losses": 1, "draws": 1})
         self.assertEqual(record(self.gary), {"wins": 1, "losses": 1, "draws": 1})
         self.assertEqual(record(self.misty), {"wins": 0, "losses": 0, "draws": 0})
+
+
+class StateTests(PlayTests):
+    """Reuses PlayTests' setup/helpers; ash is the challenger. Test names differ, so PlayTests' own tests rerun here harmlessly."""
+
+    def test_opponent_unplayed_cards_never_appear(self):
+        b = self.start()
+        for user in (self.ash, self.gary):
+            s = battle_state(user, b, now=T0)
+            theirs = self.weak if user == self.ash else self.strong
+            for c in theirs:
+                self.assertNotIn(c.name, json.dumps(s))
+                self.assertNotIn(str(c.pk), [str(h["id"]) for h in s["hand"]])
+            self.assertEqual(s["opponent_cards_left"], 5)
+        self.assertEqual(battle_state(self.ash, b, now=T0)["status"], "active")
+        self.assertEqual(len(battle_state(self.ash, b, now=T0)["hand"]), 5)
+
+    def test_opponent_pick_hidden_until_both_played(self):
+        b = self.start()
+        play_card(self.gary, b.pk, str(self.weak[0].pk), 1, now=T0)
+        s = battle_state(self.ash, b, now=T0)
+        self.assertTrue(s["round"]["opponent_picked"])
+        self.assertFalse(s["round"]["you_picked"])
+        self.assertNotIn(self.weak[0].name, json.dumps(s))
+        self.assertEqual(s["opponent_cards_left"], 5)  # the pick still counts as unplayed
+
+    def test_revealed_card_appears_in_history_after_both_play(self):
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        s = battle_state(self.ash, b, now=T0)
+        h = s["history"][0]
+        self.assertEqual((h["number"], h["result"], h["opponent"]["id"], h["you"]["id"]),
+                         (1, "win", self.weak[0].pk, self.strong[0].pk))
+        self.assertEqual((h["you"]["value"], h["opponent"]["value"]), (100, 1))
+        self.assertIn(self.weak[0].name, h["opponent"]["html"])
+        self.assertEqual(s["score"], {"you": 1, "opponent": 0})
+        self.assertEqual(battle_state(self.gary, b, now=T0)["history"][0]["result"], "loss")
+        self.assertEqual(s["opponent_cards_left"], 4)
+        self.assertEqual(s["round"]["number"], 2)
+        self.assertNotIn(self.weak[1].name, json.dumps(s))
+
+    def test_history_values_come_from_snapshot(self):
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        Card.objects.filter(pk=self.weak[0].pk).update(subscriber_count=5000, post_count=5000, event_count=5000)
+        h = battle_state(self.ash, b, now=T0)["history"][0]
+        self.assertEqual(h["opponent"]["value"], 1)
+
+    def test_draw_result_in_history(self):
+        self.weak = self.deck(self.gary, 100)
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        self.assertEqual(battle_state(self.ash, b, now=T0)["history"][0]["result"], "draw")
+
+    def test_hand_excludes_played_and_current_pick(self):
+        b = self.start()
+        self.play_round(b, self.strong[0], self.weak[0])
+        play_card(self.ash, b.pk, str(self.strong[1].pk), 2, now=T0)
+        s = battle_state(self.ash, b, now=T0)
+        self.assertEqual({h["id"] for h in s["hand"]}, {c.pk for c in self.strong[2:]})
+        self.assertTrue(s["round"]["you_picked"])
+
+    def test_finished_state_has_result_and_no_round(self):
+        b = self.start()
+        for i in range(3):
+            self.play_round(b, self.strong[i], self.weak[i])
+        s, g = battle_state(self.ash, b, now=T0), battle_state(self.gary, b, now=T0)
+        self.assertEqual((s["status"], s["result"], s["round"], s["hand"]), ("finished", "win", None, []))
+        self.assertEqual((g["result"], g["is_challenger"], g["opponent"]), ("loss", False, "ash"))
+        self.assertEqual(len(s["history"]), 3)
+        for c in self.weak[3:]:  # never played: still secret
+            self.assertNotIn(c.name, json.dumps(s))
+
+    def test_pending_state(self):
+        b = challenge(self.ash, "gary", now=T0)
+        s = battle_state(self.gary, b, now=T0)
+        self.assertEqual((s["status"], s["round"], s["hand"], s["history"], s["result"]), ("pending", None, [], [], None))
+        for c in self.strong:
+            self.assertNotIn(c.name, json.dumps(s))
+
+    def test_state_settles_overdue_round(self):
+        b = self.start()
+        s = battle_state(self.ash, b, now=T0 + PICK_TIME + S5)
+        self.assertEqual(len(s["history"]), 1)

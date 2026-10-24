@@ -3,11 +3,12 @@ from datetime import timedelta
 
 from django.db import transaction
 from django.db.models import Count, Q
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from .friends import are_friends
-from .models import Battle, BattleRound, Rarity, User
+from .models import Battle, BattleRound, Card, Rarity, User
 from .trades import _owned
 
 DECK_SIZE = 5
@@ -230,3 +231,53 @@ def current_battle(user, now=None):
     for b in Battle.objects.filter(_mine(user), status=Battle.Status.ACTIVE):
         advance(b, now)
     return Battle.objects.filter(_mine(user)).filter(_live(now)).first()
+
+
+def _outcome(a, b):
+    return "win" if a > b else "loss" if a < b else "draw"
+
+
+def battle_state(user, battle, request=None, now=None):
+    """What `user` may see of `battle`. The opponent's unplayed cards (and a pick not yet revealed) never
+    enter this dict: only resolved rounds expose both cards.
+    """
+    advance(battle, now)
+    me, them = ("challenger", "opponent") if battle.challenger_id == user.pk else ("opponent", "challenger")
+    decks = {"challenger": battle.challenger_deck, "opponent": battle.opponent_deck}
+    rounds = list(battle.rounds.all())
+    resolved = [r for r in rounds if r.challenger_card_id and r.opponent_card_id]
+    live = battle.status == Battle.Status.ACTIVE and rounds[-1] if rounds else None
+    my_pick = getattr(live, f"{me}_card_id") if live else None
+
+    hand_ids = [int(cid) for cid in remaining_cards(battle, me)] if live else []
+    ids = set(hand_ids) | {getattr(r, f"{side}_card_id") for r in resolved for side in (me, them)}
+    cards = Card.objects.in_bulk(ids)
+
+    def html(pk):
+        return render_to_string("game/_card.html", {"card": cards[pk]}, request)
+
+    def side(r, who):
+        pk = getattr(r, f"{who}_card_id")
+        return {"id": pk, "html": html(pk), "value": decks[who][str(pk)][r.stat]}
+
+    mine, theirs = scores(battle) if me == "challenger" else scores(battle)[::-1]
+    finished = battle.status == Battle.Status.FINISHED
+    return {
+        "status": battle.status,
+        "is_challenger": me == "challenger",
+        "opponent": getattr(battle, them).username,
+        "score": {"you": mine, "opponent": theirs},
+        "round": live and {
+            "number": live.number, "stat": live.stat, "deadline": live.deadline.isoformat(),
+            "you_picked": my_pick is not None, "opponent_picked": getattr(live, f"{them}_card_id") is not None,
+        } or None,
+        "hand": [{"id": pk, "html": html(pk)} for pk in hand_ids if pk != my_pick],
+        "history": [
+            {"number": r.number, "stat": r.stat, "you": side(r, me), "opponent": side(r, them),
+             "result": _outcome(decks[me][str(getattr(r, f"{me}_card_id"))][r.stat],
+                                decks[them][str(getattr(r, f"{them}_card_id"))][r.stat])}
+            for r in resolved
+        ],
+        "opponent_cards_left": len(decks[them]) - len(resolved) if live else 0,  # an unrevealed pick still counts
+        "result": _outcome(mine, theirs) if finished else None,
+    }
