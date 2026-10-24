@@ -37,7 +37,7 @@ msgstr "Ce combat est terminé."
 
 #: game/battles.py:123
 msgid "That round is already over."
-msgstr "Cette manche est déjà terminé."
+msgstr "Cette manche est déjà terminée."
 
 #: game/battles.py:125
 msgid "You already played this round."
