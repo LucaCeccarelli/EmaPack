@@ -116,9 +116,9 @@ class Battle(models.Model):
     """A best-of-5 stat duel between two friends. Decks are frozen (with their stats) once it's accepted."""
 
     class Status(models.TextChoices):
-        PENDING = "pending", "Pending"
-        ACTIVE = "active", "Active"
-        FINISHED = "finished", "Finished"
+        PENDING = "pending", _("Pending")
+        ACTIVE = "active", _("Active")
+        FINISHED = "finished", _("Finished")
 
     challenger = models.ForeignKey(User, on_delete=models.CASCADE, related_name="battles_sent")
     opponent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="battles_received")

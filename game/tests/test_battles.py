@@ -3,6 +3,7 @@ import uuid
 from datetime import timedelta
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from game.battles import (
@@ -429,3 +430,83 @@ class StateTests(PlayTests):
         b = self.start()
         with self.assertRaises(BattleError):
             battle_state(self.misty, b, now=T0)
+
+
+class BattleViewTests(TestCase):
+    def setUp(self):
+        self.ash, self.gary = (User.objects.create_user(n, password="pw") for n in ("ash", "gary"))
+        Friendship.objects.create(from_user=self.ash, to_user=self.gary, status=Friendship.Status.ACCEPTED)
+        self.cards = {}
+        for u in (self.ash, self.gary):
+            self.cards[u] = [make_card(f"{u.username}{i}", subs=i) for i in range(6)]
+            for c in self.cards[u]:
+                give(u, c)
+        self.client.force_login(self.ash)
+
+    def ids(self, user, n=5):
+        return [str(c.pk) for c in self.cards[user][:n]]
+
+    def ready(self, *users):
+        for u in users:
+            save_deck(u, self.ids(u))
+
+    def test_deck_page_saves_and_redirects(self):
+        res = self.client.post(reverse("deck"), {"cards": self.ids(self.ash)})
+        self.assertRedirects(res, reverse("battles"))
+        self.assertEqual(self.ash.deck.count(), 5)
+        self.assertContains(self.client.get(reverse("deck")), 'checked', count=5)
+
+    def test_deck_page_shows_error_and_keeps_ticks(self):
+        res = self.client.post(reverse("deck"), {"cards": self.ids(self.ash, 3)})
+        self.assertContains(res, "needs exactly 5")
+        self.assertContains(res, "checked", count=3)
+        self.assertEqual(self.ash.deck.count(), 0)
+
+    def test_challenge_button_creates_battle(self):
+        self.ready(self.ash)
+        res = self.client.post(reverse("battle_challenge", args=["gary"]))
+        self.assertRedirects(res, reverse("battles"))
+        self.assertTrue(Battle.objects.filter(challenger=self.ash, opponent=self.gary).exists())
+
+    def test_challenge_errors_are_flashed(self):
+        res = self.client.post(reverse("battle_challenge", args=["gary"]), follow=True)  # no deck
+        self.assertRedirects(res, reverse("friends"))
+        self.assertContains(res, "needs exactly 5")
+        self.assertEqual(Battle.objects.count(), 0)
+
+    def test_hub_shows_incoming_with_accept(self):
+        self.ready(self.ash, self.gary)
+        b = challenge(self.gary, "ash")
+        res = self.client.get(reverse("battles"))
+        self.assertContains(res, reverse("battle_accept", args=[b.pk]))
+        self.assertContains(res, reverse("battle_remove", args=[b.pk]))
+        self.assertContains(res, 'http-equiv="refresh"')
+        self.assertContains(res, "Deck ready")
+
+    def test_accept_and_decline_through_views(self):
+        self.ready(self.ash, self.gary)
+        b = challenge(self.gary, "ash")
+        res = self.client.post(reverse("battle_accept", args=[b.pk]))
+        self.assertRedirects(res, reverse("battles"))
+        b.refresh_from_db()
+        self.assertEqual(b.status, Battle.Status.ACTIVE)
+        self.assertNotContains(self.client.get(reverse("battles")), 'http-equiv="refresh"')
+        self.assertContains(self.client.get(reverse("battles")), "Resume")
+        Battle.objects.all().delete()
+        b = challenge(self.gary, "ash")
+        self.client.post(reverse("battle_remove", args=[b.pk]))
+        self.assertEqual(Battle.objects.count(), 0)
+
+    def test_friends_list_shows_record(self):
+        Battle.objects.create(challenger=self.ash, opponent=self.gary, status=Battle.Status.FINISHED, winner=self.gary)  # the friend's record
+        res = self.client.get(reverse("friends"))
+        self.assertContains(res, "1-0-0")
+        self.assertContains(res, reverse("battle_challenge", args=["gary"]))
+
+    def test_pages_require_login(self):
+        self.client.logout()
+        for name, args in (("battles", []), ("deck", []), ("battle_challenge", ["gary"]),
+                           ("battle_accept", [1]), ("battle_remove", [1])):
+            res = self.client.get(reverse(name, args=args))
+            self.assertEqual(res.status_code, 302, name)
+            self.assertIn("/login/", res["Location"])

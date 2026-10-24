@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 10:26+0000\n"
+"POT-Creation-Date: 2026-10-24 10:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,58 +17,58 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
 
-#: game/battles.py:29
+#: game/battles.py:30
 #, python-format
 msgid "A deck needs exactly %(size)s different cards."
 msgstr "Un deck doit contenir exactement %(size)s cartes différentes."
 
-#: game/battles.py:32
+#: game/battles.py:33
 #, python-format
 msgid "At most %(count)s %(rarity)s card(s) per deck."
 msgstr "Au maximum %(count)s carte(s) %(rarity)s par deck."
 
-#: game/battles.py:42 game/battles.py:49
+#: game/battles.py:43 game/battles.py:50
 msgid "You can only use cards you own."
 msgstr "Vous ne pouvez utiliser que des cartes que vous possédez."
 
-#: game/battles.py:114 game/battles.py:117
+#: game/battles.py:115 game/battles.py:118
 msgid "This battle is over."
 msgstr "Ce combat est terminé."
 
-#: game/battles.py:121
+#: game/battles.py:122
 msgid "That round is already over."
 msgstr "Ce round est déjà terminé."
 
-#: game/battles.py:123
+#: game/battles.py:124
 msgid "You already played this round."
 msgstr "Vous avez déjà joué ce round."
 
-#: game/battles.py:125
+#: game/battles.py:126
 msgid "Pick a card from your deck that you haven't played yet."
 msgstr "Choisissez une carte de votre deck que vous n'avez pas encore jouée."
 
-#: game/battles.py:155
+#: game/battles.py:156
 msgid "You can't challenge yourself."
 msgstr "Vous ne pouvez pas vous défier vous-même."
 
-#: game/battles.py:157 game/battles.py:197
+#: game/battles.py:158 game/battles.py:198
 msgid "You can only battle your friends."
 msgstr "Vous ne pouvez affronter que vos amis."
 
-#: game/battles.py:169
+#: game/battles.py:170
 msgid "You're already in a battle."
 msgstr "Vous êtes déjà dans un combat."
 
-#: game/battles.py:171
+#: game/battles.py:172
 #, python-format
 msgid "%(username)s is already in a battle."
 msgstr "%(username)s est déjà dans un combat."
 
-#: game/battles.py:195 game/battles.py:224
+#: game/battles.py:196 game/battles.py:225 game/battles.py:245
 msgid "That challenge no longer exists."
 msgstr "Ce défi n'existe plus."
 
-#: game/battles.py:199
+#: game/battles.py:200
 #, python-format
 msgid "%(username)s's deck is no longer valid, so the challenge was cancelled."
 msgstr "Le deck de %(username)s n'est plus valide, le défi a donc été annulé."
@@ -128,6 +128,21 @@ msgstr "Approuvée"
 msgid "Rejected"
 msgstr "Refusée"
 
+#: game/models.py:119 game/templates/game/friends.html:94
+#: game/templates/game/friends.html:111
+msgid "Pending"
+msgstr "En attente"
+
+#: game/models.py:120
+#: game/models.py:120
+msgid "Active"
+msgstr "Actif"
+
+#: game/models.py:121
+#: game/models.py:121
+msgid "Finished"
+msgstr "Terminé"
+
 #: game/packs.py:37
 msgid "Your next pack isn't ready yet."
 msgstr "Votre prochain pack n'est pas encore prêt."
@@ -150,45 +165,52 @@ msgstr "Collection"
 msgid "Friends"
 msgstr "Amis"
 
-#: game/templates/base.html:31 game/templates/game/leaderboard.html:2
+#: game/templates/base.html:31 game/templates/game/battles.html:2
+#: game/templates/game/battles.html:6 game/templates/game/deck.html:4
+#: game/templates/base.html:31 game/templates/game/battles.html:2
+#: game/templates/game/battles.html:6 game/templates/game/deck.html:4
+msgid "Battles"
+msgstr "Combats"
+
+#: game/templates/base.html:32 game/templates/game/leaderboard.html:2
 #: game/templates/game/leaderboard.html:5
 msgid "Leaderboard"
 msgstr "Classement"
 
-#: game/templates/base.html:32
+#: game/templates/base.html:33
 msgid "Propose"
 msgstr "Proposer"
 
-#: game/templates/base.html:34
+#: game/templates/base.html:35
 #, python-format
 msgid "Log out %(username)s"
 msgstr "Se déconnecter (%(username)s)"
 
-#: game/templates/base.html:34
+#: game/templates/base.html:35
 msgid "Log out"
 msgstr "Déconnexion"
 
-#: game/templates/base.html:39
+#: game/templates/base.html:40
 msgid "Switch to English"
 msgstr "Passer en anglais"
 
-#: game/templates/base.html:40
+#: game/templates/base.html:41
 msgid "Switch to French"
 msgstr "Passer en français"
 
-#: game/templates/base.html:49 game/templates/base.html:52
+#: game/templates/base.html:50 game/templates/base.html:53
 msgid "Install Pack Ema"
 msgstr "Installer Pack Ema"
 
-#: game/templates/base.html:55
+#: game/templates/base.html:56
 msgid "Close"
 msgstr "Fermer"
 
-#: game/templates/base.html:58
+#: game/templates/base.html:59
 msgid "Tap Share, then ‘Add to Home Screen’."
 msgstr "Appuyez sur Partager, puis « Sur l’écran d’accueil »."
 
-#: game/templates/base.html:58
+#: game/templates/base.html:59
 msgid "Open the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’."
 msgstr ""
 "Ouvrez le menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran "
@@ -209,6 +231,70 @@ msgstr "Événements"
 #: game/templates/game/_trade_side.html:3 game/templates/game/trade.html:61
 msgid "nothing"
 msgstr "rien"
+
+#: game/templates/game/battles.html:7
+#: game/templates/game/battles.html:7
+msgid "Record"
+msgstr "Bilan"
+
+#: game/templates/game/battles.html:11
+#: game/templates/game/battles.html:11
+msgid "Your deck"
+msgstr "Votre deck"
+
+#: game/templates/game/battles.html:12
+#: game/templates/game/battles.html:12
+msgid "Deck ready"
+msgstr "Deck prêt"
+
+#: game/templates/game/battles.html:13
+#: game/templates/game/battles.html:13
+msgid "Edit deck"
+msgstr "Modifier le deck"
+
+#: game/templates/game/battles.html:17
+#: game/templates/game/battles.html:17
+msgid "Current battle"
+msgstr "Combat en cours"
+
+#: game/templates/game/battles.html:22
+#: game/templates/game/battles.html:22
+msgid "Resume"
+msgstr "Reprendre"
+
+#: game/templates/game/battles.html:24
+#, python-format
+#: game/templates/game/battles.html:24
+#, python-format
+msgid "%(username)s challenges you"
+msgstr "%(username)s vous défie"
+
+#: game/templates/game/battles.html:26 game/templates/game/friends.html:47
+#: game/templates/game/friends.html:70
+msgid "Accept"
+msgstr "Accepter"
+
+#: game/templates/game/battles.html:27 game/templates/game/friends.html:48
+#: game/templates/game/friends.html:72
+msgid "Decline"
+msgstr "Refuser"
+
+#: game/templates/game/battles.html:30
+#, python-format
+#: game/templates/game/battles.html:30
+#, python-format
+msgid "Waiting for %(username)s"
+msgstr "En attente de %(username)s"
+
+#: game/templates/game/battles.html:32 game/templates/game/friends.html:95
+#: game/templates/game/friends.html:112
+msgid "Cancel"
+msgstr "Annuler"
+
+#: game/templates/game/battles.html:37
+#: game/templates/game/battles.html:37
+msgid "No battle right now. Challenge a friend from the Friends page."
+msgstr "Aucun combat en cours. Défiez un ami depuis la page Amis."
 
 #: game/templates/game/card_detail.html:5 game/templates/game/collection.html:2
 #: game/templates/game/collection.html:5
@@ -322,6 +408,29 @@ msgstr "Page %(number)s sur %(num_pages)s"
 msgid "Next"
 msgstr "Suivant"
 
+#: game/templates/game/deck.html:2 game/templates/game/deck.html:6
+#: game/templates/game/deck.html:2 game/templates/game/deck.html:6
+msgid "Battle deck"
+msgstr "Deck de combat"
+
+#: game/templates/game/deck.html:7
+#, python-format
+#: game/templates/game/deck.html:7
+#, python-format
+msgid ""
+"Pick %(deck_size)s cards: at most %(legendary_cap)s Legendary and "
+"%(epic_cap)s Epic."
+msgstr "Choisissez %(deck_size)s cartes : au plus %(legendary_cap)s Légendaire et %(epic_cap)s Épique."
+
+#: game/templates/game/deck.html:22 game/templates/game/trade.html:39
+msgid "You don't have any cards yet."
+msgstr "Vous n'avez encore aucune carte."
+
+#: game/templates/game/deck.html:25
+#: game/templates/game/deck.html:25
+msgid "Save deck"
+msgstr "Enregistrer le deck"
+
 #: game/templates/game/friends.html:30
 msgid "Add a friend"
 msgstr "Ajouter un ami"
@@ -337,14 +446,6 @@ msgstr "Envoyer la demande"
 #: game/templates/game/friends.html:41
 msgid "Requests"
 msgstr "Demandes"
-
-#: game/templates/game/friends.html:47 game/templates/game/friends.html:70
-msgid "Accept"
-msgstr "Accepter"
-
-#: game/templates/game/friends.html:48 game/templates/game/friends.html:72
-msgid "Decline"
-msgstr "Refuser"
 
 #: game/templates/game/friends.html:58
 msgid "Trade offers"
@@ -369,14 +470,6 @@ msgstr "Contre-offre"
 msgid "Sent trade offers"
 msgstr "Offres d'échange envoyées"
 
-#: game/templates/game/friends.html:94 game/templates/game/friends.html:111
-msgid "Pending"
-msgstr "En attente"
-
-#: game/templates/game/friends.html:95 game/templates/game/friends.html:112
-msgid "Cancel"
-msgstr "Annuler"
-
 #: game/templates/game/friends.html:105
 msgid "Sent requests"
 msgstr "Demandes envoyées"
@@ -385,19 +478,29 @@ msgstr "Demandes envoyées"
 msgid "Your friends"
 msgstr "Vos amis"
 
-#: game/templates/game/friends.html:128 game/templates/game/home.html:36
+#: game/templates/game/friends.html:127
+#: game/templates/game/friends.html:127
+msgid "Battle record (wins-losses-draws)"
+msgstr "Bilan des combats (victoires-défaites-nuls)"
+
+#: game/templates/game/friends.html:129 game/templates/game/home.html:36
 msgid "View collection"
 msgstr "Voir la collection"
 
-#: game/templates/game/friends.html:129
+#: game/templates/game/friends.html:130
 msgid "Trade"
 msgstr "Échanger"
 
-#: game/templates/game/friends.html:130
+#: game/templates/game/friends.html:131
+#: game/templates/game/friends.html:131
+msgid "Challenge"
+msgstr "Défier"
+
+#: game/templates/game/friends.html:132
 msgid "Remove"
 msgstr "Retirer"
 
-#: game/templates/game/friends.html:136
+#: game/templates/game/friends.html:138
 msgid "No friends yet — add one above."
 msgstr "Pas encore d'amis — ajoutez-en un ci-dessus."
 
@@ -591,10 +694,6 @@ msgstr ""
 "Part de l'offre de %(username)s. Modifiez les cartes puis envoyez : elle "
 "remplacera son offre."
 
-#: game/templates/game/trade.html:39
-msgid "You don't have any cards yet."
-msgstr "Vous n'avez encore aucune carte."
-
 #: game/templates/game/trade.html:59
 msgid "Send counter-offer"
 msgstr "Envoyer la contre-offre"
@@ -680,41 +779,51 @@ msgstr "Vous n'êtes plus amis, l'échange a donc été annulé."
 msgid "One of the cards is no longer available, so this trade was cancelled."
 msgstr "Une des cartes n'est plus disponible, l'échange a donc été annulé."
 
-#: game/views.py:46
+#: game/views.py:47
 msgid "A short line under the name"
 msgstr "Une courte ligne sous le nom"
 
-#: game/views.py:47
+#: game/views.py:48
 msgid "Shown on the card's page: what is this club or person about?"
 msgstr ""
 "Affiché sur la page de la carte : de quoi parle ce club ou cette personne ?"
 
-#: game/views.py:72
+#: game/views.py:73
 msgid "Pick a color like #3a3f58."
 msgstr "Choisissez une couleur comme #3a3f58."
 
-#: game/views.py:88
+#: game/views.py:89
 #, python-format
 msgid "Image too large (max %(max_mb)s MB)."
 msgstr "Image trop grande (max %(max_mb)s Mo)."
 
-#: game/views.py:226
+#: game/views.py:234
 msgid "Friend request sent!"
 msgstr "Demande d'ami envoyée !"
 
-#: game/views.py:311
+#: game/views.py:319
 msgid "Counter-offer sent!"
 msgstr "Contre-offre envoyée !"
 
-#: game/views.py:311
+#: game/views.py:319
 msgid "Trade offer sent!"
 msgstr "Offre d'échange envoyée !"
 
-#: game/views.py:333
+#: game/views.py:341
 msgid "Trade done! Check your collection."
 msgstr "Échange effectué ! Allez voir votre collection."
 
-#: game/views.py:362
+#: game/views.py:375
+#: game/views.py:375
+msgid "Deck saved!"
+msgstr "Deck enregistré !"
+
+#: game/views.py:394
+#: game/views.py:394
+msgid "Challenge sent!"
+msgstr "Défi envoyé !"
+
+#: game/views.py:431
 #, python-format
 msgid ""
 "“%(name)s” was sent for review. If it's approved, it will show up in packs!"
