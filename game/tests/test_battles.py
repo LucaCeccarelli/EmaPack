@@ -424,3 +424,8 @@ class StateTests(PlayTests):
         b = self.start()
         s = battle_state(self.ash, b, now=T0 + PICK_TIME + S5)
         self.assertEqual(len(s["history"]), 1)
+
+    def test_outsider_gets_no_state(self):
+        b = self.start()
+        with self.assertRaises(BattleError):
+            battle_state(self.misty, b, now=T0)

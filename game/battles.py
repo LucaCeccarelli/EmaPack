@@ -241,6 +241,8 @@ def battle_state(user, battle, request=None, now=None):
     """What `user` may see of `battle`. The opponent's unplayed cards (and a pick not yet revealed) never
     enter this dict: only resolved rounds expose both cards.
     """
+    if user.pk not in (battle.challenger_id, battle.opponent_id):
+        raise BattleError(_("That challenge no longer exists."))
     advance(battle, now)
     me, them = ("challenger", "opponent") if battle.challenger_id == user.pk else ("opponent", "challenger")
     decks = {"challenger": battle.challenger_deck, "opponent": battle.opponent_deck}
