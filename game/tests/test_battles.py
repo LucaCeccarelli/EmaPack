@@ -211,14 +211,15 @@ class PlayTests(TestCase):
         return accept_challenge(self.gary, challenge(self.ash, "gary", now=now).pk, now=now)
 
     def play_round(self, b, ash_card, gary_card, now=T0):
-        play_card(self.ash, b.pk, str(ash_card.pk), now=now)
-        play_card(self.gary, b.pk, str(gary_card.pk), now=now)
+        n = b.rounds.last().number
+        play_card(self.ash, b.pk, str(ash_card.pk), n, now=now)
+        play_card(self.gary, b.pk, str(gary_card.pk), n, now=now)
         b.refresh_from_db()
 
     def test_higher_value_wins_round_and_next_round_starts(self):
         b = self.start()
-        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
-        play_card(self.gary, b.pk, str(self.weak[0].pk), now=T0 + S5)
+        play_card(self.ash, b.pk, str(self.strong[0].pk), 1, now=T0)
+        play_card(self.gary, b.pk, str(self.weak[0].pk), 1, now=T0 + S5)
         self.assertEqual(scores(b), (1, 0))
         self.assertEqual(b.rounds.get(number=2).deadline, T0 + S5 + REVEAL_TIME + PICK_TIME)
 
@@ -251,33 +252,35 @@ class PlayTests(TestCase):
 
     def test_cannot_play_twice_in_a_round(self):
         b = self.start()
-        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        play_card(self.ash, b.pk, str(self.strong[0].pk), 1, now=T0)
         with self.assertRaises(BattleError):
-            play_card(self.ash, b.pk, str(self.strong[1].pk), now=T0)
+            play_card(self.ash, b.pk, str(self.strong[1].pk), 1, now=T0)
         self.assertEqual(b.rounds.get(number=1).challenger_card, self.strong[0])
 
     def test_cannot_replay_a_card(self):
         b = self.start()
         self.play_round(b, self.strong[0], self.weak[0])
         with self.assertRaises(BattleError):
-            play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+            play_card(self.ash, b.pk, str(self.strong[0].pk), 1, now=T0)
         self.assertIsNone(b.rounds.get(number=2).challenger_card)
 
     def test_cannot_play_card_outside_deck_or_tampered(self):
         b = self.start()
         for bad in (str(self.weak[0].pk), "abc", ""):
             with self.assertRaises(BattleError):
-                play_card(self.ash, b.pk, bad, now=T0)
+                play_card(self.ash, b.pk, bad, 1, now=T0)
         self.assertIsNone(b.rounds.get(number=1).challenger_card)
 
     def test_outsider_cannot_play(self):
         b = self.start()
         with self.assertRaises(BattleError):
-            play_card(self.misty, b.pk, str(self.strong[0].pk), now=T0)
+            play_card(self.misty, b.pk, str(self.strong[0].pk), 1, now=T0)
+        self.assertEqual(b.rounds.filter(challenger_card__isnull=False).count(), 0)
+        self.assertEqual(b.rounds.filter(opponent_card__isnull=False).count(), 0)
 
     def test_timeout_auto_plays_missing_side(self):
         b = self.start()
-        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        play_card(self.ash, b.pk, str(self.strong[0].pk), 1, now=T0)
         advance(b, T0 + PICK_TIME + S5 / 5)
         r1 = b.rounds.get(number=1)
         self.assertIn(str(r1.opponent_card_id), b.opponent_deck)
@@ -286,12 +289,21 @@ class PlayTests(TestCase):
 
     def test_late_pick_is_rejected(self):
         b = self.start()
-        play_card(self.ash, b.pk, str(self.strong[0].pk), now=T0)
+        play_card(self.ash, b.pk, str(self.strong[0].pk), 1, now=T0)
         late = T0 + PICK_TIME + S5 / 5
         advance(b, late)
         auto = b.rounds.get(number=1).opponent_card_id
+        fresh = next(c for c in self.weak if c.pk != auto)
         with self.assertRaises(BattleError):
-            play_card(self.gary, b.pk, str(auto), now=late)
+            play_card(self.gary, b.pk, str(fresh.pk), 1, now=late)
+        self.assertIsNone(b.rounds.get(number=2).opponent_card)
+
+    def test_pick_for_wrong_round_number_is_rejected(self):
+        b = self.start()
+        for bad in (2, "x", None):
+            with self.assertRaises(BattleError):
+                play_card(self.ash, b.pk, str(self.strong[0].pk), bad, now=T0)
+        self.assertIsNone(b.rounds.get(number=1).challenger_card)
 
     def test_advance_catches_up_every_overdue_round(self):
         b = self.start()

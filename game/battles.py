@@ -105,7 +105,7 @@ def advance(battle, now=None):
     battle.refresh_from_db()
 
 
-def play_card(user, battle_id, card_id, now=None):
+def play_card(user, battle_id, card_id, round_number, now=None):
     """Pick a card for the current round; resolves the round once both sides have picked."""
     now = now or timezone.now()
     with transaction.atomic():
@@ -117,6 +117,8 @@ def play_card(user, battle_id, card_id, now=None):
             raise BattleError(_("This battle is over."))
         side = "challenger" if battle.challenger_id == user.pk else "opponent"
         rnd = battle.rounds.last()
+        if str(round_number) != str(rnd.number):  # e.g. a late pick whose round advance() just played
+            raise BattleError(_("That round is already over."))
         if getattr(rnd, f"{side}_card_id") is not None:
             raise BattleError(_("You already played this round."))
         if str(card_id) not in remaining_cards(battle, side):
