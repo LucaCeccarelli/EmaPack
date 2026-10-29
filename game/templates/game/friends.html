@@ -124,9 +124,11 @@
     {% for user in friends %}
     <li>
       <strong>{{ user.username }}</strong>
+      <span class="chip" title="{% trans 'Battle record (wins-losses-draws)' %}">{{ user.record.wins }}-{{ user.record.losses }}-{{ user.record.draws }}</span>
       <span class="friend-actions">
         <a class="btn small ghost" href="{% url 'friend_collection' user.username %}">{% trans "View collection" %}</a>
         <a class="btn small" href="{% url 'trade_new' user.username %}">{% trans "Trade" %}</a>
+        <form method="post" action="{% url 'battle_challenge' user.username %}">{% csrf_token %}<button class="btn small">{% trans "Challenge" %}</button></form>
         <form method="post" action="{% url 'friend_remove' user.friendship_id %}">{% csrf_token %}<button class="btn small ghost">{% trans "Remove" %}</button></form>
       </span>
     </li>

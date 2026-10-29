@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Battles" %} · Pack Ema{% endblock %}
+{% block head %}{% if not battle or battle.status != "active" %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>{% trans "Battles" %}</h1>
+  <p class="muted">{% trans "Record" %}: {{ record.wins }}-{{ record.losses }}-{{ record.draws }}</p>
+</header>
+
+<section class="panel">
+  <h2>{% trans "Your deck" %}</h2>
+  <p>{% if deck_problem %}{{ deck_problem }}{% else %}{% trans "Deck ready" %}{% endif %}</p>
+  <a class="btn small ghost" href="{% url 'deck' %}">{% trans "Edit deck" %}</a>
+</section>
+
+<section class="panel friend-list">
+  <h2>{% if incoming %}{% trans "Incoming challenge" %}{% else %}{% trans "Current battle" %}{% endif %}</h2>
+  {% if battle %}
+  <ul><li>
+    {% if battle.status == "active" %}
+    <strong>{% if battle.challenger_id == user.pk %}{{ battle.opponent.username }}{% else %}{{ battle.challenger.username }}{% endif %}</strong>
+    <span class="friend-actions"><a class="btn small" href="{% url 'battle' battle.pk %}">{% trans "Resume" %}</a></span>
+    {% elif incoming %}
+    <strong>{% blocktrans with username=battle.challenger.username %}{{ username }} challenges you{% endblocktrans %}</strong>
+    <span class="friend-actions">
+      <form method="post" action="{% url 'battle_accept' battle.pk %}">{% csrf_token %}<button class="btn small">{% trans "Accept" %}</button></form>
+      <form method="post" action="{% url 'battle_remove' battle.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Decline" %}</button></form>
+    </span>
+    {% else %}
+    <strong>{% blocktrans with username=battle.opponent.username %}Waiting for {{ username }}{% endblocktrans %}</strong>
+    <span class="friend-actions">
+      <form method="post" action="{% url 'battle_remove' battle.pk %}">{% csrf_token %}<button class="btn small ghost">{% trans "Cancel" %}</button></form>
+    </span>
+    {% endif %}
+  </li></ul>
+  {% else %}
+  <p class="muted">{% trans "No battle right now. Challenge a friend from the Friends page." %}</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -14,10 +14,11 @@ from django.utils.translation import gettext_lazy as _
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
+from . import battles as battle_logic
 from . import friends as friend_logic
 from . import trades as trade_logic
 from .management.commands.import_komi import HEX_COLOR
-from .models import Card, Friendship, Rarity, Status, Trade, User
+from .models import Battle, Card, Friendship, Rarity, Status, Trade, User
 from .packs import PackUnavailable, open_pack
 
 
@@ -218,6 +219,13 @@ def card_detail(request, pk, username=None):
     })
 
 
+def friends_with_records(user):
+    friends = friend_logic.friends_of(user)
+    for f in friends:
+        f.record = battle_logic.record(f)  # ponytail: one query per friend, fine for friend-list sizes
+    return friends
+
+
 @login_required
 def friends(request):
     if request.method == "POST":
@@ -229,7 +237,7 @@ def friends(request):
         return redirect("friends")
     return render(request, "game/friends.html", {
         "search_min_chars": USERNAME_SEARCH_MIN_CHARS,
-        "friends": friend_logic.friends_of(request.user),
+        "friends": friends_with_records(request.user),
         "incoming": Friendship.objects.filter(
             to_user=request.user, status=Friendship.Status.PENDING
         ).select_related("from_user"),
@@ -344,6 +352,110 @@ def trade_remove(request, pk):
     except trade_logic.TradeError as e:
         messages.error(request, str(e))
     return redirect("friends")
+
+
+@login_required
+def battles(request):
+    battle = battle_logic.current_battle(request.user)
+    return render(request, "game/battles.html", {
+        "battle": battle,
+        "incoming": battle and battle.status == Battle.Status.PENDING and battle.opponent_id == request.user.pk,
+        "record": battle_logic.record(request.user),
+        "deck_problem": battle_logic.deck_problem(request.user),
+    })
+
+
+@login_required
+def deck(request):
+    ticked = {c.pk for c in request.user.deck.all()}
+    if request.method == "POST":
+        ticked = _ids(request.POST.getlist("cards"))
+        try:
+            battle_logic.save_deck(request.user, ticked)
+            messages.success(request, _("Deck saved!"))
+            return redirect("battles")
+        except battle_logic.BattleError as e:
+            messages.error(request, str(e))  # re-render with the boxes still ticked
+    return render(request, "game/deck.html", {
+        "ticked": ticked, "deck_size": battle_logic.DECK_SIZE,
+        "legendary_cap": battle_logic.RARITY_CAP[Rarity.LEGENDARY], "epic_cap": battle_logic.RARITY_CAP[Rarity.EPIC],
+        "cards": Card.objects.filter(pulls__user=request.user).annotate(copies=Count("pulls")).order_by("-rarity", "name"),
+    })
+
+
+@login_required
+@require_POST
+def battle_challenge(request, username):
+    try:
+        battle = battle_logic.challenge(request.user, username)
+    except battle_logic.BattleError as e:
+        messages.error(request, str(e))
+        return redirect("friends")
+    messages.success(request, _("Challenge sent!"))
+    return redirect("battle", battle.pk)
+
+
+@login_required
+@require_POST
+def battle_accept(request, pk):
+    try:
+        battle_logic.accept_challenge(request.user, pk)
+    except battle_logic.BattleError as e:
+        messages.error(request, str(e))
+        return redirect("battles")
+    return redirect("battle", pk)
+
+
+@login_required
+@require_POST
+def battle_remove(request, pk):
+    try:
+        battle_logic.remove_challenge(request.user, pk)
+    except battle_logic.BattleError as e:
+        messages.error(request, str(e))
+    return redirect("battles")
+
+
+def _my_battle(request, pk):
+    # An expired pending challenge is gone for both sides (404 sends the battle page back to the hub).
+    expired = Q(status=Battle.Status.PENDING, created_at__lte=timezone.now() - battle_logic.CHALLENGE_TTL)
+    mine = Battle.objects.filter(Q(challenger=request.user) | Q(opponent=request.user)).exclude(expired)
+    return get_object_or_404(mine, pk=pk)
+
+
+def _battle_json(request, battle, status=200, **extra):
+    state = battle_logic.battle_state(request.user, battle, request)
+    if state["result"]:
+        state["record"] = battle_logic.record(request.user)
+    return JsonResponse({**extra, "state": state} if extra else state, status=status)
+
+
+@login_required
+def battle(request, pk):
+    battle = _my_battle(request, pk)
+    return render(request, "game/battle.html", {
+        "battle": battle, "other": battle.opponent if battle.challenger_id == request.user.pk else battle.challenger,
+        "stats": battle_logic.STATS, "rounds": battle_logic.ROUNDS,
+        "pick_seconds": int(battle_logic.PICK_TIME.total_seconds()),
+    })
+
+
+@login_required
+def battle_state(request, pk):
+    return _battle_json(request, _my_battle(request, pk))
+
+
+@login_required
+@require_POST
+def battle_play(request, pk):
+    battle = _my_battle(request, pk)
+    try:
+        battle_logic.play_card(request.user, pk, request.POST.get("card", ""), request.POST.get("round", ""))
+    except battle_logic.BattleError as e:
+        battle.refresh_from_db()
+        return _battle_json(request, battle, status=409, error=str(e))
+    battle.refresh_from_db()
+    return _battle_json(request, battle)
 
 
 @login_required

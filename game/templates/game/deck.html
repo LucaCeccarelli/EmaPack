@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Battle deck" %} · Pack Ema{% endblock %}
+{% block content %}
+<a class="back" href="{% url 'battles' %}">← {% trans "Battles" %}</a>
+<header class="page-head">
+  <h1>{% trans "Battle deck" %}</h1>
+  <p class="muted">{% blocktrans %}Pick {{ deck_size }} cards: at most {{ legendary_cap }} Legendary and {{ epic_cap }} Epic.{% endblocktrans %}</p>
+</header>
+<form method="post">
+  {% csrf_token %}
+  <fieldset class="panel">
+    {% if cards %}
+    <div class="grid">
+      {% for card in cards %}
+      <label class="grid-item pick">
+        <input type="checkbox" name="cards" value="{{ card.pk }}"{% if card.pk in ticked %} checked{% endif %} aria-label="{{ card.name }}, {{ card.get_rarity_display }}">
+        {% include "game/_card.html" %}
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{% trans "You don't have any cards yet." %}</p>
+    {% endif %}
+  </fieldset>
+  <div class="trade-submit"><button class="btn">{% trans "Save deck" %}</button></div>
+</form>
+{% endblock %}
