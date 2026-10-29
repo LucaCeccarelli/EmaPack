@@ -1,0 +1,40 @@
+name: Update code graph
+
+# Every code change merged into main: rebuild graphify-out/ and commit it back,
+# so nobody has to regenerate the graph locally. Pushes made with GITHUB_TOKEN
+# don't trigger workflows, so the bot commit doesn't loop or re-publish the image.
+on:
+  push:
+    branches: [main]
+    paths: ["**.py", "**.js", "**.html", "**.md", "!graphify-out/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: graphify
+  cancel-in-progress: true
+
+jobs:
+  graph:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Rebuild graph
+        run: uvx --from graphifyy==0.9.91 graphify update .
+
+      - name: Commit graph
+        run: |
+          git add graphify-out
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update code graph"
+          git push
